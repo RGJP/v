@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>La Voie du Christ</title>
+  <title>Méditations avec le Christ</title>
   <style>
     :root {
       color-scheme: light;
@@ -174,9 +174,9 @@
   <main>
     <section class="center" aria-label="Lecteur de méditation">
       <div class="content">
-        <h1>La Voie du Christ</h1>
+        <h1>Méditations avec le Christ</h1>
         <p class="tagline">et le fruit du hasard:</p>
-        <button id="play" type="button">Écouter, pour Voir</button>
+        <button id="play" type="button">Écouter</button>
         <div id="progressWrap" class="progress" aria-label="Progression de l'audio">
           <input id="progress" type="range" min="0" max="1000" value="0" aria-label="Position dans l'audio">
           <div class="time">
@@ -2769,7 +2769,7 @@
         started = false;
         finished = true;
         widget = null;
-        playButton.textContent = "Écouter, pour Voir";
+        playButton.textContent = "Écouter";
         statusText.textContent = "Méditation terminée.";
         updateProgress(duration);
       });
