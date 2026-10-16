@@ -59,7 +59,7 @@ html, body {
   outline: none;
 }
 
-/* ---------- toolbar (pause / fullscreen / mute) ---------- */
+/* ---------- toolbar (pause / fullscreen) ---------- */
 #toolbar {
   position: fixed;
   top: calc(12px + var(--safe-t));
@@ -86,10 +86,7 @@ html, body {
 .tool path { fill: currentColor; }
 .tool path.line { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-#mute .icon-off, #fs .icon-exit { display: none; }
-#mute.muted { color: #8a83b0; }
-#mute.muted .icon-on { display: none; }
-#mute.muted .icon-off { display: block; }
+#fs .icon-exit { display: none; }
 #fs.on .icon-enter { display: none; }
 #fs.on .icon-exit { display: block; }
 
