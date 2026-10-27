@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en" class="loading">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0a0a0a">
+  <title>CHICKAROO</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐥</text></svg>">
+  <meta name="description" content="CHICKAROO — a handcrafted 2D platformer homage. Pure HTML5 canvas and Web Audio.">
+  <style>html, body { background: #0a0a0a; }</style>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Static bake of SPR.small.blush, embedded so it appears before game scripts and fonts load. -->
+  <div id="loading" role="status" aria-label="Loading CHICKAROO">
+    <img src="data:image/png;base64,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" width="96" height="74" alt="" fetchpriority="high" draggable="false">
+  </div>
+  <main id="stage">
+    <div id="frame">
+      <canvas id="game" width="1200" height="672" aria-label="CHICKAROO game screen"></canvas>
+    </div>
+  </main>
+
+  <div id="toolbar">
+    <button id="pause" class="tool touch-only" type="button" aria-label="Pause" title="Pause (P)">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3h3v10H4zM9 3h3v10H9z"/></svg>
+    </button>
+    <button id="fs" class="tool" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F)">
+      <svg class="icon-enter" viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>
+      <svg class="icon-exit" viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M6 2v4H2M14 6h-4V2M10 14v-4h4M2 10h4v4"/></svg>
+    </button>
+  </div>
+
+  <div id="touch" class="touch-only" aria-hidden="true">
+    <div id="dpad"><span class="arrow l"></span><span class="arrow r"></span></div>
+    <div id="btns"><span id="bB" class="btn">B</span><span id="bA" class="btn">A</span></div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="src/levels.js"></script>
+  <script src="src/constants.js"></script>
+  <script src="src/utils.js"></script>
+  <script src="src/fonts.js"></script>
+  <script src="src/hires.js"></script>
+  <script src="src/audio.js"></script>
+  <script src="src/bayou-music.js"></script>
+  <script src="src/input.js"></script>
+  <script src="src/sprites.js"></script>
+  <script src="src/tiles.js"></script>
+  <script src="src/backgrounds.js"></script>
+  <script src="src/meadow-fine.js"></script>
+  <script src="src/fine-ground.js"></script>
+  <script src="src/cave-fine.js"></script>
+  <script src="src/sky-fine.js"></script>
+  <script src="src/citadel-fine.js"></script>
+  <script src="src/ocean-fine.js"></script>
+  <script src="src/snow-fine.js"></script>
+  <script src="src/clock-fine.js"></script>
+  <script src="src/eclipse-fine.js"></script>
+  <script src="src/desert-fine.js"></script>
+  <script src="src/level.js"></script>
+  <script src="src/enemy.js"></script>
+  <script src="src/enemies-meadow.js"></script>
+  <script src="src/blooms.js"></script>
+  <script src="src/meadow-art.js"></script>
+  <script src="src/desert-art.js"></script>
+  <script src="src/magmaw-art.js"></script>
+  <script src="src/sprites-fine.js"></script>
+  <script src="src/bayou-fine.js"></script>
+  <script src="src/jungle-fine.js"></script>
+  <script src="src/winter-art.js"></script>
+  <script src="src/clock-art.js"></script>
+  <script src="src/eclipse-enemy-art.js"></script>
+  <script src="src/enemies-water-ice.js"></script>
+  <script src="src/enemies-snow.js"></script>
+  <script src="src/enemies-forest.js"></script>
+  <script src="src/enemies-desert.js"></script>
+  <script src="src/enemies-jungle.js"></script>
+  <script src="src/enemies-misc.js"></script>
+  <script src="src/snorer-art.js"></script>
+  <script src="src/enemies-cave.js"></script>
+  <script src="src/cave-moths.js"></script>
+  <script src="src/enemies-sky.js"></script>
+  <script src="src/fair.js"></script>
+  <script src="src/enemies-citadel.js"></script>
+  <script src="src/enemies-clock.js"></script>
+  <script src="src/clock-finale.js"></script>
+  <script src="src/enemies-eclipse.js"></script>
+  <script src="src/bosses.js"></script>
+  <script src="src/umbra-art.js"></script>
+  <script src="src/shade.js"></script>
+  <script src="src/sigil.js"></script>
+  <script src="src/dunes.js"></script>
+  <script src="src/enemies-bayou.js"></script>
+  <script src="src/enemies-gut.js"></script>
+  <script src="src/enemies-gumbo.js"></script>
+  <script src="src/crawdad-art.js"></script>
+  <script src="src/items-fx.js"></script>
+  <script src="src/platform.js"></script>
+  <script src="src/gumbo.js"></script>
+  <script src="src/game.js"></script>
+  <script src="src/game-update.js"></script>
+  <script src="src/game-jungle.js"></script>
+  <script src="src/game-sky.js"></script>
+  <script src="src/game-clock.js"></script>
+  <script src="src/game-bayou.js"></script>
+  <script src="src/gut.js"></script>
+  <script src="src/gut-dream.js"></script>
+  <script src="src/gut-rooms.js"></script>
+  <script src="src/gut-ileum.js"></script>
+  <script src="src/gut-colon.js"></script>
+  <script src="src/cloacolith-art.js"></script>
+  <script src="src/turtle-art.js"></script>
+  <script src="src/gut-vault.js"></script>
+  <script src="src/gut-sprites.js"></script>
+  <script src="src/game-gumbo.js"></script>
+  <script src="src/game-world.js"></script>
+  <script src="src/game-blocks-items.js"></script>
+  <script src="src/game-suits.js"></script>
+  <script src="src/game-entities.js"></script>
+  <script src="src/game-render.js"></script>
+  <script src="src/game-decor.js"></script>
+  <script src="src/game-goals.js"></script>
+  <script src="src/game-hud.js"></script>
+  <script src="src/game-devwarp.js"></script>
+  <script src="src/game-cat.js"></script>
+  <script src="src/game-story.js"></script>
+  <script src="src/logo.js"></script>
+  <script src="src/boot.js"></script>
+</body>
+</html>
