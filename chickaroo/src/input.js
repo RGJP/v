@@ -14,7 +14,8 @@ const KEYMAP = {
   Space: 'ok',
   KeyP: 'pause', Escape: 'pause', Enter: 'start', NumpadEnter: 'start', KeyF: 'fullscreen',
   // virtual codes pressed by the on-screen touch controls
-  TouchLeft: 'left', TouchRight: 'right', TouchJump: 'jump', TouchRun: 'run',
+  TouchLeft: 'left', TouchRight: 'right', TouchUp: 'up', TouchDown: 'down', TouchJump: 'jump', TouchRun: 'run',
+  TouchSpin: 'spin', TouchRoll: 'roll',
   // virtual codes pressed by game controllers (see Pad)
   PadLeft: 'left', PadRight: 'right', PadUp: 'up', PadDown: 'down', PadJump: 'jump', PadRun: 'run',
   PadPause: 'pause', PadStart: 'start', PadBack: 'pause', PadRoll: 'roll', PadSpin: 'spin',
@@ -27,7 +28,9 @@ const Input = {
   // playing on the keyboard (set by real key presses, cleared by a controller or the touch buttons): he runs on his own,
   // holding a run key and a jump key together on a keyboard being a known pain. Only the speed: grab and fire still need it held
   keyboard: false,
-  autoRun() { return this.keyboard; },
+  // on the touch buttons too (set by a touch, cleared by keys or a controller), unless switched off with the AUTO chip
+  touch: false, touchAutoRun: safeStorage.get('chickaroo-autorun') !== '0',
+  autoRun() { return this.keyboard || (this.touch && this.touchAutoRun); },
   acts: Object.create(null),   // code -> the action it pressed
   down(a) { return (this.held[a] | 0) > 0; },
   hit(a) { return this.hits.has(a); },
@@ -57,6 +60,13 @@ const Input = {
 //   Cross = jump    Circle = roll    Triangle = spin jump    Square / L1 / R1 / L2 / R2 = run / fire
 //   D-pad or left stick = move (and navigate menus, with auto-repeat)
 //   Options = pause in game, confirm in menus    Create = reserve swap    Touchpad = back / pause
+// in play, up is a jump of its own -- except hanging from a vine (up climbs), carrying a shell (up tosses it straight
+// up), on DJINNY's magic carpet (3-1, up steers it higher) and at a ladder (up climbs it)
+function upSteers(game) {
+  const p = game.player;
+  return !!p && (!!p.vine || !!game.held || !!p.ladder || !!game.nearLadder || (typeof Carpet !== 'undefined' && p.platform instanceof Carpet));
+}
+
 const PAD_DEAD_ON = 0.45, PAD_DEAD_OFF = 0.3;      // stick hysteresis: no flicker at the edge
 const PAD_RUMBLE = {
   umbraUnravel:[380,.65,.35],umbraFracture:[65,.15,.35],umbraShatter:[520,.95,.8],umbraDust:[120,0,.15],
@@ -120,7 +130,7 @@ const Pad = {
     };
   },
   set(code, on) {
-    if (on && !Input.codes.has(code)) { Input.press(code); this.used = true; Input.keyboard = false; Sound.unlock(); }
+    if (on && !Input.codes.has(code)) { Input.press(code); this.used = true; Input.keyboard = Input.touch = false; Sound.unlock(); }
     else if (!on && Input.codes.has(code)) Input.release(code);
   },
   releaseAll() {
@@ -146,7 +156,7 @@ const Pad = {
     }
     const dz = v => Math.abs(v) < 0.2 ? 0 : (v - Math.sign(v) * 0.2) / 0.8;
     this.rx = dz(rx); this.ry = dz(ry);
-    if (this.rx || this.ry) { this.used = true; Input.keyboard = false; }
+    if (this.rx || this.ry) { this.used = true; Input.keyboard = Input.touch = false; }
     const titleInput = game.mode === 'title' && (Object.values(w).some(Boolean) || Math.abs(lx) > PAD_DEAD_ON || Math.abs(ly) > PAD_DEAD_ON || this.rx !== 0 || this.ry !== 0);
     if (titleInput && !this.titleInputHeld && game.goFullscreen) game.goFullscreen();
     this.titleInputHeld = titleInput;
@@ -158,15 +168,9 @@ const Pad = {
     const now = performance.now();
     const warp = this.checkWarpSequence(game, { r3: w.r3 }, now);
     const inPlay = game.mode === 'play';
-    // in play, up would jump - except while hanging from a vine, where up climbs (like down, the
-    // stick has to point clearly up so a sloppy diagonal push still just pumps the swing)
-    const onVine = inPlay && !!(game.player && game.player.vine);
-    // ...and while carrying a shell, where up tosses it straight up; and on DJINNY's magic carpet (3-1),
-    // where up steers it higher
-    const carrying = inPlay && !!game.held;
-    const onCarpet = inPlay && !!(game.player && typeof Carpet !== 'undefined' && game.player.platform instanceof Carpet);
-    const onLadder = inPlay && !!(game.player && (game.player.ladder || game.nearLadder));   // (up climbs a ladder)
-    const up = inPlay ? (onVine || carrying || onCarpet || onLadder) && (w.up || (ly < -0.6 && -ly > Math.abs(lx))) : w.up || st.up;
+    // in play, up would jump - except where it climbs or steers (upSteers; like down, the stick has to point
+    // clearly up so a sloppy diagonal push still just pumps a vine swing)
+    const up = inPlay ? upSteers(game) && (w.up || (ly < -0.6 && -ly > Math.abs(lx))) : w.up || st.up;
     const down = w.down || (inPlay ? ly > 0.6 && ly > Math.abs(lx) : st.down);
     this.set('PadLeft', w.left || st.left);
     this.set('PadRight', w.right || st.right);
@@ -205,3 +209,30 @@ const Pad = {
   },
 };
 
+
+// ---- on-screen touch controls (wired up in boot.js) ----
+// The stick's raw direction is kept here and turned into virtual key codes once per frame, so up can follow the same
+// rule as a controller's (upSteers) as he grabs and lets go of vines and ladders without the thumb moving.
+const Touch = {
+  stick: { left: false, right: false, up: false, down: false },
+  set(code, on) {
+    if (on && !Input.codes.has(code)) { Input.press(code); Input.keyboard = false; Input.touch = true; Pad.used = false; }
+    else if (!on && Input.codes.has(code)) Input.release(code);
+  },
+  poll(game) {
+    const st = this.stick, inPlay = game.mode === 'play';
+    this.set('TouchLeft', st.left);
+    this.set('TouchRight', st.right);
+    this.set('TouchUp', st.up && (!inPlay || upSteers(game)));
+    this.set('TouchDown', st.down);
+  },
+  releaseAll() {
+    this.stick = { left: false, right: false, up: false, down: false };
+    for (const c of ['TouchLeft', 'TouchRight', 'TouchUp', 'TouchDown', 'TouchJump', 'TouchRun', 'TouchSpin', 'TouchRoll']) this.set(c, false);
+  },
+  toggleAutoRun() {
+    Input.touchAutoRun = !Input.touchAutoRun;
+    safeStorage.set('chickaroo-autorun', Input.touchAutoRun ? '1' : '0');
+    return Input.touchAutoRun;
+  },
+};

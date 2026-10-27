@@ -426,12 +426,12 @@ class GameEntities {
   // a `quiet` stage (2-4) tells its story without words: nobody but the cat talks and no tips show, start to finish
   hushed() { const lv = this.level; return !!(lv && lv.def.quiet && this.mode === 'play'); }
   saying(speaker) { return (this.dialog && this.dialog.speaker === speaker) || (this.dialogQ || []).some(l => l.speaker === speaker); }
-  // {JUMP} {RUN} {ROLL} {SPIN} {DOWN} in a tip become the button for whatever he's playing with. On a touch screen
-  // there's no roll, spin or down: a tip about one of those is skipped altogether (null)
+  // {JUMP} {RUN} {ROLL} {SPIN} {DOWN} in a tip become the button for whatever he's playing with (null: a tip about a
+  // button he hasn't got, skipped altogether)
   buttonText(s) {
     const pad = Pad.used, ps = pad && Pad.isPS(), touch = this.touch && !pad;
     const N = pad ? { JUMP: ps ? 'CROSS' : 'A', RUN: ps ? 'SQUARE' : 'X', ROLL: ps ? 'CIRCLE' : 'B', SPIN: ps ? 'TRIANGLE' : 'Y', DOWN: 'DOWN' }
-      : touch ? { JUMP: 'A', RUN: 'B' } : { JUMP: 'UP', RUN: 'D', ROLL: 'C', SPIN: 'W', DOWN: 'DOWN' };
+      : touch ? { JUMP: 'A', RUN: 'B', ROLL: 'ROLL', SPIN: 'SPIN', DOWN: 'DOWN' } : { JUMP: 'UP', RUN: 'D', ROLL: 'C', SPIN: 'W', DOWN: 'DOWN' };
     let missing = false;
     const out = s.replace(/\{(\w+)\}/g, (m, k) => { if (!N[k]) missing = true; return N[k] || k; });
     return missing ? null : out;

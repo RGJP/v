@@ -28,6 +28,9 @@
     <button id="pause" class="tool touch-only" type="button" aria-label="Pause" title="Pause (P)">
       <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3h3v10H4zM9 3h3v10H9z"/></svg>
     </button>
+    <button id="swap" class="tool touch-only play-only" type="button" aria-label="Swap reserve item" title="Swap item">
+      <svg viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M3 5h9l-2.5-2.5M13 11H4l2.5 2.5"/></svg>
+    </button>
     <button id="fs" class="tool" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F)">
       <svg class="icon-enter" viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>
       <svg class="icon-exit" viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M6 2v4H2M14 6h-4V2M10 14v-4h4M2 10h4v4"/></svg>
@@ -35,8 +38,22 @@
   </div>
 
   <div id="touch" class="touch-only" aria-hidden="true">
-    <div id="dpad"><span class="arrow l"></span><span class="arrow r"></span></div>
-    <div id="btns"><span id="bB" class="btn">B</span><span id="bA" class="btn">A</span></div>
+    <div id="dpad">
+      <div class="base"><span class="chev u"></span><span class="chev d"></span><span class="chev l"></span><span class="chev r"></span><span class="knob"></span></div>
+    </div>
+    <button id="autorun" type="button" class="chip"><span class="dot"></span>AUTO RUN</button>
+    <div id="btns">
+      <span id="bR" class="btn small" data-code="TouchRoll"><i>ROLL</i></span>
+      <span id="bS" class="btn small" data-code="TouchSpin"><i>SPIN</i></span>
+      <span id="bB" class="btn" data-code="TouchRun"><b>B</b><i>RUN</i></span>
+      <span id="bA" class="btn" data-code="TouchJump"><b>A</b><i>JUMP</i></span>
+    </div>
+  </div>
+
+  <div id="rotate" role="alert">
+    <div class="phone"><span></span></div>
+    <p class="big">Turn your phone sideways</p>
+    <p class="small">CHICKAROO plays in landscape. Tap to go fullscreen.</p>
   </div>
 
   <div id="toast" role="status" aria-live="polite"></div>

@@ -34,6 +34,10 @@ async function boot() {
     const full = !!(document.fullscreenElement || document.webkitFullscreenElement) || (touch && !portrait);
     root.classList.toggle('portrait', touch && portrait);
     root.classList.toggle('edge', full);
+    // the touch overlay's size: 1 on a typical phone on its side (about 390 px tall), a little bigger on tablets
+    root.style.setProperty('--ui', Math.max(0.75, Math.min(1.25, Math.min(vw, vh) / 390)).toFixed(3));
+    // held upright mid-level: play waits behind the turn-sideways screen
+    if (touch && portrait && game.mode === 'play' && game.player && game.player.state === 'play') { Input.reset(); Touch.releaseAll(); game.pause(); }
     let aw = vw - 24, ah = vh - 24;
     if (touch && portrait) { aw = vw - 8; ah = Math.max(120, vh - 64 - 230); }
     else if (full) { aw = vw; ah = vh; }
@@ -59,6 +63,10 @@ async function boot() {
   const fsBtn = document.getElementById('fs'), toast = document.getElementById('toast');
   const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
   const canFs = !!(root.requestFullscreen || root.webkitRequestFullscreen);
+  // phones turn to landscape by themselves once fullscreen (Android); elsewhere it's quietly unsupported
+  const lockLandscape = () => {
+    try { if (root.classList.contains('touch') && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); } catch (e) { /* unsupported */ }
+  };
   let toastT = 0;
   const showToast = msg => {
     if (!toast) return;
@@ -71,8 +79,7 @@ async function boot() {
       if (fsElement()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
       if (!canFs) { showToast('Fullscreen: use Share → Add to Home Screen'); return; }
       const req = (root.requestFullscreen || root.webkitRequestFullscreen).call(root, { navigationUI: 'hide' });
-      const lock = () => { if (root.classList.contains('touch') && screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {}); };
-      if (req && req.then) req.then(lock).catch(() => showToast('Fullscreen was blocked by the browser')); else lock();
+      if (req && req.then) req.then(lockLandscape).catch(() => showToast('Fullscreen was blocked by the browser')); else lockLandscape();
     } catch (e) { showToast('Fullscreen is not available here'); }
   };
   // Request directly during title input, while the browser's user activation is still available.
@@ -83,8 +90,8 @@ async function boot() {
     fsPending = true;
     try {
       const req = (root.requestFullscreen || root.webkitRequestFullscreen).call(root, { navigationUI: 'hide' });
-      if (req && req.then) req.then(() => { fsPending = false; }, () => { fsPending = false; });
-      else fsPending = false;
+      if (req && req.then) req.then(() => { fsPending = false; lockLandscape(); }, () => { fsPending = false; });
+      else { fsPending = false; lockLandscape(); }
     } catch (e) { fsPending = false; }
   };
   const onFsChange = () => { if (fsBtn) fsBtn.classList.toggle('on', !!fsElement()); setTimeout(fit, 60); };
@@ -113,7 +120,7 @@ async function boot() {
     const a = KEYMAP[e.code];
     if (!a) return;
     if (game.mode === 'title' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && a !== 'fullscreen' && e.code !== 'Escape') game.goFullscreen();
-    Pad.used = false; Input.keyboard = true;   // (keyboard play: auto-run)
+    Pad.used = false; Input.keyboard = true; Input.touch = false;   // (keyboard play: auto-run)
     e.preventDefault();
     if (Input.codes.has(e.code)) return;
     Input.press(e.code);
@@ -124,7 +131,7 @@ async function boot() {
     Input.release(e.code);
   });
   const autoPause = () => {
-    Input.reset();
+    Input.reset(); Touch.releaseAll();
     if (game.mode === 'play' && game.player && game.player.state === 'play') game.pause();
   };
   window.addEventListener('blur', autoPause);
@@ -153,6 +160,11 @@ async function boot() {
   window.addEventListener('pointercancel', () => { titlePointerPending = false; });
   const pauseBtn = document.getElementById('pause');
   if (pauseBtn) pauseBtn.addEventListener('click', () => { Sound.unlock(); Input.hits.add('pause'); pauseBtn.blur(); });
+  const swapBtn = document.getElementById('swap');
+  if (swapBtn) swapBtn.addEventListener('click', () => { Sound.unlock(); Input.hits.add('reserve'); swapBtn.blur(); });
+  // the turn-sideways screen: a tap goes fullscreen, which on Android also turns the game to landscape
+  const rotateEl = document.getElementById('rotate');
+  if (rotateEl) rotateEl.addEventListener('click', () => { Sound.unlock(); if (!fsElement() && canFs) toggleFullscreen(); });
 
   // ---- tap / click the canvas to use menus
   canvas.addEventListener('pointerdown', e => {
@@ -161,11 +173,9 @@ async function boot() {
     game.tap(((e.clientX - r.left) / r.width) * VIEW_W, ((e.clientY - r.top) / r.height) * VIEW_H);
   });
 
-  // ---- multi-touch controls: a D-pad zone and an A/B zone (slide a thumb between A and B to press both)
-  const setVirtual = (code, on) => {
-    if (on && !Input.codes.has(code)) { Input.press(code); Input.keyboard = false; }
-    else if (!on && Input.codes.has(code)) Input.release(code);
-  };
+  // ---- multi-touch controls: a stick on the left, four face buttons on the right (slide a thumb between A and B
+  // to press both). A little buzz on each press, where the phone can
+  const buzz = () => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) { /* unsupported */ } };
   const zone = (el, classify, apply) => {
     if (!el) return;
     const ptrs = new Map();
@@ -180,32 +190,72 @@ async function boot() {
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => el.addEventListener(t, end));
     el.addEventListener('contextmenu', e => e.preventDefault());
   };
-  const dpad = document.getElementById('dpad');
+  // the stick: left / right anywhere but straight up or down; up and down need a deliberate push (so a thumb
+  // drifting up while walking doesn't climb or crouch). The diagonals give both
+  const dpad = document.getElementById('dpad'), base = dpad && dpad.querySelector('.base');
   zone(dpad, e => {
-    const r = dpad.getBoundingClientRect();
-    const dx = (e.clientX - (r.left + r.width / 2)) / (r.width / 2);
-    return { l: dx < -0.12, r: dx > 0.12 };
+    const r = base.getBoundingClientRect(), rad = r.width / 2;
+    const dx = (e.clientX - (r.left + rad)) / rad, dy = (e.clientY - (r.top + rad)) / rad, d = Math.hypot(dx, dy);
+    const on = d > 0.22, k = Math.min(1, 0.62 / Math.max(d, 0.001));   // (the knob stays on the base)
+    return {
+      dx: dx * k, dy: dy * k,
+      l: on && dx < 0 && -dx > d * 0.38, r: on && dx > 0 && dx > d * 0.38,
+      u: d > 0.4 && dy < 0 && -dy > d * 0.7, d: d > 0.4 && dy > 0 && dy > d * 0.7,
+    };
   }, list => {
-    const l = list.some(p => p.l), r = list.some(p => p.r);
-    setVirtual('TouchLeft', l && !r); setVirtual('TouchRight', r && !l);
-    dpad.classList.toggle('left', l && !r); dpad.classList.toggle('right', r && !l);
+    const p = list[list.length - 1], st = Touch.stick, was = st.left + st.right * 2 + st.up * 4 + st.down * 8;
+    const l = list.some(q => q.l), r = list.some(q => q.r);
+    st.left = l && !r; st.right = r && !l; st.up = list.some(q => q.u); st.down = list.some(q => q.d);
+    if (st.left + st.right * 2 + st.up * 4 + st.down * 8 !== was && was === 0) buzz();
+    Touch.poll(game);   // (pressed now, not at the next frame: a quick flick still counts)
+    for (const c of ['left', 'right', 'up', 'down']) dpad.classList.toggle(c, st[c]);
+    dpad.classList.toggle('held', !!p);
+    const rad = base.offsetWidth / 2;
+    dpad.style.setProperty('--kx', (p ? p.dx * rad : 0).toFixed(1) + 'px');
+    dpad.style.setProperty('--ky', (p ? p.dy * rad : 0).toFixed(1) + 'px');
   });
-  const btns = document.getElementById('btns'), bA = document.getElementById('bA'), bB = document.getElementById('bB');
+  const btns = document.getElementById('btns'), faces = btns ? [...btns.querySelectorAll('.btn')] : [];
+  const bA = document.getElementById('bA'), bB = document.getElementById('bB');
   zone(btns, e => {
-    const ra = bA.getBoundingClientRect(), rb = bB.getBoundingClientRect(), rad = ra.width / 2;
-    const da = Math.hypot(e.clientX - (ra.left + rad), e.clientY - (ra.top + rad));
-    const db = Math.hypot(e.clientX - (rb.left + rad), e.clientY - (rb.top + rad));
-    let a = da < rad * 1.35, b = db < rad * 1.35;
-    if (!a && !b) { if (da < db) a = true; else b = true; }
-    return { a, b };
+    // each thumb presses the button it's nearest (relative to the button's size), and A and B both when it lies
+    // across the two
+    const near = faces.map(el => {
+      const r = el.getBoundingClientRect(), rad = r.width / 2;
+      return { el, f: Math.hypot(e.clientX - (r.left + rad), e.clientY - (r.top + rad)) / rad };
+    }).sort((x, y) => x.f - y.f);
+    const hit = new Set([near[0].el]);
+    if (near[0].el === bA || near[0].el === bB) {
+      const other = near.find(n => n.el === (near[0].el === bA ? bB : bA));
+      if (other.f < 1.35 && near[0].f < 1.35) hit.add(other.el);
+    }
+    return hit;
   }, list => {
-    const a = list.some(p => p.a), b = list.some(p => p.b);
-    setVirtual('TouchJump', a); setVirtual('TouchRun', b);
-    bA.classList.toggle('on', a); bB.classList.toggle('on', b);
+    for (const el of faces) {
+      const on = list.some(h => h.has(el));
+      if (on && !el.classList.contains('on')) buzz();
+      Touch.set(el.dataset.code, on);
+      el.classList.toggle('on', on);
+    }
   });
+  // auto-run (on by default): hold a direction and he breaks into a run by himself, so B is only for grabbing
+  // and fire. The chip switches it off for anyone who'd rather hold B to run
+  const autoBtn = document.getElementById('autorun'), bCap = bB && bB.querySelector('i');
+  const showAutoRun = () => {
+    if (autoBtn) autoBtn.classList.toggle('on', Input.touchAutoRun);
+    if (bCap) bCap.textContent = Input.touchAutoRun ? 'FIRE/GRAB' : 'RUN';
+  };
+  showAutoRun();
+  if (autoBtn) {
+    autoBtn.addEventListener('pointerdown', e => e.preventDefault());
+    autoBtn.addEventListener('click', () => {
+      Sound.unlock(); markTouch(); Input.touch = true;
+      showToast(Touch.toggleAutoRun() ? 'Auto run ON: hold a direction to run' : 'Auto run OFF: hold B to run');
+      showAutoRun(); buzz(); autoBtn.blur();
+    });
+  }
   document.addEventListener('gesturestart', e => e.preventDefault());
 
-  let acc = 0, last = performance.now(), renderSlow = 0;
+  let acc = 0, last = performance.now(), renderSlow = 0, shownMode = null;
   function frame(now) {
     let dt = Math.min(250, now - last);
     last = now;
@@ -218,6 +268,12 @@ async function boot() {
     let steps = 0;
     try {
       Pad.poll(game);
+      Touch.poll(game);
+      if (game.mode !== shownMode) {
+        shownMode = game.mode;
+        root.classList.toggle('menus', shownMode === 'title' || shownMode === 'select' || shownMode === 'placeholder');
+        root.classList.toggle('playing', shownMode === 'play');
+      }
       while (acc >= STEP_MS && steps < 5) {
         game.update();
         Input.endStep();

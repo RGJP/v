@@ -118,71 +118,178 @@ html.touch #game { border-radius: 0; }
 html.touch #toolbar { flex-direction: column; }
 html.touch .tool { width: 38px; height: 38px; padding: 8px; background: rgba(18, 14, 39, .6); }
 
+/* --ui scales the whole overlay to the phone (boot.js fit): about 1 on a typical phone held sideways */
 #touch {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 5;
+  transition: opacity .2s ease;
 }
-#dpad, #btns {
+#dpad, #btns, #autorun {
   position: absolute;
   pointer-events: auto;
   touch-action: none;
 }
+
+/* the stick: a round base with a knob that follows the thumb. The touch area is bigger than the base,
+   so a thumb that wanders a little off it still steers */
 #dpad {
-  left: calc(14px + var(--safe-l));
-  bottom: calc(14px + var(--safe-b));
-  width: 150px;
-  height: 76px;
-  border-radius: 38px;
-  background: rgba(18, 14, 39, .42);
+  left: calc(4px + var(--safe-l));
+  bottom: calc(4px + var(--safe-b));
+  width: 180px;
+  height: 180px;
+  transform: scale(var(--ui, 1));
+  transform-origin: left bottom;
+}
+#dpad .base {
+  position: absolute;
+  left: 22px;
+  top: 22px;
+  width: 136px;
+  height: 136px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(18, 14, 39, .2) 0%, rgba(18, 14, 39, .45) 70%);
   border: 2px solid rgba(255, 255, 255, .22);
 }
-#dpad .arrow {
+#dpad .knob {
   position: absolute;
+  left: 50%;
   top: 50%;
+  width: 58px;
+  height: 58px;
+  margin: -29px 0 0 -29px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .22);
+  border: 2px solid rgba(255, 255, 255, .45);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .35);
+  transform: translate(var(--kx, 0px), var(--ky, 0px));
+}
+#dpad.held .knob { background: rgba(255, 209, 102, .35); border-color: rgba(255, 209, 102, .85); }
+#dpad .chev {
+  position: absolute;
   width: 0;
   height: 0;
-  margin-top: -14px;
-  border-top: 14px solid transparent;
-  border-bottom: 14px solid transparent;
-  opacity: .75;
-  transition: transform .06s ease, opacity .06s ease;
+  border: 8px solid transparent;
+  opacity: .55;
+  transition: opacity .06s ease;
 }
-#dpad .l { left: 22px; border-right: 22px solid #fff; }
-#dpad .r { right: 22px; border-left: 22px solid #fff; }
-#dpad.left .l, #dpad.right .r { opacity: 1; transform: scale(1.15); border-left-color: var(--gold); border-right-color: var(--gold); }
+#dpad .chev.u { left: 50%; top: 8px; margin-left: -8px; border-bottom: 11px solid #fff; border-top-width: 0; }
+#dpad .chev.d { left: 50%; bottom: 8px; margin-left: -8px; border-top: 11px solid #fff; border-bottom-width: 0; }
+#dpad .chev.l { top: 50%; left: 8px; margin-top: -8px; border-right: 11px solid #fff; border-left-width: 0; }
+#dpad .chev.r { top: 50%; right: 8px; margin-top: -8px; border-left: 11px solid #fff; border-right-width: 0; }
+#dpad.up .chev.u, #dpad.down .chev.d, #dpad.left .chev.l, #dpad.right .chev.r { opacity: 1; border-top-color: transparent; }
+#dpad.up .chev.u { border-bottom-color: var(--gold); }
+#dpad.down .chev.d { border-top-color: var(--gold); border-bottom-color: transparent; }
+#dpad.left .chev.l { border-right-color: var(--gold); }
+#dpad.right .chev.r { border-left-color: var(--gold); }
 
+/* auto-run chip, just above the stick (it changes how the stick moves him) */
+#autorun {
+  left: calc(26px + var(--safe-l));
+  bottom: calc(4px + 162px * var(--ui, 1) + var(--safe-b));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px 5px 8px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, .22);
+  background: rgba(18, 14, 39, .5);
+  color: rgba(255, 255, 255, .6);
+  font: 800 10px/1 system-ui, sans-serif;
+  letter-spacing: .06em;
+  cursor: pointer;
+}
+#autorun .dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255, 255, 255, .3); }
+#autorun.on { color: #fff; border-color: rgba(46, 196, 182, .7); }
+#autorun.on .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+
+/* the buttons fan round the right thumb like a controller's face buttons: A (jump) biggest, where the thumb rests;
+   B (run / fire) beside it, so one thumb can lie across both; spin and roll above */
 #btns {
-  right: calc(14px + var(--safe-r));
-  bottom: calc(14px + var(--safe-b));
-  width: 156px;
-  height: 128px;
+  right: calc(8px + var(--safe-r));
+  bottom: calc(8px + var(--safe-b));
+  width: 206px;
+  height: 184px;
+  transform: scale(var(--ui, 1));
+  transform-origin: right bottom;
 }
 #btns .btn {
   position: absolute;
-  width: 68px;
-  height: 68px;
   border-radius: 50%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  font: 800 24px/1 system-ui, sans-serif;
-  color: rgba(255, 255, 255, .9);
+  color: rgba(255, 255, 255, .92);
   border: 2px solid rgba(255, 255, 255, .28);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
   transition: transform .06s ease, background-color .06s ease;
 }
-#bB { left: 0; top: 56px; background: rgba(46, 196, 182, .38); }
-#bA { left: 82px; top: 16px; background: rgba(255, 93, 115, .45); }
+#btns .btn b { font: 800 24px/1 system-ui, sans-serif; }
+#btns .btn i { font: 800 9px/1 system-ui, sans-serif; font-style: normal; letter-spacing: .05em; opacity: .8; margin-top: 2px; }
+#btns .btn.small i { font-size: 11px; opacity: .95; margin: 0; }
+#bA { width: 78px; height: 78px; left: 124px; top: 98px; background: rgba(255, 93, 115, .45); }
+#bB { width: 66px; height: 66px; left: 40px; top: 116px; background: rgba(46, 196, 182, .38); }
+#bS { width: 54px; height: 54px; left: 136px; top: 22px; background: rgba(255, 209, 102, .3); }
+#bR { width: 54px; height: 54px; left: 54px; top: 42px; background: rgba(160, 130, 255, .32); }
 #btns .btn.on { transform: scale(.92); border-color: #fff; }
-#bB.on { background: rgba(46, 196, 182, .75); }
 #bA.on { background: rgba(255, 93, 115, .8); }
+#bB.on { background: rgba(46, 196, 182, .75); }
+#bS.on { background: rgba(255, 209, 102, .7); }
+#bR.on { background: rgba(160, 130, 255, .7); }
 
-/* portrait phone: game on top, roomy controls below it */
+/* menus are tapped directly: the play controls step out of the way */
+html.menus #touch, html.menus .play-only { opacity: 0; visibility: hidden; }
+html.touch:not(.playing) .play-only { display: none; }
+
+/* ---------- turn the phone sideways ---------- */
+#rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px;
+  text-align: center;
+  background: radial-gradient(ellipse at 50% 40%, var(--bg-2) 0%, var(--bg) 75%);
+  color: #fff;
+  font-family: Fredoka, system-ui, sans-serif;
+}
+html.touch.portrait #rotate { display: flex; }
+html.touch.portrait #touch, html.touch.portrait #toolbar { visibility: hidden; }
+#rotate .big { margin: 18px 0 0; font-size: 22px; font-weight: 700; color: var(--gold); }
+#rotate .small { margin: 0; font-size: 14px; color: #b8b2d8; max-width: 260px; }
+#rotate .phone {
+  width: 54px;
+  height: 92px;
+  border: 4px solid #fff;
+  border-radius: 10px;
+  position: relative;
+  animation: tilt 2.4s ease-in-out infinite;
+}
+#rotate .phone span {
+  position: absolute;
+  left: 50%;
+  bottom: 5px;
+  width: 10px;
+  height: 4px;
+  margin-left: -5px;
+  border-radius: 2px;
+  background: #fff;
+}
+@keyframes tilt {
+  0%, 25% { transform: rotate(0deg); }
+  55%, 85% { transform: rotate(-90deg); border-color: var(--accent); }
+  100% { transform: rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) { #rotate .phone { animation: none; transform: rotate(-90deg); } }
+
+/* portrait phone: the game waits behind the turn-sideways screen (#rotate) */
 html.touch.portrait #stage { align-items: flex-start; padding-top: calc(64px + var(--safe-t)); }
-html.touch.portrait #toolbar { flex-direction: row; }
-html.touch.portrait #dpad { width: 168px; height: 84px; border-radius: 42px; left: calc(18px + var(--safe-l)); bottom: calc(40px + var(--safe-b)); }
-html.touch.portrait #btns { right: calc(18px + var(--safe-r)); bottom: calc(40px + var(--safe-b)); transform: scale(1.12); transform-origin: right bottom; }
 
 /* ---------- toast ---------- */
 #toast {
