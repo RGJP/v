@@ -33,6 +33,7 @@ class GameRender {
         break;
       case 'play': this.drawWorld(ctx); break;
       case 'pause': this.drawWorld(ctx); this.drawPause(ctx); break;
+      case 'controls': this.drawControls(ctx); break;
       case 'ready': this.drawWorld(ctx); this.drawReady(ctx); break;
       case 'devwarp': this.drawDevWarp(ctx); break;
       case 'clear':

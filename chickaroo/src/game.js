@@ -134,7 +134,7 @@ class Game {
     return [
       this.save ? { label: 'CONTINUE - ' + LEVELS[this.save.level].name, act: 'continue' } : { label: 'PLAY', act: 'play' },
       { label: 'LEVEL SELECT', act: 'select' },
-    ];
+    ].concat(this.canRemap() ? [{ label: 'CONTROLS', act: 'controls' }] : []);
   }
   titleSelectIdx() { return 1; }
   toIntro() { if (LEVELS[this.levelIndex].placeholder) { this.startLevel(); return; } this.mode = 'intro'; this.introT = 0; Music.stop(); }

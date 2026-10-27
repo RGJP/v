@@ -429,9 +429,9 @@ class GameEntities {
   // {JUMP} {RUN} {ROLL} {SPIN} {DOWN} in a tip become the button for whatever he's playing with (null: a tip about a
   // button he hasn't got, skipped altogether)
   buttonText(s) {
-    const pad = Pad.used, ps = pad && Pad.isPS(), touch = this.touch && !pad;
-    const N = pad ? { JUMP: ps ? 'CROSS' : 'A', RUN: ps ? 'SQUARE' : 'X', ROLL: ps ? 'CIRCLE' : 'B', SPIN: ps ? 'TRIANGLE' : 'Y', DOWN: 'DOWN' }
-      : touch ? { JUMP: 'JUMP', RUN: 'RUN', ROLL: 'ROLL', SPIN: 'SPIN', DOWN: 'DOWN' } : { JUMP: 'UP', RUN: 'D', ROLL: 'C', SPIN: 'W', DOWN: 'DOWN' };
+    const pad = Pad.used, touch = this.touch && !pad, P = a => Controls.label('pad', a), K = a => Controls.label('keys', a);
+    const N = pad ? { JUMP: P('jump'), RUN: P('run'), ROLL: P('roll'), SPIN: P('spin'), DOWN: 'DOWN' }
+      : touch ? { JUMP: 'JUMP', RUN: 'RUN', ROLL: 'ROLL', SPIN: 'SPIN', DOWN: 'DOWN' } : { JUMP: K('up'), RUN: K('run'), ROLL: K('roll'), SPIN: K('spin'), DOWN: K('down') };
     let missing = false;
     const out = s.replace(/\{(\w+)\}/g, (m, k) => { if (!N[k]) missing = true; return N[k] || k; });
     return missing ? null : out;
@@ -531,6 +531,7 @@ class GameEntities {
     if (this.fadeCb) return;
     if (this.mode === 'placeholder') { this.openSelect(); Music.play('title'); return; }
     const h = this.menuHits.find(m => x >= m.x && x <= m.x + m.w && y >= m.y && y <= m.y + m.h);
+    if (this.mode === 'controls') { this.controlsTap(h); return; }
     if (this.mode === 'select') { if (h) this.tapSelect(h); return; }
     if (h && h.bar && x >= h.bar.x - 4) {
       this.menu = h.i;

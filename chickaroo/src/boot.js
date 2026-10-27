@@ -117,6 +117,8 @@ async function boot() {
     Sound.unlock();
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     if (game && game.mode === 'devwarp' && !e.repeat && game.warpKey(e.code)) { e.preventDefault(); return; }
+    if (game.mode === 'controls') { e.preventDefault(); Input.swallow.add(e.code); game.controlsKey(e.code, e.repeat); return; }
+    if (Input.swallow.has(e.code)) { e.preventDefault(); return; }
     const a = KEYMAP[e.code];
     if (!a) return;
     if (game.mode === 'title' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey && a !== 'fullscreen' && e.code !== 'Escape') game.goFullscreen();
@@ -128,6 +130,7 @@ async function boot() {
   });
   window.addEventListener('keyup', e => {
     if (KEYMAP[e.code] && !e.ctrlKey && !e.metaKey && !e.altKey) e.preventDefault();
+    Input.swallow.delete(e.code);
     Input.release(e.code);
   });
   const autoPause = () => {
@@ -288,7 +291,7 @@ async function boot() {
       if (hasPad !== padShown) { padShown = hasPad; padSwitch(hasPad); }
       if (game.mode !== shownMode) {
         shownMode = game.mode;
-        root.classList.toggle('menus', shownMode === 'title' || shownMode === 'select' || shownMode === 'placeholder');
+        root.classList.toggle('menus', shownMode === 'title' || shownMode === 'select' || shownMode === 'placeholder' || shownMode === 'controls');
         root.classList.toggle('playing', shownMode === 'play');
       }
       while (acc >= STEP_MS && steps < 5) {

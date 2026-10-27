@@ -560,15 +560,15 @@ class GameHud {
     if (this.menu < labels.length) ctx.fillRect(Math.round(VIEW_W / 2 - mw / 2) + 3, my + 4 + this.menu * mg, mw - 6, mg - 2);
     this.drawMenu(ctx, labels, this.menu, VIEW_W / 2, my + 7, mg);
     // controls: a compact two-column card, see-through so the meadow stays in view
+    // (the keys and buttons as the player has them: Controls)
+    const P = (a, both) => Controls.label('pad', a, both), K = a => Controls.label('keys', a);
     const rows = Pad.used
-      ? (Pad.isPS()
-        ? [['D-PAD / STICK', 'MOVE'], ['CROSS', 'JUMP'], ['SQUARE / R1', 'RUN / FIRE'], ['CIRCLE', 'ROLL'], ['TRIANGLE', 'SPIN JUMP'], ['CROSS', 'CONFIRM'], ['OPTIONS', 'PAUSE'], ['CREATE', 'SWAP ITEM']]
-        : [['D-PAD / STICK', 'MOVE'], ['A', 'JUMP'], ['X / RB', 'RUN / FIRE'], ['B', 'ROLL'], ['Y', 'SPIN JUMP'], ['A', 'CONFIRM'], ['MENU', 'PAUSE'], ['VIEW', 'SWAP ITEM']])
+      ? [['D-PAD / STICK', 'MOVE'], [P('jump'), 'JUMP'], [P('run', true), 'RUN / FIRE'], [P('roll'), 'ROLL'], [P('spin'), 'SPIN JUMP'], [P('jump'), 'CONFIRM'], [P('pause'), 'PAUSE'], [P('reserve'), 'SWAP ITEM']]
       : this.touch
       ? [['STICK', 'MOVE / CROUCH'], ['BOTTOM', 'JUMP'], ['LEFT', Input.touchAutoRun ? 'GRAB / FIRE' : 'RUN / FIRE'], ['TOP', 'SPIN ATTACK'],
         ['RIGHT', 'ROLL'], ['AUTO RUN', Input.touchAutoRun ? 'ON' : 'OFF'], ['TAP MENUS', 'SELECT']]
       // (the small font has no arrows: words only. On a keyboard he runs on his own)
-      : [['LEFT / RIGHT', 'MOVE'], ['UP', 'JUMP'], ['DOWN', 'CROUCH / STOMP'], ['D', 'GRAB / FIRE'], ['W', 'SPIN ATTACK'], ['C', 'ROLL'], ['B', 'SWAP ITEM'], ['ENTER / SPACE', 'CONFIRM'], ['P / ESC', 'PAUSE']];
+      : [[K('left') + ' / ' + K('right'), 'MOVE'], [K('up'), 'JUMP'], [K('down'), 'CROUCH / STOMP'], [K('run'), 'GRAB / FIRE'], [K('spin'), 'SPIN ATTACK'], [K('roll'), 'ROLL'], [K('reserve'), 'SWAP ITEM'], ['ENTER / SPACE', 'CONFIRM'], [K('pause') + ' / ESC', 'PAUSE']];
     const half = Math.ceil(rows.length / 2), rg = 9, cw = 120, cx0 = VIEW_W / 2 - cw - 6;
     const panelGap = 9, controlsY = my + labels.length * mg + 10 + panelGap, cy0 = controlsY + 7;
     const controlsH = half * rg + 15;
@@ -740,7 +740,7 @@ class GameHud {
       drawText(ctx, 'BEST: ' + bestMap[sel.def.id] + '%', 43, footY + 1, '#7be08a', { align: 'center', small: true, shadow: INK });
     }
 
-    const playPrompt = this.touch ? 'TAP CARD TO PLAY' : Pad.used ? (Pad.isPS() ? 'PRESS CROSS TO PLAY' : 'PRESS A TO PLAY') : 'PRESS ENTER TO PLAY';
+    const playPrompt = this.touch ? 'TAP CARD TO PLAY' : Pad.used ? 'PRESS ' + Controls.label('pad', 'jump') + ' TO PLAY' : 'PRESS ENTER TO PLAY';
     const pw = textWidth(playPrompt, 'small') + 16;
     this.drawPanel(ctx, Math.round(VIEW_W / 2 - pw / 2), footY - 3, pw, 15, '#3a3170', 'rgba(11,9,24,0.6)', true);
     drawText(ctx, playPrompt, VIEW_W / 2, footY + 1, '#ffd166', { align: 'center', small: true, shadow: INK });
@@ -776,9 +776,9 @@ class GameHud {
       return;
     }
     // the panel hugs its rows (9px of air above the title and below the last bar) and sits in the middle of the screen
-    const oy = 26;
+    const remap = this.canRemap(), oy = remap ? 19 : 26;
     ctx.save(); ctx.translate(0, oy);
-    this.drawPanel(ctx, 56, 10, 288, 151);
+    this.drawPanel(ctx, 56, 10, 288, remap ? 165 : 151);
     drawText(ctx, 'PAUSED', VIEW_W / 2, 19, '#ffffff', { align: 'center', scale: 2, shadow: INK });
     const def = this.level.def, pl = this.player;
     drawText(ctx, def.name, VIEW_W / 2, 38, '#9fd8f0', { align: 'center', small: true });
@@ -796,8 +796,8 @@ class GameHud {
       drawText(ctx, suit.name, 275, 63, suit.color, { small: true });
     }
     ctx.fillStyle = '#3a3170'; ctx.fillRect(72, 87, 256, 1);
-    // rows, one per line (menu index = row): resume, restart, quit, music vol, sfx vol
-    const actions = { 0: 'RESUME', 1: 'RESTART LEVEL', 2: 'QUIT TO TITLE' }, ys = [94, 106, 118, 132, 144], gap = 12;
+    // rows, one per line (menu index = row): resume, restart, quit, music vol, sfx vol, controls
+    const actions = { 0: 'RESUME', 1: 'RESTART LEVEL', 2: 'QUIT TO TITLE', 5: 'CONTROLS' }, ys = [94, 106, 118, 132, 144, 158].slice(0, remap ? 6 : 5), gap = 12;
     ys.forEach((y, i) => {
       const on = i === this.menu;
       if (actions[i]) {
@@ -847,7 +847,7 @@ class GameHud {
       drawText(ctx, '-', 284, 135, '#ffd23f', { align: 'right' });
     }
     drawText(ctx, 'SCORE', 116, 148, '#ffffff'); drawText(ctx, pad(this.score, 6), 284, 148, '#ffffff', { align: 'right' });
-    if (this.clearT > 60 && Math.floor(this.t / 20) % 2 === 0) drawText(ctx, Pad.used ? (Pad.isPS() ? 'PRESS CROSS' : 'PRESS A') : 'PRESS ENTER', VIEW_W / 2, 176, '#b8b2d8', { align: 'center' });
+    if (this.clearT > 60 && Math.floor(this.t / 20) % 2 === 0) drawText(ctx, Pad.used ? 'PRESS ' + Controls.label('pad', 'jump') : 'PRESS ENTER', VIEW_W / 2, 176, '#b8b2d8', { align: 'center' });
     ctx.globalAlpha = 1;
   }
 

@@ -3,7 +3,8 @@
 class GameUpdate {
   // ---------- update ---------------------------------------------------------
   update() {
-    if (this.mode !== 'pause') this.t++;
+    const frozen = this.mode === 'pause' || (this.mode === 'controls' && this.ctlFrom === 'pause');   // (the world stands still)
+    if (!frozen) this.t++;
     Sound.src = null;   // (in case last frame broke off mid-update)
     if (this.gut && this.t - (this.boneSndT || 0) > 1) this.hushBones();   // (3-4: no fish-skeleton cracking while the bones aren't updating)
     this.updateFade();
@@ -14,6 +15,7 @@ class GameUpdate {
       case 'title': {
         if (busy) break;
         const items = this.titleItems(), n = items.length;
+        this.menu = Math.min(this.menu, n - 1);
         if (Input.hit('up')) { this.menu = (this.menu + n - 1) % n; Sound.play('select'); }
         if (Input.hit('down')) { this.menu = (this.menu + 1) % n; Sound.play('select'); }
         if (confirm) {
@@ -21,6 +23,7 @@ class GameUpdate {
           if (act === 'continue') { Sound.play('confirm'); this.transition(() => this.continueGame()); }
           else if (act === 'play') { Sound.play('confirm'); this.transition(() => this.newGame()); }
           else if (act === 'select') { Sound.play('confirm'); this.openSelect(); }
+          else if (act === 'controls') this.openControls('title');
         }
         break;
       }
@@ -45,6 +48,7 @@ class GameUpdate {
         }
         break;
       case 'devwarp': this.updateDevWarp(busy); break;
+      case 'controls': if (!busy) this.updateControls(); break;
       case 'pause': {
         if (busy) break;
         if (this.pauseConfirm) {
@@ -65,8 +69,10 @@ class GameUpdate {
           break;
         }
         if (Input.hit('pause')) { this.resume(); break; }
-        if (Input.hit('up')) { this.menu = (this.menu + 4) % 5; Sound.play('select'); }
-        if (Input.hit('down')) { this.menu = (this.menu + 1) % 5; Sound.play('select'); }
+        const n = this.canRemap() ? 6 : 5;   // resume, restart, quit, music vol, sfx vol (and controls)
+        this.menu = Math.min(this.menu, n - 1);
+        if (Input.hit('up')) { this.menu = (this.menu + n - 1) % n; Sound.play('select'); }
+        if (Input.hit('down')) { this.menu = (this.menu + 1) % n; Sound.play('select'); }
         if (this.menu === 3 || this.menu === 4) {
           const dir = (Input.down('right') ? 1 : 0) - (Input.down('left') ? 1 : 0);
           this.volRep = dir && this.volRep > 0 ? this.volRep - 1 : 0;
@@ -81,7 +87,7 @@ class GameUpdate {
           else if (this.menu === 1 || this.menu === 2) {
             this.pauseConfirm = this.menu === 1 ? 'restart' : 'quit';
             this.pauseReturn = this.menu; this.menu = 1; Sound.play('select');
-          }
+          } else if (this.menu === 5) this.openControls('pause');
         }
         break;
       }
@@ -108,7 +114,7 @@ class GameUpdate {
         }
         break;
     }
-    if (this.mode !== 'pause') this.updateAmbient();
+    if (!frozen) this.updateAmbient();
   }
 
   // A stage's `welcome` note (1-1): once a session, when it's started from the top (the controls wait for it). Once he's

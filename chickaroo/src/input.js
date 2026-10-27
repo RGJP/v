@@ -2,17 +2,16 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // 5. INPUT
 // ═══════════════════════════════════════════════════════════════════════════
+// the keyboard: arrows to move (up jumps, down crouches / stomps), D run / grab / fire, W spin attack, C roll. Not WASD,
+// and never Z (awkward for the hands). Space and Enter confirm and skip text ('ok' / 'start'). The play keys are the
+// player's to change (Controls, below, and the CONTROLS screen); these fixed ones always work the menus.
+const FIXED_KEYS = {
+  Space: 'ok', Enter: 'start', NumpadEnter: 'start', Escape: 'pause', KeyF: 'fullscreen',
+  KeyQ: 'worldPrev', PageUp: 'worldPrev', KeyE: 'worldNext', PageDown: 'worldNext',
+};
 const KEYMAP = {
-  // the keyboard: arrows to move (up jumps, down crouches / stomps), D run / grab / fire, W spin attack, C roll. Not WASD,
-  // and never Z (awkward for the hands). Space and Enter confirm and skip text ('ok' / 'start')
-  ArrowLeft: 'left', ArrowRight: 'right', ArrowUp: 'up', ArrowDown: 'down',
-  KeyK: 'jump',   // (and up)
-  KeyD: 'run', ShiftLeft: 'run', ShiftRight: 'run', KeyX: 'run', KeyJ: 'run',
-  KeyW: 'spin', KeyV: 'spin', KeyI: 'spin',
-  KeyC: 'roll', KeyL: 'roll',
-  KeyB: 'reserve', PadReserve: 'reserve',
-  Space: 'ok',
-  KeyP: 'pause', Escape: 'pause', Enter: 'start', NumpadEnter: 'start', KeyF: 'fullscreen',
+  // (the keyboard's entries are filled in by Controls.apply)
+  PadReserve: 'reserve',
   // virtual codes pressed by the on-screen touch controls
   TouchLeft: 'left', TouchRight: 'right', TouchUp: 'up', TouchDown: 'down', TouchJump: 'jump', TouchRun: 'run',
   TouchSpin: 'spin', TouchRoll: 'roll',
@@ -20,9 +19,120 @@ const KEYMAP = {
   PadLeft: 'left', PadRight: 'right', PadUp: 'up', PadDown: 'down', PadJump: 'jump', PadRun: 'run',
   PadPause: 'pause', PadStart: 'start', PadBack: 'pause', PadRoll: 'roll', PadSpin: 'spin',
   PadDevWarp: 'devwarp',
-  KeyQ: 'worldPrev', PageUp: 'worldPrev', KeyE: 'worldNext', PageDown: 'worldNext',
   PadWorldPrev: 'worldPrev', PadWorldNext: 'worldNext',
 };
+
+// ---- remappable controls (the CONTROLS screen: game-controls.js) ----
+// Every play action has two slots (main and alternate) per device, saved in the browser. Moving left / right on a
+// controller stays on the d-pad and left stick.
+const KEY_ACTIONS = [
+  ['left', 'MOVE LEFT'], ['right', 'MOVE RIGHT'], ['up', 'UP / JUMP'], ['down', 'CROUCH / STOMP'], ['jump', 'JUMP'],
+  ['run', 'GRAB / FIRE'], ['spin', 'SPIN ATTACK'], ['roll', 'ROLL'], ['reserve', 'SWAP ITEM'], ['pause', 'PAUSE'],
+];
+const PAD_ACTIONS = [
+  ['jump', 'JUMP'], ['run', 'RUN / FIRE'], ['spin', 'SPIN JUMP'], ['roll', 'ROLL'], ['reserve', 'SWAP ITEM'], ['pause', 'PAUSE'],
+];
+const KEY_DEFAULTS = {
+  left: ['ArrowLeft', null], right: ['ArrowRight', null], up: ['ArrowUp', null], down: ['ArrowDown', null], jump: ['KeyK', null],
+  run: ['KeyD', 'ShiftLeft'], spin: ['KeyW', 'KeyI'], roll: ['KeyC', 'KeyL'], reserve: ['KeyB', null], pause: ['KeyP', null],
+};
+const PAD_DEFAULTS = {
+  jump: ['south', null], run: ['west', 'r1'], spin: ['north', null], roll: ['east', null], reserve: ['create', null], pause: ['options', null],
+};
+// the controller buttons that can be bound (the d-pad moves; a PlayStation touchpad always goes back)
+const PAD_BUTTONS = ['south', 'east', 'west', 'north', 'l1', 'r1', 'l2', 'r2', 'l3', 'r3', 'create', 'options'];
+const PAD_NAMES = {
+  ps: { south: 'CROSS', east: 'CIRCLE', west: 'SQUARE', north: 'TRIANGLE', l1: 'L1', r1: 'R1', l2: 'L2', r2: 'R2', l3: 'L3', r3: 'R3', create: 'CREATE', options: 'OPTIONS' },
+  xb: { south: 'A', east: 'B', west: 'X', north: 'Y', l1: 'LB', r1: 'RB', l2: 'LT', r2: 'RT', l3: 'LS', r3: 'RS', create: 'VIEW', options: 'MENU' },
+};
+// keys that can't be bound: Esc backs out of the screen, and the browser and system keep the rest
+const KEY_UNBINDABLE = /^(Escape|Tab|Meta|OS|Control|Alt|ContextMenu|CapsLock|NumLock|ScrollLock|Pause|PrintScreen|F\d+$|Unidentified)/;
+const KEY_NAMES = {
+  ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', ArrowUp: 'UP', ArrowDown: 'DOWN', ShiftLeft: 'L SHIFT', ShiftRight: 'R SHIFT',
+  NumpadEnter: 'NUM ENTER', Backquote: 'BACKQUOTE', BracketLeft: 'L BRACKET', BracketRight: 'R BRACKET', Semicolon: 'SEMICOLON',
+  Quote: 'QUOTE', Backslash: 'BACKSLASH', IntlBackslash: 'BACKSLASH', Comma: 'COMMA', Period: 'PERIOD', Slash: 'SLASH',
+  Minus: 'MINUS', Equal: 'EQUALS', Backspace: 'BACKSPACE', Delete: 'DELETE', Insert: 'INSERT', PageUp: 'PAGE UP', PageDown: 'PAGE DOWN',
+  NumpadAdd: 'NUM +', NumpadSubtract: 'NUM -', NumpadMultiply: 'NUM *', NumpadDivide: 'NUM /', NumpadDecimal: 'NUM .',
+};
+const Controls = {
+  keys: null, pad: null,
+  actions(dev) { return dev === 'pad' ? PAD_ACTIONS : KEY_ACTIONS; },
+  binds(dev) { return dev === 'pad' ? this.pad : this.keys; },
+  load() {
+    const read = (key, def, ok) => {
+      let saved = null;
+      try { saved = JSON.parse(safeStorage.get(key) || 'null'); } catch (e) { saved = null; }
+      const out = {};
+      for (const a in def) {
+        const v = saved && Array.isArray(saved[a]) ? saved[a].slice(0, 2).map(c => (ok(c) ? c : null)) : null;
+        out[a] = v && v.some(Boolean) ? [v[0] || null, v[1] || null] : def[a].slice();
+      }
+      return out;
+    };
+    this.keys = read('chickaroo-keys', KEY_DEFAULTS, c => typeof c === 'string' && !KEY_UNBINDABLE.test(c));
+    this.pad = read('chickaroo-pad', PAD_DEFAULTS, c => PAD_BUTTONS.includes(c));
+    this.apply();
+  },
+  save() {
+    safeStorage.set('chickaroo-keys', JSON.stringify(this.keys));
+    safeStorage.set('chickaroo-pad', JSON.stringify(this.pad));
+    this.apply();
+  },
+  // the keyboard's half of KEYMAP: the fixed keys, then the player's (a bound key wins over a fixed one)
+  apply() {
+    for (const c of Object.keys(KEYMAP)) if (!/^(Pad|Touch)/.test(c)) delete KEYMAP[c];
+    Object.assign(KEYMAP, FIXED_KEYS);
+    for (const [a] of KEY_ACTIONS) for (const c of this.keys[a]) if (c) KEYMAP[c] = a;
+  },
+  // put code in an action's slot. Whatever had it before gets this slot's old one (a swap), so no action is left
+  // with nothing; false if that would happen (the slot was empty and the other action had nothing else)
+  assign(dev, action, slot, code) {
+    const B = this.binds(dev), old = B[action][slot];
+    if (old === code) return true;
+    for (const [a] of this.actions(dev)) {
+      const i = B[a].indexOf(code);
+      if (i < 0) continue;
+      if (a !== action && !old && !B[a][1 - i]) return false;
+      B[a][i] = old;
+    }
+    B[action][slot] = code;
+    this.tidy(B);
+    this.save();
+    return true;
+  },
+  // empty a slot, as long as the action keeps its other one
+  clear(dev, action, slot) {
+    const B = this.binds(dev);
+    if (!B[action][slot] || !B[action][1 - slot]) return false;
+    B[action][slot] = null;
+    this.tidy(B);
+    this.save();
+    return true;
+  },
+  reset(dev) {
+    const D = dev === 'pad' ? PAD_DEFAULTS : KEY_DEFAULTS, B = {};
+    for (const a in D) B[a] = D[a].slice();
+    if (dev === 'pad') this.pad = B; else this.keys = B;
+    this.save();
+  },
+  // (the main slot is never left empty while the alternate has something)
+  tidy(B) { for (const a in B) if (!B[a][0] && B[a][1]) B[a] = [B[a][1], null]; },
+  keyName(c) {
+    if (!c) return '-';
+    if (KEY_NAMES[c]) return KEY_NAMES[c];
+    return c.replace(/^Key|^Digit/, '').replace(/^Numpad/, 'NUM ').replace(/([a-z])([A-Z0-9])/g, '$1 $2').toUpperCase();
+  },
+  padName(b) { return b ? PAD_NAMES[Pad.isPS() ? 'ps' : 'xb'][b] : '-'; },
+  name(dev, c) { return dev === 'pad' ? this.padName(c) : this.keyName(c); },
+  // the button for an action, for prompts and tips: its main slot, or both ('SQUARE / R1')
+  label(dev, action, both = false) {
+    const s = this.binds(dev)[action].filter(Boolean);
+    return (both ? s : s.slice(0, 1)).map(c => this.name(dev, c)).join(' / ') || '-';
+  },
+  padDown(w, action) { return this.pad[action].some(b => b && w[b]); },
+};
+Controls.load();
+
 const Input = {
   held: Object.create(null), hits: new Set(), codes: new Set(),
   // playing on the keyboard (set by real key presses, cleared by a controller or the touch buttons): he runs on his own,
@@ -32,11 +142,12 @@ const Input = {
   touch: false, touchAutoRun: safeStorage.get('chickaroo-autorun') !== '0',
   autoRun() { return this.keyboard || (this.touch && this.touchAutoRun); },
   acts: Object.create(null),   // code -> the action it pressed
+  swallow: new Set(),          // keys pressed on the CONTROLS screen: ignored until they're let go
   down(a) { return (this.held[a] | 0) > 0; },
   hit(a) { return this.hits.has(a); },
 
   endStep() { this.hits.clear(); },
-  reset() { this.held = Object.create(null); this.codes.clear(); this.hits.clear(); this.acts = Object.create(null); },
+  reset() { this.held = Object.create(null); this.codes.clear(); this.hits.clear(); this.acts = Object.create(null); this.swallow.clear(); },
   press(code) {
     const a = KEYMAP[code];
     if (!a || this.codes.has(code)) return a;
@@ -56,10 +167,11 @@ const Input = {
 
 // ---- game controllers (DualSense, DualShock, Xbox, ... via the Gamepad API) ----
 // Polled once per frame and turned into the same virtual key codes the keyboard uses,
-// so every screen works with a controller without special cases.
-//   Cross = jump    Circle = roll    Triangle = spin jump    Square / L1 / R1 / L2 / R2 = run / fire
+// so every screen works with a controller without special cases. The face buttons, shoulders, Create and Options
+// do what Controls.pad says (by default: Cross = jump, Circle = roll, Triangle = spin jump, Square / R1 = run / fire,
+// Create = reserve swap, Options = pause)
 //   D-pad or left stick = move (and navigate menus, with auto-repeat)
-//   Options = pause in game, confirm in menus    Create = reserve swap    Touchpad = back / pause
+//   the pause button pauses in game and confirms in menus    Touchpad = back / pause
 // in play, up is a jump of its own -- except hanging from a vine (up climbs), carrying a shell (up tosses it straight
 // up), on DJINNY's magic carpet (3-1, up steers it higher) and at a ladder (up climbs it)
 function upSteers(game) {
@@ -78,7 +190,7 @@ const PAD_RUMBLE = {
 const Pad = {
   used: false,                 // last input came from a controller (switches on-screen button names)
   stick: { left: false, right: false, up: false, down: false },
-  rep: { up: 0, down: 0 }, menuCode: null,
+  rep: { up: 0, down: 0, left: 0, right: 0 }, menuCode: null,
   // PlayStation pads get PlayStation button names; anything else (Razer Kishi, Xbox, 8BitDo...) gets Xbox-style names
   isPS() { const gp = this.list()[0]; return !gp || /054c|dualsense|dualshock|playstation|wireless controller/i.test(gp.id || ''); },
   rx: 0, ry: 0,   // right stick, dead zone removed (steers a held Superwing prop)
@@ -115,9 +227,9 @@ const Pad = {
     // Kishi in the phone's port, say): read as raw, its left and top face buttons came out swapped (run <-> spin)
     if (gp.mapping === 'standard' || /android/i.test(navigator.userAgent)) {
       return {
-        jump: b(0), roll: b(1), spin: b(3), run: b(2) || b(4) || b(5) || b(6) || b(7), sq: b(2),
+        south: b(0), east: b(1), west: b(2), north: b(3),
         l1: b(4), r1: b(5), l2: b(6), r2: b(7),
-        menu: b(9), create: b(8), back: b(17), l3: b(10), r3: b(11),
+        options: b(9), create: b(8), touchpad: b(17), l3: b(10), r3: b(11),
         left: b(14), right: b(15), up: b(12), down: b(13), lx: ax(0), ly: ax(1), rx: ax(2), ry: ax(3),
       };
     }
@@ -125,9 +237,9 @@ const Pad = {
     // options; the d-pad is a hat on axes 6/7.
     const hx = gp.axes.length > 7 ? ax(6) : 0, hy = gp.axes.length > 7 ? ax(7) : 0;
     return {
-      jump: b(0), roll: b(1), spin: b(2), run: b(3) || b(4) || b(5) || b(6) || b(7), sq: b(3),
+      south: b(0), east: b(1), north: b(2), west: b(3),
       l1: b(4), r1: b(5), l2: b(6), r2: b(7),
-      menu: b(9), create: b(8), back: false, l3: b(11), r3: b(12),
+      options: b(9), create: b(8), touchpad: false, l3: b(11), r3: b(12),
       left: hx < -0.5, right: hx > 0.5, up: hy < -0.5, down: hy > 0.5, lx: ax(0), ly: ax(1), rx: ax(3), ry: ax(4),
     };
   },
@@ -146,7 +258,7 @@ const Pad = {
   poll(game) {
     const pads = this.list();
     if (!pads.length) { this.resetWarpSequence(); this.rx = this.ry = 0; this.titleInputHeld = false; if ([...Input.codes].some(c => c.startsWith('Pad'))) this.releaseAll(); return; }
-    const w = { jump: false, roll: false, spin: false, run: false, sq: false, l1: false, r1: false, l2: false, r2: false, menu: false, create: false, back: false, l3: false, r3: false, left: false, right: false, up: false, down: false };
+    const w = { south: false, east: false, west: false, north: false, l1: false, r1: false, l2: false, r2: false, options: false, create: false, touchpad: false, l3: false, r3: false, left: false, right: false, up: false, down: false };
     let lx = 0, ly = 0, rx = 0, ry = 0;
     for (const gp of pads) {
       const r = this.read(gp);
@@ -159,6 +271,8 @@ const Pad = {
     const dz = v => Math.abs(v) < 0.2 ? 0 : (v - Math.sign(v) * 0.2) / 0.8;
     this.rx = dz(rx); this.ry = dz(ry);
     if (this.rx || this.ry) { this.used = true; Input.keyboard = Input.touch = false; }
+    // buttons still held from the CONTROLS screen do nothing until they're let go
+    for (const k of this.mute) if (w[k]) w[k] = false; else this.mute.delete(k);
     const titleInput = game.mode === 'title' && (Object.values(w).some(Boolean) || Math.abs(lx) > PAD_DEAD_ON || Math.abs(ly) > PAD_DEAD_ON || this.rx !== 0 || this.ry !== 0);
     if (titleInput && !this.titleInputHeld && game.goFullscreen) game.goFullscreen();
     this.titleInputHeld = titleInput;
@@ -168,6 +282,8 @@ const Pad = {
     st.up = ly < -(st.up ? PAD_DEAD_OFF : PAD_DEAD_ON);
     st.down = ly > (st.down ? PAD_DEAD_OFF : PAD_DEAD_ON);
     const now = performance.now();
+    if (game.mode === 'controls') { this.pollControls(game, w, now); return; }
+    this.prev = w;
     const warp = this.checkWarpSequence(game, { r3: w.r3 }, now);
     const inPlay = game.mode === 'play';
     // in play, up would jump - except where it climbs or steers (upSteers; like down, the stick has to point
@@ -178,18 +294,20 @@ const Pad = {
     this.set('PadRight', w.right || st.right);
     this.set('PadUp', up);
     this.set('PadDown', down);
-    this.set('PadJump', w.jump);
-    this.set('PadRun', w.run);
+    const act = a => Controls.padDown(w, a);
+    this.set('PadJump', act('jump'));
+    this.set('PadRun', act('run'));
     this.set('PadWorldPrev', game.mode === 'select' && w.l1);
     this.set('PadWorldNext', game.mode === 'select' && w.r1);
-    this.set('PadRoll', w.roll);
-    this.set('PadSpin', w.spin);
-    this.set('PadReserve', w.create && inPlay);
-    this.set('PadBack', w.back);
+    this.set('PadRoll', act('roll'));
+    this.set('PadSpin', act('spin'));
+    this.set('PadReserve', act('reserve') && inPlay);
+    this.set('PadBack', w.touchpad);
     this.set('PadDevWarp', warp);
-    // Options: pause during play, confirm everywhere else (decided when pressed)
-    if (w.menu && !this.menuCode) { this.menuCode = inPlay || game.mode === 'pause' ? 'PadPause' : 'PadStart'; this.set(this.menuCode, true); }
-    else if (!w.menu && this.menuCode) { this.set(this.menuCode, false); this.menuCode = null; }
+    // the pause button (Options): pause during play, confirm everywhere else (decided when pressed)
+    const menu = act('pause');
+    if (menu && !this.menuCode) { this.menuCode = inPlay || game.mode === 'pause' ? 'PadPause' : 'PadStart'; this.set(this.menuCode, true); }
+    else if (!menu && this.menuCode) { this.set(this.menuCode, false); this.menuCode = null; }
     // menu auto-repeat when a direction is held
     for (const [d, on] of [['up', up && !inPlay], ['down', down && !inPlay]]) {
       if (!on) this.rep[d] = 0;
@@ -197,6 +315,25 @@ const Pad = {
       else if (now >= this.rep[d]) { Input.hits.add(d); this.rep[d] = now + 110; }
     }
   },
+  prev: {}, mute: new Set(),
+  // the CONTROLS screen reads the buttons themselves, not what they're bound to (so a muddled layout can always be
+  // put right): it gets each newly pressed button and d-pad / stick direction (with menu auto-repeat)
+  pollControls(game, w, now) {
+    if ([...Input.codes].some(c => c.startsWith('Pad'))) this.releaseAll();
+    const pressed = Object.keys(w).filter(k => w[k] && !this.prev[k] && !['left', 'right', 'up', 'down'].includes(k));
+    const st = this.stick, dirs = [];
+    for (const d of ['up', 'down', 'left', 'right']) {
+      const on = w[d] || st[d], was = this.prev['dir' + d];
+      if (!on) this.rep[d] = 0;
+      else if (!was) { dirs.push(d); this.rep[d] = now + 380; }
+      else if (this.rep[d] && now >= this.rep[d]) { dirs.push(d); this.rep[d] = now + 110; }
+      w['dir' + d] = on;
+    }
+    this.prev = w;
+    game.controlsPad(pressed, dirs);
+  },
+  // leaving the CONTROLS screen: whatever's held there stays quiet until it's let go
+  muteHeld() { for (const k of PAD_BUTTONS.concat('touchpad')) if (this.prev[k]) this.mute.add(k); },
   rumble(name) {
     const fx = PAD_RUMBLE[name];
     if (!fx || !this.used) return;
