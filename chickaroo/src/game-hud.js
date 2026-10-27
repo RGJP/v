@@ -175,7 +175,7 @@ class GameHud {
       if (p.hotFoot > 12) fEll(ctx, fx - p.facing * 6 + 0.5, p.y + 3 + ((24 - p.hotFoot) >> 2), 0.6, 1, '#9fe3ff');
     }
     if (ball) this.drawSweat(ctx, ccx - (flip ? -1 : 1) * (power ? 8 : 7), p.y + sink - bob + (power ? 3 : 1));
-    if (power === 2 && suit === 'quake' && p.state === 'play' && !swimming && !p.vine && f !== 'sleep') this.drawHammer(ctx, p);
+    if (power === 2 && suit === 'quake' && p.state === 'play' && !p.vine && f !== 'sleep') this.drawHammer(ctx, p, swimming);
     if (asleep) this.drawZzz(ctx, p);
     if (this.shield && p.state === 'play') this.drawShield(ctx, p, set[f] || set.idle);
     if (p.pounding && p.poundT > POUND_HANG) {
@@ -197,8 +197,10 @@ class GameHud {
   }
   // Hammeroo's mallet, its long handle clamped in his beak: held up and forward at rest, then wound
   // back and brought crashing down in front of him on a swing. Drawn point by point (no blurry rotation).
-  drawHammer(ctx, p) {
-    const f = p.facing, hx = p.x + p.w / 2 + f * 5, hy = p.y + p.h * 0.62, L = 28;
+  // Swimming, it bobs along with the swim stroke frames (drawn a little lower, see the swim stance above).
+  drawHammer(ctx, p, swimming = false) {
+    const f = p.facing, hx = p.x + p.w / 2 + f * 5, L = 28;
+    const hy = p.y + p.h * 0.62 + (swimming && !p.onGround ? 2 + Math.round(Math.sin(this.t * 0.1)) : 0);
     let a = 0.45 + Math.sin(this.t * 0.08) * 0.05;
     if (p.pounding) a = -0.2;
     else if (p.hammerT > 0) {
