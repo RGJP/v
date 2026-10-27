@@ -130,17 +130,26 @@ class Sidewinder extends Enemy {
       const head = s < 5 ? (5 - s) * 0.5 * calm : 0;                // the head held a little off the sand
       return { x, y: y + 2 - r - 0.5 - lift - head, r, s, flat: true, ground: y + 2, lift };
     });
-    ctx.save();ctx.globalAlpha=0.18;for(const q of pts)if(q.flat&&q.lift<0.5)fEll(ctx,q.x,q.ground,1.1,0.5,'#79533a');ctx.restore();
-    for(const q of pts)fEll(ctx,q.x,q.y,q.r+0.65,q.r+0.65,INK);
+    // The body is a few hundred little ellipses, one over the next: filled one by one, a pyramid full of snakes was
+    // thousands of canvas fills a frame. They're set into a pixel buffer instead (FinePix: the same art pixels) and the
+    // whole body goes on screen in one drawImage
+    let x0=Infinity,y0=Infinity,x1=-Infinity,y1=-Infinity;
+    for(const q of pts){x0=Math.min(x0,q.x-q.r-2);x1=Math.max(x1,q.x+q.r+2);y0=Math.min(y0,q.y-q.r-2);y1=Math.max(y1,q.y+q.r+2,(q.ground||0)+2);}
+    const P=(this.pix=this.pix||new FinePix()).begin(x0,y0,x1,y1),C=SNAKE_COL,shadow=P.soft('#79533a',0.18);
+    for(const q of pts)if(q.flat&&q.lift<0.5)P.ell(q.x,q.ground,1.1,0.5,shadow);
+    for(const q of pts)P.ell(q.x,q.y,q.r+0.65,q.r+0.65,C.INK);
     for(let i=pts.length-1;i>=0;i--){
-      const q=pts[i];fEll(ctx,q.x,q.y,q.r,q.r,'#c79a60');fEll(ctx,q.x-0.18,q.y-q.r*0.22,q.r*0.88,q.r*0.66,'#e5bf7f');
-      fEll(ctx,q.x,q.y+q.r*0.64,q.r*0.8,0.35,'#f6dfaf');
-      if(q.s>6&&q.s<SNAKE_LEN-3&&(q.s%6)<1.2)fEll(ctx,q.x,q.y-q.r*0.53,0.48,q.r*0.5,'#8b6846');
+      const q=pts[i];P.ell(q.x,q.y,q.r,q.r,C.BODY);P.ell(q.x-0.18,q.y-q.r*0.22,q.r*0.88,q.r*0.66,C.SHEEN);
+      P.ell(q.x,q.y+q.r*0.64,q.r*0.8,0.35,C.BELLY);
+      if(q.s>6&&q.s<SNAKE_LEN-3&&(q.s%6)<1.2)P.ell(q.x,q.y-q.r*0.53,0.48,q.r*0.5,C.MARK);
     }
+    P.end(ctx);
     const h0=pts[0],h1=pts[4],angle=Math.atan2(h0.y-h1.y,h0.x-h1.x);
     ctx.translate(h0.x,h0.y);ctx.rotate(angle);if(f<0)ctx.scale(1,-1);ctx.drawImage(duneSnakeHeadArt(this.tongue<0&&(this.t>>1)%3),-10,-6);ctx.restore();
   }
 }
+
+const SNAKE_COL = { INK: FinePix.rgba(INK), BODY: FinePix.rgba('#c79a60'), SHEEN: FinePix.rgba('#e5bf7f'), BELLY: FinePix.rgba('#f6dfaf'), MARK: FinePix.rgba('#8b6846') };
 
 // Scorpling: a scorpion that patrols its patch of sand (turning at ledges). With Chickaroo close in
 // front it stops, cocks its tail high (the stinger glints), then jabs it forward. Landing on it means

@@ -256,6 +256,61 @@ function fLine(ctx, x0, y0, x1, y1, color, w = 1) {
   for (let i = 0; i <= n; i++) ctx.rect(Math.round((x0 + (x1 - x0) * i / n) * R - (w - 1) / 2) * s, Math.round((y0 + (y1 - y0) * i / n) * R - (w - 1) / 2) * s, w * s, w * s);
   ctx.fill();
 }
+// Lots of tiny fills -- fEll / fLine rows of art pixels, hundreds a frame -- set straight into a small pixel buffer instead,
+// and put on screen in one drawImage: exactly the art pixels the fills would cover, without sending each one to the
+// (GPU) screen on its own. Pixels outside begin()'s box are dropped (it works as a clip). Opaque colours (FinePix.rgba)
+// replace what's under them; the one translucent colour (soft()) builds up the way overlapping translucent fills do.
+// Each user keeps its own (it holds the canvas).
+class FinePix {
+  static rgba(hex) { const v = parseInt(hex.slice(1), 16); return (0xff000000 | ((v & 0xff) << 16) | (v & 0xff00) | (v >> 16)) >>> 0; }
+  soft(hex, a) { this.softRGB = FinePix.rgba(hex) & 0xffffff; this.softA = a; return FinePix.SOFT; }
+  // the box to paint in, in game units (snapped out to art pixels)
+  begin(x0, y0, x1, y1) {
+    const R = ART_R;
+    this.ox = Math.floor(x0 * R); this.oy = Math.floor(y0 * R);
+    this.w = Math.max(1, Math.ceil(x1 * R) - this.ox); this.h = Math.max(1, Math.ceil(y1 * R) - this.oy);
+    if (!this.c || this.c.width < this.w || this.c.height < this.h) {
+      this.c = makeCanvas(Math.max(this.w, this.c ? this.c.width : 0), Math.max(this.h, this.c ? this.c.height : 0));
+      this.g = this.c.getContext('2d', { willReadFrequently: true });
+      this.img = this.g.createImageData(this.c.width, this.c.height);
+      this.px = new Uint32Array(this.img.data.buffer); this.n = new Uint8Array(this.c.width * this.c.height);
+    }
+    this.W = this.c.width;
+    this.px.fill(0); this.n.fill(0);
+    return this;
+  }
+  // art pixels [x0, x1) of art row y (absolute art-pixel coordinates)
+  span(y, x0, x1, col) {
+    const yy = y - this.oy;
+    if (yy < 0 || yy >= this.h) return;
+    const a = Math.max(0, x0 - this.ox), e = Math.min(this.w, x1 - this.ox), row = yy * this.W;
+    if (col === FinePix.SOFT) for (let x = a; x < e; x++) this.n[row + x]++;
+    else for (let x = a; x < e; x++) this.px[row + x] = col;
+  }
+  // fEll's rows
+  ell(cx, cy, rx, ry, col) {
+    const R = ART_R, X = cx * R, Y = cy * R, RX = rx * R, RY = ry * R;
+    for (let y = Math.ceil(Y - RY - 0.5); y <= Math.floor(Y + RY - 0.5); y++) {
+      const v = (y + 0.5 - Y) / RY, half = RX * Math.sqrt(Math.max(0, 1 - v * v)), x0 = Math.round(X - half), x1 = Math.round(X + half);
+      if (x1 > x0) this.span(y, x0, x1, col);
+    }
+  }
+  // fLine's dots
+  line(x0, y0, x1, y1, col, w = 1) {
+    const R = ART_R, n = Math.max(1, Math.round(Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) * R));
+    for (let i = 0; i <= n; i++) {
+      const X = Math.round((x0 + (x1 - x0) * i / n) * R - (w - 1) / 2), Y = Math.round((y0 + (y1 - y0) * i / n) * R - (w - 1) / 2);
+      for (let k = 0; k < w; k++) this.span(Y + k, X, X + w, col);
+    }
+  }
+  end(ctx) {
+    const { px, n } = this, R = ART_R;
+    if (this.softRGB !== undefined) for (let i = 0; i < n.length; i++) if (n[i] && !px[i]) px[i] = (this.softRGB | (Math.round(255 * (1 - Math.pow(1 - this.softA, n[i]))) << 24)) >>> 0;
+    this.g.putImageData(this.img, 0, 0, 0, 0, this.w, this.h);
+    ctx.drawImage(this.c, 0, 0, this.w, this.h, this.ox / R, this.oy / R, this.w / R, this.h / R);
+  }
+}
+FinePix.SOFT = 1;   // (a marker, not a colour: counted, then coloured in end())
 // many rects of one colour in one fill: list of [x, y, w, h] in game units, snapped to the art pixel
 function fRects(ctx, color, list) {
   ctx.fillStyle = color; ctx.beginPath();

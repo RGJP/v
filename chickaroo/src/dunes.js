@@ -619,6 +619,7 @@ class BigCactus extends Enemy {
 // it shakes, then crumbles away in a shower of rubble. A few seconds later it puts itself back together
 // like time running backwards: the very same chunks fly back up out of the canyon into place.
 const MESA_HOLD = 120, MESA_GONE = 240, MESA_RISE = 40, MESA_FALL = 80;
+const MESA_CRACK_LIGHT = FinePix.rgba('#f1c78e'), MESA_CRACK_DARK = FinePix.rgba('#684936');
 class CrumbleMesa extends Enemy {
   constructor(x0, x1, top) {
     super(x0 * TILE, top * TILE, (x1 - x0 + 1) * TILE, (ROWS - top) * TILE);
@@ -685,13 +686,27 @@ class CrumbleMesa extends Enemy {
       const u = this.state === 'rise' ? this.timer / MESA_RISE : 0;
       const f = this.state === 'gone' ? Math.min(MESA_FALL, this.timer) : Math.round(MESA_FALL * (1 - u) * (1 - u));
       if (this.state === 'gone' && this.timer > MESA_FALL) return;
+      if (this.state === 'rise' && f > 2) {   // a little time-streak trailing back along each chunk's path (one pixel buffer: FinePix)
+        const R = ART_R, streaks = [];
+        let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+        for (const ch of this.chunks) {
+          const [, cy] = ch.path[f], [tx, ty] = ch.path[Math.min(MESA_FALL, f + 6)], sx = tx + ch.s / 2, sy = Math.min(cy, ty), sh = Math.abs(ty - cy) + 1;
+          if (cy > VIEW_H + 8) continue;
+          streaks.push([sx, sy, sh]);
+          x0 = Math.min(x0, sx); x1 = Math.max(x1, sx + 1); y0 = Math.min(y0, sy); y1 = Math.max(y1, sy + sh + 1);
+        }
+        if (streaks.length) {
+          const P = (this.pix = this.pix || new FinePix()).begin(x0 - 1, y0 - 1, x1 + 1, y1 + 1), col = P.soft('#fff3d8', 0.25);
+          for (const [sx, sy, sh] of streaks) {   // (fRoundRect's rows: this thin, its corners don't round off)
+            const X = Math.round(sx * R), Y = Math.round(sy * R), H = Math.round(sh * R);
+            for (let j = 0; j < H; j++) P.span(Y + j, X, X + 2, col);
+          }
+          P.end(ctx);
+        }
+      }
       for (const ch of this.chunks) {
         const [cx, cy] = ch.path[f], s = ch.s;
         if (cy > VIEW_H + 8) continue;
-        if (this.state === 'rise' && f > 2) {   // a little time-streak trailing back along its path
-          const [tx, ty] = ch.path[Math.min(MESA_FALL, f + 6)];
-          ctx.globalAlpha = 0.25; fRoundRect(ctx, tx + s / 2, Math.min(cy, ty), 0.67, Math.abs(ty - cy) + 1, 0.33, '#fff3d8'); ctx.globalAlpha = 1;
-        }
         ctx.drawImage(duneRockChipArt(s,Math.round(ch.shade)),cx,cy);
       }
       return;
@@ -702,9 +717,11 @@ class CrumbleMesa extends Enemy {
     const k = this.timer / MESA_HOLD, shake = k > 0.75 ? ((this.t >> 1) % 2 ? 1 : -1) : 0;
     if (!this.cracks) this.cracks = this.fractures();
     const reach = this.cracks.max * Math.min(1, k * 1.2 + 0.06);
-    ctx.save(); ctx.beginPath(); ctx.rect(x + 1, top, this.w - 2, VIEW_H - top); ctx.clip();
-    for(const q of this.cracks.lines||[])if(q[4]<=reach){fLine(ctx,q[0]+shake+0.34,q[1]+0.34,q[2]+shake+0.34,q[3]+0.34,'#f1c78e',2);fLine(ctx,q[0]+shake,q[1],q[2]+shake,q[3],'#684936',1);}
-    ctx.restore();
+    // (hundreds of hairline segments: set into a pixel buffer the size of the pillar's face -- which also keeps them on
+    // it -- and put on screen in one go, rather than two canvas fills apiece every frame. FinePix: hires.js)
+    const P = (this.pix = this.pix || new FinePix()).begin(x + 1, top, x + this.w - 1, VIEW_H);
+    for (const q of this.cracks.lines) if (q[4] <= reach) { P.line(q[0] + shake + 0.34, q[1] + 0.34, q[2] + shake + 0.34, q[3] + 0.34, MESA_CRACK_LIGHT, 2); P.line(q[0] + shake, q[1], q[2] + shake, q[3], MESA_CRACK_DARK, 1); }
+    P.end(ctx);
     if (k > 0.75) { ctx.globalAlpha = 0.25; fRect(ctx, x, top, this.w, 0.67, '#ffffff'); ctx.globalAlpha = 1; }
   }
   // A fracture pattern for this mesa (seeded, so it's always the same): a few cracks start along the top
