@@ -239,6 +239,10 @@ html.touch .tool { width: 38px; height: 38px; padding: 8px; background: rgba(18,
 #bS.on { background: rgba(255, 209, 102, .7); }
 #bR.on { background: rgba(160, 130, 255, .7); }
 
+/* faint while resting so the game shows through; a press lights up what's under the thumb */
+#dpad .base, #btns .btn, #autorun { opacity: .2; transition: opacity .08s ease, transform .06s ease, background-color .06s ease; }
+#dpad.held .base, #btns .btn.on { opacity: .6; }
+
 /* menus are tapped directly: the play controls step out of the way */
 html.menus #touch, html.menus .play-only { opacity: 0; visibility: hidden; }
 html.touch:not(.playing) .play-only { display: none; }
@@ -313,7 +317,7 @@ html.touch.portrait #stage { align-items: flex-start; padding-top: calc(64px + v
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* edge to edge (fullscreen, or a phone on its side): no frame, nothing round the picture but a dark blue */
-html.edge, html.edge body { background: #0b1230; }
+html.edge, html.edge body { background: #000; }
 html.loading, html.loading body,
 html.edge #frame { box-shadow: none; border-radius: 0; }
 html.edge #game { border-radius: 0; }
