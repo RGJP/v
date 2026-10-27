@@ -1,0 +1,1747 @@
+import { Platform } from './Platform.js';
+import { MovingPlatform } from './MovingPlatform.js';
+import { TrampolinePlatform } from './TrampolinePlatform.js';
+import { Enemy } from '../entities/Enemy.js';
+import { Collectible } from '../entities/Collectible.js';
+import { Vine } from '../entities/Vine.js';
+import { SwingingVine } from '../entities/SwingingVine.js';
+import { SafeBubble } from '../entities/SafeBubble.js';
+import { SpecialBarrel } from '../entities/SpecialBarrel.js';
+import { BubbleColumn } from '../entities/BubbleColumn.js';
+import { getRandomTheme } from './ThemeManager.js';
+import { getEmojiCanvas } from '../EmojiCache.js';
+
+export function loadLevel() {
+    const theme = getRandomTheme();
+    const platforms = [];
+    const movingPlatforms = [];
+
+    const MOVING_HEIGHT = 30;
+    const TRAMPOLINE_HEIGHT = 26;
+    const TRAMPOLINE_MIN_WIDTH = 92;
+    const TRAMPOLINE_MAX_WIDTH = 130;
+    const STATIC_CLEARANCE_X = 56;
+    const STATIC_CLEARANCE_Y = 44;
+    const MP_TO_MP_CLEARANCE_X = 80;
+    const MP_TO_MP_CLEARANCE_Y = 70;
+    const MIN_MP_CENTER_DISTANCE = 220;
+    const FINAL_STATIC_CLEARANCE_X = 48;
+    const FINAL_STATIC_CLEARANCE_Y = 38;
+
+    const axisOf = (obj) => obj.moveAxis || obj.axis;
+    const rangeOf = (obj) => obj.range || 0;
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+    const rectCenter = (rect) => ({ x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 });
+
+    const getSweptRect = (obj) => {
+        const axis = axisOf(obj);
+        const range = rangeOf(obj);
+        if (axis === 'x') {
+            const minX = Math.min(obj.x, obj.x + range);
+            return { x: minX, y: obj.y, width: obj.width + Math.abs(range), height: obj.height };
+        }
+        if (axis === 'y') {
+            const minY = Math.min(obj.y, obj.y + range);
+            return { x: obj.x, y: minY, width: obj.width, height: obj.height + Math.abs(range) };
+        }
+        return { x: obj.x, y: obj.y, width: obj.width, height: obj.height };
+    };
+
+    const overlapsRect = (a, b, padX = 0, padY = 0) => (
+        a.x < b.x + b.width + padX &&
+        a.x + a.width > b.x - padX &&
+        a.y < b.y + b.height + padY &&
+        a.y + a.height > b.y - padY
+    );
+
+    const overlapWidth = (a, b) => Math.max(0, Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x));
+
+    const canPlaceTrampoline = (candidate, extraStatic = []) => {
+        if (!candidate) return false;
+        const rect = {
+            x: candidate.x,
+            y: candidate.y,
+            width: candidate.width,
+            height: candidate.height
+        };
+        if (rect.y < 110 || rect.y + rect.height > 860) return false;
+
+        const staticRects = [...platforms, ...extraStatic];
+        for (let i = 0; i < staticRects.length; i++) {
+            if (overlapsRect(rect, staticRects[i], 20, 18)) return false;
+        }
+
+        for (let i = 0; i < movingPlatforms.length; i++) {
+            if (overlapsRect(rect, getSweptRect(movingPlatforms[i]), 24, 22)) return false;
+        }
+
+        for (let i = 0; i < vines.length; i++) {
+            if (overlapsRect(rect, vines[i], 10, 10)) return false;
+        }
+
+        for (let i = 0; i < swingingVines.length; i++) {
+            const sv = swingingVines[i];
+            if (Math.abs((rect.x + rect.width / 2) - sv.anchorX) < 95) return false;
+        }
+
+        return true;
+    };
+
+    const tryPlaceTrampoline = ({ attempts = 6, createCandidate, extraStatic = [] }) => {
+        for (let i = 0; i < attempts; i++) {
+            const candidate = createCandidate(i);
+            if (!candidate) continue;
+            if (!canPlaceTrampoline(candidate, extraStatic)) continue;
+            platforms.push(new TrampolinePlatform(
+                candidate.x,
+                candidate.y,
+                candidate.width,
+                candidate.height,
+                theme
+            ));
+            return true;
+        }
+        return false;
+    };
+
+    const canPlaceMovingPlatform = (candidate, extraStatic = [], isUseful = null) => {
+        const swept = getSweptRect(candidate);
+        if (swept.y < 80 || swept.y + swept.height > 880) return false;
+
+        const staticRects = [...platforms, ...extraStatic];
+        for (let i = 0; i < staticRects.length; i++) {
+            if (overlapsRect(swept, staticRects[i], STATIC_CLEARANCE_X, STATIC_CLEARANCE_Y)) return false;
+        }
+
+        const c = rectCenter(swept);
+        for (let i = 0; i < movingPlatforms.length; i++) {
+            const existing = movingPlatforms[i];
+            const existingSwept = getSweptRect(existing);
+            if (overlapsRect(swept, existingSwept, MP_TO_MP_CLEARANCE_X, MP_TO_MP_CLEARANCE_Y)) return false;
+            const ec = rectCenter(existingSwept);
+            const dx = c.x - ec.x;
+            const dy = c.y - ec.y;
+            if (Math.sqrt(dx * dx + dy * dy) < MIN_MP_CENTER_DISTANCE) return false;
+        }
+
+        return isUseful ? isUseful(swept, candidate) : true;
+    };
+
+    const trySpawnMovingPlatform = ({ attempts = 8, createCandidate, extraStatic = [], isUseful = null }) => {
+        for (let attempt = 0; attempt < attempts; attempt++) {
+            const candidate = createCandidate(attempt);
+            if (!candidate) continue;
+            if (canPlaceMovingPlatform(candidate, extraStatic, isUseful)) {
+                movingPlatforms.push(new MovingPlatform(
+                    candidate.x,
+                    candidate.y,
+                    candidate.width,
+                    candidate.height,
+                    candidate.moveAxis,
+                    candidate.range,
+                    candidate.speed,
+                    theme
+                ));
+                return true;
+            }
+        }
+        return false;
+    };
+
+    const pruneOverlappingMovingPlatforms = () => {
+        if (movingPlatforms.length === 0) return;
+        const kept = [];
+        for (let i = 0; i < movingPlatforms.length; i++) {
+            const mp = movingPlatforms[i];
+            const swept = getSweptRect(mp);
+
+            if (swept.y < 80 || swept.y + swept.height > 880) {
+                continue;
+            }
+
+            let blocked = false;
+            for (let j = 0; j < platforms.length; j++) {
+                if (overlapsRect(swept, platforms[j], FINAL_STATIC_CLEARANCE_X, FINAL_STATIC_CLEARANCE_Y)) {
+                    blocked = true;
+                    break;
+                }
+            }
+            if (blocked) continue;
+
+            for (let j = 0; j < kept.length; j++) {
+                const keptSwept = getSweptRect(kept[j]);
+                if (overlapsRect(swept, keptSwept, MP_TO_MP_CLEARANCE_X, MP_TO_MP_CLEARANCE_Y)) {
+                    blocked = true;
+                    break;
+                }
+            }
+            if (!blocked) kept.push(mp);
+        }
+        movingPlatforms.length = 0;
+        for (let i = 0; i < kept.length; i++) movingPlatforms.push(kept[i]);
+    };
+
+    const isVineClipping = (anchorX, anchorY, ropeLen, otherRects = []) => {
+        // Use max possible swing angle (40 degrees) for safety check
+        const maxAngleRad = (40 * Math.PI) / 180;
+        const reach = Math.sin(maxAngleRad) * ropeLen;
+        const vineWidth = 24;
+        const padding = 20;
+
+        const vMinX = anchorX - reach - vineWidth / 2 - padding;
+        const vMaxX = anchorX + reach + vineWidth / 2 + padding;
+        const vPivotY = anchorY + 30; // pivot point where rope starts
+        const vMaxY = vPivotY + ropeLen + padding;
+
+        const checkOverlap = (rect) => {
+            const rMinX = rect.x;
+            const rMaxX = rect.x + rect.width;
+            const rMinY = rect.y;
+            const rMaxY = rect.y + (rect.height || 30);
+            return vMaxX > rMinX && vMinX < rMaxX && vMaxY > rMinY && vPivotY < rMaxY;
+        };
+
+        // Static platforms
+        for (const p of platforms) {
+            if (checkOverlap(p)) return true;
+        }
+        // Upcoming platforms in the current segment
+        for (const r of otherRects) {
+            if (checkOverlap(r)) return true;
+        }
+        // Moving platforms (check their entire range of motion)
+        for (const mp of movingPlatforms) {
+            const mAxis = axisOf(mp);
+            const mRange = rangeOf(mp);
+            const mRangeX = mAxis === 'x' ? Math.abs(mRange) : 0;
+            const mRangeY = mAxis === 'y' ? Math.abs(mRange) : 0;
+            const mRect = {
+                x: mp.x + (mAxis === 'x' && mRange < 0 ? mRange : 0),
+                y: mp.y + (mAxis === 'y' && mRange < 0 ? mRange : 0),
+                width: mp.width + mRangeX,
+                height: mp.height + mRangeY
+            };
+            if (checkOverlap(mRect)) return true;
+        }
+        // Other swinging vines (proximity + potential overlap)
+        for (const sv of swingingVines) {
+            // Anchor proximity check - keep them spread out
+            if (Math.abs(anchorX - sv.anchorX) < 350) return true;
+
+            const svReach = Math.sin(maxAngleRad) * sv.ropeLength;
+            const svMinX = sv.anchorX - svReach - vineWidth / 2 - padding;
+            const svMaxX = sv.anchorX + svReach + vineWidth / 2 + padding;
+            const svPivotY = sv.anchorY + 30;
+            const svMaxY = svPivotY + sv.ropeLength + padding;
+            if (vMaxX > svMinX && vMinX < svMaxX && vMaxY > svPivotY && vPivotY < svMaxY) return true;
+        }
+        // Static vines
+        for (const v of vines) {
+            if (checkOverlap(v)) return true;
+        }
+
+        return false;
+    };
+
+    const enemies = [];
+    const bossSpawns = [];
+    const collectibles = [];
+    const safeZones = [];
+    const specialBarrels = [];
+    const vines = [];
+    const swingingVines = [];
+    const layoutVariantsUsed = new Set();
+    const potentialCoinLocations = [];
+    const JELLY_EMOJI = '🪼';
+
+    const createJellyfishEnemy = (x, y, platform) => {
+        const jelly = new Enemy(x, y, platform);
+        jelly.type = 'jellyfish';
+        jelly.emoji = JELLY_EMOJI;
+        jelly.width = 46;
+        jelly.height = 46;
+        jelly.x = x;
+        jelly.y = y;
+        jelly.startX = x;
+        jelly.startY = y;
+        jelly.baseSpeed = 0;
+        jelly.speed = 0;
+        jelly.health = 1;
+        jelly.maxHealth = 1;
+        jelly.state = 'FLOAT';
+        jelly.vx = 0;
+        jelly.vy = 0;
+        jelly._cachedEmoji = getEmojiCanvas(jelly.emoji, jelly.height);
+        return jelly;
+    };
+
+    const isJellySpawnRectClear = (rect) => {
+        for (let i = 0; i < platforms.length; i++) {
+            if (overlapsRect(rect, platforms[i], 36, 54)) return false;
+        }
+        for (let i = 0; i < movingPlatforms.length; i++) {
+            if (overlapsRect(rect, getSweptRect(movingPlatforms[i]), 36, 54)) return false;
+        }
+        for (let i = 0; i < enemies.length; i++) {
+            if (overlapsRect(rect, enemies[i], 44, 44)) return false;
+        }
+        return true;
+    };
+
+    const findPlatformBelow = (x, y) => {
+        let best = null;
+        let bestDy = Infinity;
+        const jellyBottom = y + 46;
+        const findOn = (arr) => {
+            for (let i = 0; i < arr.length; i++) {
+                const p = arr[i];
+                const overlapsX = x + 46 > p.x && x < p.x + p.width;
+                if (!overlapsX) continue;
+                const dy = p.y - jellyBottom;
+                if (dy >= 70 && dy <= 360 && dy < bestDy) {
+                    bestDy = dy;
+                    best = p;
+                }
+            }
+        };
+        findOn(platforms);
+        findOn(movingPlatforms);
+        return best;
+    };
+
+    // Start zone: rotate through distinct opening layouts so the run never opens the same way.
+    const addPlatformCoinPoints = (platform, spacing = 140) => {
+        const pointCount = Math.max(2, Math.floor(platform.width / spacing));
+        for (let i = 0; i < pointCount; i++) {
+            const coinX = platform.x + (platform.width / (pointCount + 1)) * (i + 1);
+            if (coinX < 60) continue;
+            potentialCoinLocations.push({ x: coinX, y: platform.y - (40 + Math.random() * 80) });
+        }
+    };
+
+    const addSwingingVineCoinArc = (anchorX, anchorY, ropeLen, maxAngle) => {
+        const pivotY = anchorY + 30; // Matches SwingingVine's pivot offset
+        const radius = ropeLen * 0.88; // Place coins near the lower part of the vine
+        const coinCount = 6;
+
+        for (let i = 0; i < coinCount; i++) {
+            const t = i / (coinCount - 1);
+            // Map t from [0, 1] to [-maxAngle, maxAngle]
+            const angle = -maxAngle + t * (maxAngle * 2);
+
+            // Calculate position matching the vine's swing trajectory
+            const x = anchorX - Math.sin(angle) * radius;
+            const y = pivotY + Math.cos(angle) * radius;
+
+            // Directly push to collectibles to ensure they aren't filtered out or replaced
+            collectibles.push(new Collectible(x - 12, y - 12, 'coin'));
+        }
+    };
+
+    const startStyle = Math.floor(Math.random() * 4);
+    const startPlatforms = [];
+
+    if (startStyle === 0) {
+        // Wide runway
+        const y = 380 + Math.random() * 170;
+        const width = 460 + Math.random() * 560;
+        const height = 80 + Math.random() * 120;
+        startPlatforms.push(new Platform(-120, y, width + 120, height, false, theme));
+    } else if (startStyle === 1) {
+        // Stepped opener
+        const y1 = 450 + Math.random() * 120;
+        const w1 = 260 + Math.random() * 300;
+        const h1 = 90 + Math.random() * 110;
+        startPlatforms.push(new Platform(-120, y1, w1 + 120, h1, false, theme));
+
+        const gap = 35 + Math.random() * 45;
+        const y2 = clamp(y1 - (35 + Math.random() * 65), 260, 620);
+        const w2 = 280 + Math.random() * 360;
+        const h2 = 80 + Math.random() * 120;
+        startPlatforms.push(new Platform(w1 + gap, y2, w2, h2, false, theme));
+    } else if (startStyle === 2) {
+        // Split islands near spawn
+        const y1 = 400 + Math.random() * 170;
+        const w1 = 280 + Math.random() * 280;
+        const h1 = 90 + Math.random() * 120;
+        startPlatforms.push(new Platform(-120, y1, w1 + 120, h1, false, theme));
+
+        const gap = 70 + Math.random() * 55;
+        const y2 = clamp(y1 + (Math.random() * 80 - 40), 260, 640);
+        const w2 = 260 + Math.random() * 360;
+        const h2 = 80 + Math.random() * 120;
+        startPlatforms.push(new Platform(w1 + gap, y2, w2, h2, false, theme));
+    } else {
+        // Staggered intro: up then down
+        const y1 = 420 + Math.random() * 140;
+        const w1 = 300 + Math.random() * 320;
+        const h1 = 90 + Math.random() * 120;
+        startPlatforms.push(new Platform(-120, y1, w1 + 120, h1, false, theme));
+
+        const gap1 = 35 + Math.random() * 45;
+        const y2 = clamp(y1 - (45 + Math.random() * 70), 240, 610);
+        const w2 = 200 + Math.random() * 220;
+        const h2 = 70 + Math.random() * 110;
+        startPlatforms.push(new Platform(w1 + gap1, y2, w2, h2, false, theme));
+
+        const gap2 = 30 + Math.random() * 55;
+        const y3 = clamp(y2 + (55 + Math.random() * 80), 260, 670);
+        const w3 = 250 + Math.random() * 320;
+        const h3 = 80 + Math.random() * 120;
+        startPlatforms.push(new Platform(w1 + gap1 + w2 + gap2, y3, w3, h3, false, theme));
+    }
+
+    for (let i = 0; i < startPlatforms.length; i++) {
+        const p = startPlatforms[i];
+        platforms.push(p);
+        addPlatformCoinPoints(p, 150);
+    }
+
+    // Start micro-variants: lightweight extras so openings feel fresh without breaking readability.
+    const startGaps = [];
+    for (let i = 0; i < startPlatforms.length - 1; i++) {
+        const left = startPlatforms[i];
+        const right = startPlatforms[i + 1];
+        const gap = right.x - (left.x + left.width);
+        if (gap > 0) startGaps.push({ left, right, gap });
+    }
+
+    // Occasional bonus floating ledge around the start zone.
+    if (Math.random() < 0.48) {
+        const base = startPlatforms[Math.floor(Math.random() * startPlatforms.length)];
+        const maxWidth = Math.min(260, base.width * 0.65);
+        if (maxWidth >= 110) {
+            const width = 110 + Math.random() * (maxWidth - 110);
+            const x = base.x + Math.max(10, (base.width - width) * (0.15 + Math.random() * 0.7));
+            const y = clamp(base.y - (135 + Math.random() * 120), 160, 650);
+            const ledgeRect = { x, y, width, height: 34 };
+            let blocked = false;
+            for (let i = 0; i < platforms.length; i++) {
+                if (overlapsRect(ledgeRect, platforms[i], 28, 26)) {
+                    blocked = true;
+                    break;
+                }
+            }
+            if (!blocked) {
+                const ledge = new Platform(ledgeRect.x, ledgeRect.y, ledgeRect.width, ledgeRect.height, false, theme);
+                platforms.push(ledge);
+                addPlatformCoinPoints(ledge, 120);
+                if (Math.random() < 0.22) {
+                    const vineX = ledge.x + ledge.width * (0.35 + Math.random() * 0.3) - 12;
+                    const vineH = 120 + Math.random() * 170;
+                    vines.push(new Vine(vineX, ledge.y + ledge.height, vineH));
+                }
+            }
+        }
+    }
+
+    // Occasional decorative/utility gap vine near start.
+    if (startGaps.length > 0 && Math.random() < 0.34) {
+        let bestGap = startGaps[0];
+        for (let i = 1; i < startGaps.length; i++) {
+            if (startGaps[i].gap > bestGap.gap) bestGap = startGaps[i];
+        }
+        if (bestGap.gap > 80) {
+            const vineX = bestGap.left.x + bestGap.left.width + bestGap.gap * (0.35 + Math.random() * 0.3) - 12;
+            const topY = Math.min(bestGap.left.y, bestGap.right.y) - (190 + Math.random() * 130);
+            const vineHeight = 190 + Math.random() * 170;
+            vines.push(new Vine(vineX, topY, vineHeight));
+        }
+    }
+
+    // Rare starter mover (bridge a start gap or shuttle over a start platform).
+    if (Math.random() < 0.42) {
+        const tryGapMover = startGaps.length > 0 && Math.random() < 0.58;
+        if (tryGapMover) {
+            const viableGaps = startGaps.filter(g => g.gap > 110);
+            if (viableGaps.length > 0) {
+                const pick = viableGaps[Math.floor(Math.random() * viableGaps.length)];
+                trySpawnMovingPlatform({
+                    attempts: 8,
+                    extraStatic: [pick.left, pick.right],
+                    createCandidate: () => {
+                        const width = 95 + Math.random() * 50;
+                        const range = pick.gap - width - 18;
+                        if (range < 85) return null;
+                        const x = pick.left.x + pick.left.width + 8;
+                        const y = clamp(Math.min(pick.left.y, pick.right.y) - (95 + Math.random() * 80), 150, 680);
+                        return {
+                            x,
+                            y,
+                            width,
+                            height: MOVING_HEIGHT,
+                            moveAxis: 'x',
+                            range,
+                            speed: 65 + Math.random() * 45
+                        };
+                    },
+                    isUseful: (swept) => {
+                        const gapRect = {
+                            x: pick.left.x + pick.left.width + 4,
+                            y: swept.y,
+                            width: pick.gap - 8,
+                            height: swept.height
+                        };
+                        return overlapWidth(swept, gapRect) >= swept.width * 0.62;
+                    }
+                });
+            }
+        } else {
+            let widest = startPlatforms[0];
+            for (let i = 1; i < startPlatforms.length; i++) {
+                if (startPlatforms[i].width > widest.width) widest = startPlatforms[i];
+            }
+            trySpawnMovingPlatform({
+                attempts: 8,
+                createCandidate: () => {
+                    const maxWidth = Math.min(220, widest.width * 0.6);
+                    if (maxWidth < 100) return null;
+                    const width = 100 + Math.random() * (maxWidth - 100);
+                    const maxRange = Math.min(520, widest.width - width - 16);
+                    if (maxRange < 160) return null;
+                    const x = widest.x + 8 + Math.random() * Math.max(1, widest.width - width - 16);
+                    const y = clamp(widest.y - (120 + Math.random() * 120), 140, 660);
+                    return {
+                        x,
+                        y,
+                        width,
+                        height: MOVING_HEIGHT,
+                        moveAxis: 'x',
+                        range: 160 + Math.random() * (maxRange - 160),
+                        speed: 55 + Math.random() * 50
+                    };
+                },
+                isUseful: (swept) => {
+                    const aligned = overlapWidth(swept, widest) >= swept.width * 0.52;
+                    const verticalGap = widest.y - (swept.y + swept.height);
+                    return aligned && verticalGap >= 85 && verticalGap <= 280;
+                }
+            });
+        }
+    }
+
+    // Start-zone utility trampolines (DKC-style tire bounce lanes).
+    for (let i = 0; i < startGaps.length; i++) {
+        const g = startGaps[i];
+        if (g.gap < 130 || Math.random() >= 0.42) continue;
+        tryPlaceTrampoline({
+            attempts: 6,
+            extraStatic: [g.left, g.right],
+            createCandidate: () => {
+                const width = TRAMPOLINE_MIN_WIDTH + Math.random() * (TRAMPOLINE_MAX_WIDTH - TRAMPOLINE_MIN_WIDTH);
+                const minX = g.left.x + g.left.width + 14;
+                const maxX = g.right.x - width - 14;
+                if (maxX <= minX) return null;
+                const x = minX + Math.random() * (maxX - minX);
+                const yBase = Math.min(g.left.y, g.right.y) - (34 + Math.random() * 48);
+                const y = clamp(yBase, 160, 760);
+                return { x, y, width, height: TRAMPOLINE_HEIGHT };
+            }
+        });
+    }
+
+    let currentX = Math.max(...startPlatforms.map(p => p.x + p.width));
+
+    // Generate up to 10000 X
+    while (currentX < 10000) {
+        // Different generation modes for diverse platforming
+        const segmentTypes = ['SKY_ISLANDS', 'SOLID_GROUND', 'STAIRS_UP', 'STAIRS_DOWN', 'TWO_TIER', 'THREE_TIER', 'FOUR_TIER', 'PILLARS'];
+        const segmentType = segmentTypes[Math.floor(Math.random() * segmentTypes.length)];
+        layoutVariantsUsed.add(segmentType);
+        const segmentLength = 1000 + Math.random() * 2000;
+        const segmentEndX = Math.min(10000, currentX + segmentLength);
+
+        let currentY = 500; // Base Y mainly for stair continuity
+
+        while (currentX < segmentEndX) {
+            let platWidth, platY, gap, height;
+            let floatingPlatforms = [];
+
+            switch (segmentType) {
+                case 'SOLID_GROUND':
+                    platWidth = 300 + Math.random() * 700;
+                    gap = 60 + Math.random() * 100; // max 160
+                    platY = 500 + (Math.random() * 40 - 20); // slight variation
+                    height = 250; // deep ground
+                    break;
+
+                case 'SKY_ISLANDS':
+                    platWidth = 150 + Math.random() * 300;
+                    gap = 90 + Math.random() * 110; // max 200
+                    platY = 250 + Math.random() * 300; // 250 to 550
+                    height = 60 + Math.random() * 40;
+
+                    if (Math.random() < 0.6) {
+                        floatingPlatforms.push({
+                            x: currentX + gap + platWidth / 2 - 50 + (Math.random() * 100 - 50),
+                            y: platY - 150 - Math.random() * 60,
+                            width: 100 + Math.random() * 80,
+                            height: 30
+                        });
+                    }
+                    break;
+
+                case 'STAIRS_UP':
+                    platWidth = 120 + Math.random() * 150;
+                    gap = 60 + Math.random() * 80;
+                    currentY -= 60 + Math.random() * 70;
+                    if (currentY < 150) currentY = 150 + Math.random() * 100;
+                    platY = currentY;
+                    height = 50 + Math.random() * 100;
+                    break;
+
+                case 'STAIRS_DOWN':
+                    platWidth = 120 + Math.random() * 150;
+                    gap = 60 + Math.random() * 80;
+                    currentY += 60 + Math.random() * 70;
+                    if (currentY > 600) currentY = 500 - Math.random() * 100;
+                    platY = currentY;
+                    height = 50 + Math.random() * 100;
+                    break;
+
+                case 'TWO_TIER':
+                    platWidth = 400 + Math.random() * 500;
+                    gap = 80 + Math.random() * 120; // max 200
+                    platY = 550 + Math.random() * 50;
+                    height = 200;
+
+                    let upperX = currentX + gap + 50 + (Math.random() * 100);
+                    while (upperX < currentX + gap + platWidth - 150) {
+                        const upWidth = 150 + Math.random() * 200;
+                        floatingPlatforms.push({
+                            x: upperX,
+                            y: platY - 200 - Math.random() * 80,
+                            width: upWidth,
+                            height: 40
+                        });
+                        upperX += upWidth + 60 + Math.random() * 100;
+                    }
+                    break;
+
+                case 'THREE_TIER':
+                    platWidth = 440 + Math.random() * 540;
+                    gap = 90 + Math.random() * 120;
+                    // Push base lower and spread tiers close to the double-jump ceiling.
+                    platY = 640 + Math.random() * 95;
+                    height = 180;
+
+                    const tier3Band1Y = clamp(platY - (225 + Math.random() * 34), 280, 760);
+                    const tier3Band2Y = clamp(
+                        Math.min(platY - (450 + Math.random() * 62), tier3Band1Y - 208),
+                        80,
+                        760
+                    );
+                    const tier3Bands = [
+                        { y: tier3Band1Y, minW: 175, maxW: 250, minGap: 75, maxGap: 120, shift: -20 },
+                        { y: tier3Band2Y, minW: 140, maxW: 210, minGap: 85, maxGap: 135, shift: 35 }
+                    ];
+
+                    for (let tier = 0; tier < tier3Bands.length; tier++) {
+                        const band = tier3Bands[tier];
+                        let bandX = currentX + gap + 55 + band.shift + (Math.random() * 70 - 35);
+                        const bandEndX = currentX + gap + platWidth - 135;
+
+                        while (bandX < bandEndX) {
+                            const bandWidth = band.minW + Math.random() * (band.maxW - band.minW);
+                            floatingPlatforms.push({
+                                x: bandX,
+                                y: band.y + (Math.random() * 8 - 4),
+                                width: bandWidth,
+                                height: 34
+                            });
+                            bandX += bandWidth + band.minGap + Math.random() * (band.maxGap - band.minGap);
+                        }
+                    }
+                    break;
+
+                case 'FOUR_TIER':
+                    platWidth = 470 + Math.random() * 560;
+                    gap = 95 + Math.random() * 120;
+                    // Much taller vertical spread, but keep each step reachable with full double jump.
+                    platY = 665 + Math.random() * 95;
+                    height = 175;
+
+                    const tier4Band1Y = clamp(platY - (210 + Math.random() * 32), 300, 760);
+                    const tier4Band2Y = clamp(
+                        Math.min(platY - (418 + Math.random() * 58), tier4Band1Y - 198),
+                        120,
+                        760
+                    );
+                    const tier4Band3Y = clamp(
+                        Math.min(platY - (610 + Math.random() * 72), tier4Band2Y - 188),
+                        36,
+                        760
+                    );
+                    const tier4Bands = [
+                        { y: tier4Band1Y, minW: 170, maxW: 245, minGap: 78, maxGap: 120, shift: -28 },
+                        { y: tier4Band2Y, minW: 140, maxW: 205, minGap: 88, maxGap: 132, shift: 24 },
+                        { y: tier4Band3Y, minW: 115, maxW: 175, minGap: 92, maxGap: 140, shift: -8 }
+                    ];
+
+                    for (let tier = 0; tier < tier4Bands.length; tier++) {
+                        const band = tier4Bands[tier];
+                        let bandX = currentX + gap + 52 + band.shift + (Math.random() * 80 - 40);
+                        const bandEndX = currentX + gap + platWidth - 128;
+
+                        while (bandX < bandEndX) {
+                            const bandWidth = band.minW + Math.random() * (band.maxW - band.minW);
+                            floatingPlatforms.push({
+                                x: bandX,
+                                y: band.y + (Math.random() * 8 - 4),
+                                width: bandWidth,
+                                height: 32
+                            });
+                            bandX += bandWidth + band.minGap + Math.random() * (band.maxGap - band.minGap);
+                        }
+                    }
+                    break;
+
+                case 'PILLARS':
+                    platWidth = 60 + Math.random() * 80;
+                    gap = 100 + Math.random() * 100; // max 200
+                    platY = 300 + Math.random() * 250;
+                    height = 600; // extend way down
+                    break;
+            }
+
+            // Chance to add a vine in the gap before the platform
+            let gapVineSpawned = false;
+            // Higher gap requirement and reduced probability for peppered distribution
+            if (gap > 100 && Math.random() < 0.20) {
+                const vineX = currentX + gap / 2 - 12;
+                const topY = platY - 150 - Math.random() * 200;
+                const vineHeight = 250 + Math.random() * 150;
+                vines.push(new Vine(vineX, topY, vineHeight));
+                gapVineSpawned = true;
+            }
+
+            // Chance to add a swinging vine in the sky
+            // Higher priority if we haven't met the minimum requirement of 2
+            const svProb = (swingingVines.length < 2) ? 0.65 : 0.30;
+            if (gap > 120 && Math.random() < svProb) {
+                const svAnchorX = currentX + gap / 2 + (Math.random() * 60 - 30);
+                const svAnchorY = -40 + Math.random() * 60;
+                const svRopeLen = 350 + Math.random() * 100;
+                const svMaxAngle = (Math.PI / 180) * (35 + Math.random() * 55); // 35°–90°
+
+                // Platforms to be added in this cycle
+                const upcoming = [
+                    { x: currentX + gap, y: platY, width: platWidth, height: height },
+                    ...floatingPlatforms
+                ];
+
+                if (!isVineClipping(svAnchorX, svAnchorY, svRopeLen, upcoming)) {
+                    swingingVines.push(new SwingingVine(svAnchorX, svAnchorY, svRopeLen, svMaxAngle));
+                    if (Math.random() < 0.30) {
+                        addSwingingVineCoinArc(svAnchorX, svAnchorY, svRopeLen, svMaxAngle);
+                    }
+                }
+            }
+
+            // Utility mover: bridge larger gaps and travel clearly between both sides.
+            if (gap > 120 && Math.random() < 0.65) {
+                const previousPlatform = platforms[platforms.length - 1];
+                const gapLeft = currentX;
+                const nextPlatformRect = { x: currentX + gap, y: platY, width: platWidth, height };
+                const maxBridgeWidth = Math.min(180, gap - 70);
+                if (maxBridgeWidth >= 100) {
+                    trySpawnMovingPlatform({
+                        attempts: 10,
+                        extraStatic: [nextPlatformRect, ...floatingPlatforms],
+                        createCandidate: () => {
+                            const width = 100 + Math.random() * (maxBridgeWidth - 100);
+                            const range = gap - width - 20;
+                            if (range < 90) return null;
+                            const x = gapLeft + 20;
+                            const yBase = Math.min(previousPlatform.y, platY) - 135;
+                            const y = clamp(yBase + (Math.random() * 70 - 35), 130, 670);
+                            return {
+                                x,
+                                y,
+                                width,
+                                height: MOVING_HEIGHT,
+                                moveAxis: 'x',
+                                range,
+                                speed: 70 + Math.random() * 55
+                            };
+                        },
+                        isUseful: (swept, candidate) => {
+                            const gapRect = { x: gapLeft + 12, y: swept.y, width: gap - 24, height: swept.height };
+                            const travelCoverage = candidate.range / gap;
+                            return overlapWidth(swept, gapRect) >= swept.width * 0.7 && travelCoverage >= 0.45;
+                        }
+                    });
+                }
+            }
+
+            // Optional trampoline in the gap for vertical rescue routes.
+            if (gap > 130 && Math.random() < 0.33) {
+                const previousPlatform = platforms[platforms.length - 1];
+                const nextPlatformRect = { x: currentX + gap, y: platY, width: platWidth, height };
+                tryPlaceTrampoline({
+                    attempts: 6,
+                    extraStatic: [previousPlatform, nextPlatformRect, ...floatingPlatforms],
+                    createCandidate: () => {
+                        const width = TRAMPOLINE_MIN_WIDTH + Math.random() * (TRAMPOLINE_MAX_WIDTH - TRAMPOLINE_MIN_WIDTH);
+                        const minX = currentX + 14;
+                        const maxX = currentX + gap - width - 14;
+                        if (maxX <= minX) return null;
+                        const x = minX + Math.random() * (maxX - minX);
+                        const yBase = Math.min(previousPlatform.y, platY) - (30 + Math.random() * 62);
+                        const y = clamp(yBase, 150, 760);
+                        return { x, y, width, height: TRAMPOLINE_HEIGHT };
+                    }
+                });
+            }
+
+            currentX += gap;
+
+            const platform = new Platform(currentX, platY, platWidth, height, false, theme);
+            platforms.push(platform);
+
+            // Enemies on main platform depending on width
+            if (platWidth > 100 && Math.random() < 0.65) {
+                const numEnemies = Math.floor(Math.random() * Math.max(2, Math.floor(platWidth / 200))) + 1;
+                for (let i = 0; i < numEnemies; i++) {
+                    const enemyX = currentX + (platWidth / (numEnemies + 1)) * (i + 1);
+                    enemies.push(new Enemy(enemyX, platY - 40, platform));
+                }
+            }
+
+            // Utility mover: overhead shuttle above wide platforms for optional route shortcuts.
+            if (platWidth > 170 && Math.random() < 0.42) {
+                const supportRect = { x: currentX, y: platY, width: platWidth, height };
+                trySpawnMovingPlatform({
+                    attempts: 10,
+                    createCandidate: () => {
+                        const maxWidth = Math.min(230, platWidth * 0.65);
+                        if (maxWidth < 100) return null;
+                        const width = 100 + Math.random() * (maxWidth - 100);
+                        const maxRange = Math.min(640, platWidth - width - 16);
+                        if (maxRange < 180) return null;
+                        const x = currentX + 15 + Math.random() * Math.max(1, (platWidth - width - 30));
+                        const y = platY - (130 + Math.random() * 140);
+                        return {
+                            x,
+                            y,
+                            width,
+                            height: MOVING_HEIGHT,
+                            moveAxis: 'x',
+                            range: 180 + Math.random() * (maxRange - 180),
+                            speed: 55 + Math.random() * 55
+                        };
+                    },
+                    isUseful: (swept) => {
+                        const aligned = overlapWidth(swept, supportRect) >= swept.width * 0.55;
+                        const verticalGap = supportRect.y - (swept.y + swept.height);
+                        return aligned && verticalGap >= 90 && verticalGap <= 300;
+                    }
+                });
+            }
+
+            // Coin locations for main platform
+            const numCoinPoints = Math.floor(platWidth / 100) + 1;
+            for (let i = 0; i < numCoinPoints; i++) {
+                const coinX = currentX + (platWidth / (numCoinPoints + 1)) * (i + 1);
+                potentialCoinLocations.push({ x: coinX, y: platY - (40 + Math.random() * 80) });
+            }
+
+            // Generate floating platforms above if any
+            for (let fp of floatingPlatforms) {
+                // Convert some floating platforms to movers, centered around the original lane.
+                if (Math.random() < 0.45) {
+                    const anchorCenterX = fp.x + fp.width / 2;
+                    const anchorCenterY = fp.y + fp.height / 2;
+                    const converted = trySpawnMovingPlatform({
+                        attempts: 8,
+                        extraStatic: floatingPlatforms.filter(other => other !== fp),
+                        createCandidate: () => {
+                            if (Math.random() < 0.7) {
+                                const range = 260 + Math.random() * 260;
+                                return {
+                                    x: fp.x - range / 2,
+                                    y: fp.y,
+                                    width: fp.width,
+                                    height: fp.height,
+                                    moveAxis: 'x',
+                                    range,
+                                    speed: 50 + Math.random() * 60
+                                };
+                            }
+                            const range = 180 + Math.random() * 210;
+                            return {
+                                x: fp.x,
+                                y: fp.y - range / 2,
+                                width: fp.width,
+                                height: fp.height,
+                                moveAxis: 'y',
+                                range,
+                                speed: 45 + Math.random() * 45
+                            };
+                        },
+                        isUseful: (swept, candidate) => {
+                            const center = rectCenter(swept);
+                            const centered = Math.abs(center.x - anchorCenterX) < 26 && Math.abs(center.y - anchorCenterY) < 26;
+                            const travel = Math.abs(candidate.range);
+                            return centered && travel >= 90;
+                        }
+                    });
+                    if (converted) {
+                        potentialCoinLocations.push({ x: fp.x + fp.width / 2, y: fp.y - (40 + Math.random() * 80) });
+                        continue; // Skip normal floating platform creation (no enemies on moving ones)
+                    }
+                }
+
+                const floatPlatform = new Platform(fp.x, fp.y, fp.width, fp.height, false, theme);
+                platforms.push(floatPlatform);
+
+                if (Math.random() < 0.15) { // Reduced from 0.3 for better balance
+                    // Hang a vine from this floating platform
+                    const vineX = fp.x + fp.width / 2 - 12;
+                    const topY = fp.y + fp.height;
+                    const vineHeight = 150 + Math.random() * 200;
+                    vines.push(new Vine(vineX, topY, vineHeight));
+                }
+
+                if (fp.width > 100 && Math.random() < 0.5) {
+                    const numEnemies = Math.floor(Math.random() * 2) + 1;
+                    for (let j = 0; j < numEnemies; j++) {
+                        enemies.push(new Enemy(fp.x + (fp.width / (numEnemies + 1)) * (j + 1), fp.y - 40, floatPlatform));
+                    }
+                }
+
+                potentialCoinLocations.push({ x: fp.x + fp.width / 2, y: fp.y - (40 + Math.random() * 80) });
+                if (fp.width > 200) {
+                    potentialCoinLocations.push({ x: fp.x + fp.width * 0.25, y: fp.y - (40 + Math.random() * 80) });
+                    potentialCoinLocations.push({ x: fp.x + fp.width * 0.75, y: fp.y - (40 + Math.random() * 80) });
+                }
+            }
+
+            currentX += platWidth;
+        }
+    }
+
+    // Optional airborne stomp chain: 5-7 jellyfish spaced out in a fair, clear lane.
+    if (Math.random() < 0.34) {
+        const count = 5 + Math.floor(Math.random() * 3); // 5..7
+        const spacing = 118 + Math.random() * 52;
+        const chainLen = (count - 1) * spacing;
+        const minX = 850;
+        const maxX = Math.max(minX, currentX - 1050 - chainLen);
+
+        for (let attempt = 0; attempt < 60 && maxX > minX; attempt++) {
+            const startX = minX + Math.random() * (maxX - minX);
+            const baseY = 190 + Math.random() * 230;
+            const candidates = [];
+            let blocked = false;
+
+            for (let i = 0; i < count; i++) {
+                const x = startX + i * spacing;
+                const y = baseY + Math.sin(i * 0.85) * 16;
+                const rect = { x, y, width: 46, height: 46 };
+                const below = findPlatformBelow(x, y);
+                if (!below || !isJellySpawnRectClear(rect)) {
+                    blocked = true;
+                    break;
+                }
+                candidates.push({ x, y, platform: below });
+            }
+
+            if (!blocked) {
+                for (let i = 0; i < candidates.length; i++) {
+                    const c = candidates[i];
+                    enemies.push(createJellyfishEnemy(c.x, c.y, c.platform));
+                }
+                break;
+            }
+        }
+    }
+
+    // ── Boss encounter ──
+    // A dedicated, larger arena platform inserted before the victory flag
+    // We increase the gap and the arena size to make it feel more focused.
+    const arenaW = 1200;
+    const arenaY = 550; // Sit slightly lower for more headroom
+    const arenaX = currentX + 400; // Large gap from the last regular platform
+    const arenaPlatform = new Platform(arenaX, arenaY, arenaW, 100, false, theme);
+    platforms.push(arenaPlatform);
+    const isInsideBossArena = (x) => x >= arenaPlatform.x && x <= arenaPlatform.x + arenaPlatform.width;
+
+    // Always place two safe honey pots on boss arena corners (with padding).
+    const bossCornerBarrelSize = 100;
+    const bossCornerOffset = 60; // place outside each bottom corner
+    const bossCornerCenterY = arenaPlatform.y + arenaPlatform.height + bossCornerBarrelSize / 2;
+    const leftCornerCenterX = arenaPlatform.x - bossCornerOffset - bossCornerBarrelSize / 2;
+    safeZones.push(new SafeBubble(leftCornerCenterX, bossCornerCenterY, bossCornerBarrelSize));
+
+    // Queue boss spawn centered on the arena.
+    // Boss is instantiated later when the player gets near the arena.
+    const bossX = arenaX + arenaW / 2 - 80; // 80 = half boss size
+    bossSpawns.push({ x: bossX, y: arenaY, platform: arenaPlatform });
+
+    // Update currentX to the end of the arena so post-boss sequence platforms follow correctly
+    currentX = arenaX + arenaW;
+
+    // Add a mid-size rescue platform before victory.
+    const rescuePlatform = new Platform(currentX + 360, 520, 390, 90, false, theme);
+    platforms.push(rescuePlatform);
+
+    // Move victory platform farther away to create a post-rescue run-up.
+    const victoryPlatform = new Platform(currentX + 980, 500, 300, 100, true, theme);
+    platforms.push(victoryPlatform);
+
+    // Final safety pass: remove any mover whose entire path is too close to static geometry.
+    pruneOverlappingMovingPlatforms();
+
+    // --- COIN POPULATION LOGIC ---
+    // Target count between 20 and 60 as requested
+    const targetCoinCount = Math.floor(Math.random() * (60 - 20 + 1)) + 20;
+
+    // Filter out any coin locations that are past the victory platform and any
+    // location that sits over the victory platform footprint.
+    const victoryMinX = victoryPlatform.x - 24;
+    const victoryMaxX = victoryPlatform.x + victoryPlatform.width + 24;
+    const safeCoinLocations = potentialCoinLocations.filter(loc => (
+        loc.x <= victoryPlatform.x + victoryPlatform.width - 50 &&
+        (loc.x < victoryMinX || loc.x > victoryMaxX)
+    ));
+
+    const hasSupportBelow = (x, y) => {
+        const maxDrop = 240;
+        const check = (p) => (
+            x >= p.x - 18 &&
+            x <= p.x + p.width + 18 &&
+            p.y > y &&
+            (p.y - y) <= maxDrop
+        );
+        for (let i = 0; i < platforms.length; i++) if (check(platforms[i])) return true;
+        for (let i = 0; i < movingPlatforms.length; i++) if (check(movingPlatforms[i])) return true;
+        return false;
+    };
+
+    const getSupportDrop = (x, y, maxDrop = 320) => {
+        let bestDrop = Infinity;
+        const check = (p) => {
+            if (x < p.x - 18 || x > p.x + p.width + 18) return;
+            if (p.y <= y) return;
+            const drop = p.y - y;
+            if (drop <= maxDrop && drop < bestDrop) bestDrop = drop;
+        };
+        for (let i = 0; i < platforms.length; i++) check(platforms[i]);
+        for (let i = 0; i < movingPlatforms.length; i++) check(movingPlatforms[i]);
+        return Number.isFinite(bestDrop) ? bestDrop : null;
+    };
+
+    const hasEnemyTooClose = (x, y, minDistance = 260) => {
+        const minDistanceSq = minDistance * minDistance;
+        for (let i = 0; i < enemies.length; i++) {
+            const enemy = enemies[i];
+            if (!enemy || enemy.markedForDeletion) continue;
+            const ex = enemy.x + enemy.width / 2;
+            const ey = enemy.y + enemy.height / 2;
+            const dx = ex - x;
+            const dy = ey - y;
+            if ((dx * dx + dy * dy) < minDistanceSq) return true;
+        }
+        return false;
+    };
+
+    const hasBarrelLaunchHeadroom = (x, y) => {
+        // Match Player barrel launch: centerY = y + 16, initial top around centerY - 78.
+        const centerY = y + 16;
+        const launchTopY = centerY - 78;
+        const requiredHeadroom = 190;
+        const clearanceRect = {
+            x: x - 46,
+            y: launchTopY - requiredHeadroom,
+            width: 92,
+            height: (centerY + 8) - (launchTopY - requiredHeadroom)
+        };
+
+        for (let i = 0; i < platforms.length; i++) {
+            if (overlapsRect(clearanceRect, platforms[i], 0, 0)) return false;
+        }
+        for (let i = 0; i < movingPlatforms.length; i++) {
+            if (overlapsRect(clearanceRect, getSweptRect(movingPlatforms[i]), 0, 0)) return false;
+        }
+        return true;
+    };
+
+    // Clearance check: Moving platforms swept area vs barrels
+    const BARREL_MP_CLEARANCE_X = 75;
+    const BARREL_MP_CLEARANCE_Y = 65;
+
+    const overlapsMovingPlatformSwept = (centerX, centerY, barrelWidth = 100, barrelHeight = 100, padX = BARREL_MP_CLEARANCE_X, padY = BARREL_MP_CLEARANCE_Y) => {
+        const barrelRect = {
+            x: centerX - barrelWidth / 2,
+            y: centerY - barrelHeight / 2,
+            width: barrelWidth,
+            height: barrelHeight
+        };
+        for (let i = 0; i < movingPlatforms.length; i++) {
+            const swept = getSweptRect(movingPlatforms[i]);
+            if (overlapsRect(barrelRect, swept, padX, padY)) return true;
+        }
+        return false;
+    };
+
+    // ── 1. BARREL & SPECIAL BARREL POPULATION ──
+    // Spawn barrels first so we can establish generous breathing room buffer zones around them.
+    const barrelCandidates = safeCoinLocations
+        .map((loc) => ({
+            x: loc.x,
+            y: loc.y,
+            drop: getSupportDrop(loc.x, loc.y, 320)
+        }))
+        .filter((loc) =>
+            loc.x > 900 &&
+            loc.x < victoryPlatform.x * 0.8 &&
+            !isInsideBossArena(loc.x) &&
+            loc.y >= 120 &&
+            loc.y <= 620 &&
+            loc.drop !== null &&
+            loc.drop >= 100 &&
+            loc.drop <= 300 &&
+            hasBarrelLaunchHeadroom(loc.x, loc.y) &&
+            !hasEnemyTooClose(loc.x, loc.y, 360) &&
+            !overlapsMovingPlatformSwept(loc.x, loc.y + 16, 100, 100)
+        )
+        .sort((a, b) => a.x - b.x);
+
+    // Fallback: derive candidates from platform tops so we still get stable barrel counts.
+    if (barrelCandidates.length < 5) {
+        const tryAddFallback = (x, y, enemyRadius = 320) => {
+            if (x <= 900 || x >= victoryPlatform.x * 0.84) return;
+            const cy = clamp(y, 120, 620);
+            const drop = getSupportDrop(x, cy, 360);
+            if (drop === null || drop < 90 || drop > 330) return;
+            if (!hasBarrelLaunchHeadroom(x, cy)) return;
+            if (hasEnemyTooClose(x, cy, enemyRadius)) return;
+            if (overlapsMovingPlatformSwept(x, cy + 16, 100, 100)) return;
+            for (let i = 0; i < barrelCandidates.length; i++) {
+                if (Math.abs(barrelCandidates[i].x - x) < 180) return;
+            }
+            barrelCandidates.push({ x, y: cy, drop });
+        };
+
+        for (let i = 0; i < platforms.length; i++) {
+            const p = platforms[i];
+            if (!p || p.isVictory || p === arenaPlatform || p.width < 140) continue;
+            const y = p.y - 150;
+            const c = p.x + p.width * 0.5;
+            tryAddFallback(c, y, 320);
+            if (p.width >= 360) {
+                tryAddFallback(p.x + p.width * 0.3, y + 8, 300);
+                tryAddFallback(p.x + p.width * 0.7, y + 8, 300);
+            }
+            if (barrelCandidates.length >= 18) break;
+        }
+    }
+
+    barrelCandidates.sort((a, b) => a.x - b.x);
+
+    if (barrelCandidates.length > 0) {
+        const desired = 3 + Math.floor(Math.random() * 3); // 3..5 always
+        const selected = [];
+        const minBarrelSpacing = 620;
+        const minX = 900;
+        const maxX = victoryPlatform.x * 0.84;
+
+        for (let slot = 0; slot < desired; slot++) {
+            const t = desired <= 1 ? 0.5 : slot / (desired - 1);
+            const centerX = minX + (maxX - minX) * t;
+            const bandW = Math.max(700, (maxX - minX) / Math.max(1, desired) * 1.25);
+            const bandMin = centerX - bandW * 0.5;
+            const bandMax = centerX + bandW * 0.5;
+            let best = null;
+            let bestDist = Infinity;
+
+            for (let i = 0; i < barrelCandidates.length; i++) {
+                const c = barrelCandidates[i];
+                if (c.x < bandMin || c.x > bandMax) continue;
+                let tooClose = false;
+                for (let j = 0; j < selected.length; j++) {
+                    if (Math.abs(selected[j].x - c.x) < minBarrelSpacing) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (tooClose) continue;
+                const dist = Math.abs(c.x - centerX);
+                if (dist < bestDist) {
+                    best = c;
+                    bestDist = dist;
+                }
+            }
+
+            if (!best) {
+                for (let i = 0; i < barrelCandidates.length; i++) {
+                    const c = barrelCandidates[i];
+                    let tooClose = false;
+                    for (let j = 0; j < selected.length; j++) {
+                        if (Math.abs(selected[j].x - c.x) < minBarrelSpacing) {
+                            tooClose = true;
+                            break;
+                        }
+                    }
+                    if (tooClose) continue;
+                    const dist = Math.abs(c.x - centerX);
+                    if (dist < bestDist) {
+                        best = c;
+                        bestDist = dist;
+                    }
+                }
+            }
+
+            if (best) selected.push(best);
+        }
+
+        if (selected.length < desired) {
+            for (let i = 0; i < barrelCandidates.length && selected.length < desired; i++) {
+                const c = barrelCandidates[i];
+                let tooClose = false;
+                for (let j = 0; j < selected.length; j++) {
+                    if (Math.abs(selected[j].x - c.x) < 420) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (!tooClose) selected.push(c);
+            }
+        }
+
+        if (selected.length < 3) {
+            const inferBarrelYAtX = (x) => {
+                let bestY = null;
+                let bestDx = Infinity;
+                const consider = (p) => {
+                    if (!p || p.isVictory || p === arenaPlatform) return;
+                    if (x < p.x - 30 || x > p.x + p.width + 30) return;
+                    const candidateY = clamp(p.y - 150, 120, 620);
+                    if (!hasBarrelLaunchHeadroom(x, candidateY)) return;
+                    const px = p.x + p.width * 0.5;
+                    const dx = Math.abs(px - x);
+                    if (dx < bestDx) {
+                        bestDx = dx;
+                        bestY = candidateY;
+                    }
+                };
+                for (let i = 0; i < platforms.length; i++) consider(platforms[i]);
+                for (let i = 0; i < movingPlatforms.length; i++) consider(movingPlatforms[i]);
+                return bestY;
+            };
+
+            const requiredSlots = 3;
+            for (let slot = 0; slot < requiredSlots && selected.length < requiredSlots; slot++) {
+                const t = requiredSlots <= 1 ? 0.5 : slot / (requiredSlots - 1);
+                const x = minX + (maxX - minX) * t;
+                let tooClose = false;
+                for (let j = 0; j < selected.length; j++) {
+                    if (Math.abs(selected[j].x - x) < 420) {
+                        tooClose = true;
+                        break;
+                    }
+                }
+                if (tooClose) continue;
+                const inferredY = inferBarrelYAtX(x);
+                if (inferredY === null) continue;
+                if (overlapsMovingPlatformSwept(x, inferredY + 16, 100, 100)) continue;
+                selected.push({ x, y: inferredY, drop: 150 });
+            }
+        }
+
+        for (let i = 0; i < selected.length; i++) {
+            const candidate = selected[i];
+            if (!candidate) continue;
+            if (!hasBarrelLaunchHeadroom(candidate.x, candidate.y)) continue;
+            const centerY = candidate.y + 16;
+            if (overlapsMovingPlatformSwept(candidate.x, centerY, 100, 100)) continue;
+            safeZones.push(new SafeBubble(candidate.x, centerY, 100));
+        }
+    }
+
+    const spawnSpecialBarrel = () => {
+        const size = 78;
+        const pathStartX = 0;
+        const pathEndX = victoryPlatform.x + victoryPlatform.width;
+        const minX = pathStartX + (pathEndX - pathStartX) * 0.3;
+        const maxX = pathEndX + (pathEndX - pathStartX) * 0.9;
+
+        const findStaticSupport = (x, y, maxDrop = 290) => {
+            let best = null;
+            let bestDrop = Infinity;
+            for (let i = 0; i < platforms.length; i++) {
+                const p = platforms[i];
+                if (!p || p.isVictory || p === arenaPlatform) continue;
+                if (x < p.x + 18 || x > p.x + p.width - 18) continue;
+                if (p.y <= y) continue;
+                const drop = p.y - y;
+                if (drop <= maxDrop && drop < bestDrop) {
+                    best = p;
+                    bestDrop = drop;
+                }
+            }
+            return best;
+        };
+
+        const overlapsAnySafeZone = (rect) => {
+            for (let i = 0; i < safeZones.length; i++) {
+                if (overlapsRect(rect, safeZones[i], 48, 48)) return true;
+            }
+            return false;
+        };
+
+        const isSpecialSpotClear = (rect, support) => {
+            if (!support || rect.y < 90 || rect.y + rect.height > 760) return false;
+            for (let i = 0; i < platforms.length; i++) {
+                const p = platforms[i];
+                if (!p || p === support) continue;
+                if (overlapsRect(rect, p, 16, 18)) return false;
+            }
+            for (let i = 0; i < movingPlatforms.length; i++) {
+                if (overlapsRect(rect, getSweptRect(movingPlatforms[i]), 70, 60)) return false;
+            }
+            for (let i = 0; i < enemies.length; i++) {
+                if (overlapsRect(rect, enemies[i], 72, 48)) return false;
+            }
+            return !overlapsAnySafeZone(rect);
+        };
+
+        const buildCandidate = (centerX, support) => {
+            if (!support) return null;
+            if (support.width < size + 44) return null;
+            const x = clamp(centerX - size / 2, support.x + 18, support.x + support.width - size - 18);
+            const y = support.y - size - 4;
+            const rect = { x, y, width: size, height: size };
+            const cx = x + size / 2;
+            if (cx < minX || cx > maxX || isInsideBossArena(cx)) return null;
+            if (hasEnemyTooClose(cx, y + size / 2, 330)) return null;
+            if (!isSpecialSpotClear(rect, support)) return null;
+            return { x, y, support };
+        };
+
+        const candidates = [];
+        for (let i = 0; i < safeCoinLocations.length; i++) {
+            const loc = safeCoinLocations[i];
+            if (!loc || loc.x < minX || loc.x > maxX) continue;
+            const support = findStaticSupport(loc.x, loc.y);
+            const candidate = buildCandidate(loc.x, support);
+            if (candidate) candidates.push(candidate);
+        }
+
+        for (let i = 0; i < platforms.length; i++) {
+            const p = platforms[i];
+            if (!p || p.isVictory || p === arenaPlatform || p.width < size + 70) continue;
+            const candidateMin = Math.max(p.x + 40, minX);
+            const candidateMax = Math.min(p.x + p.width - 40, maxX);
+            if (candidateMax <= candidateMin) continue;
+            const centerX = candidateMin + Math.random() * (candidateMax - candidateMin);
+            const candidate = buildCandidate(centerX, p);
+            if (candidate) candidates.push(candidate);
+        }
+
+        let picked = candidates.length > 0
+            ? candidates[Math.floor(Math.random() * candidates.length)]
+            : null;
+
+        if (!picked) {
+            const targetX = minX + (maxX - minX) * Math.random();
+            let bestPlatform = null;
+            let bestDist = Infinity;
+            for (let i = 0; i < platforms.length; i++) {
+                const p = platforms[i];
+                if (!p || p.isVictory || p === arenaPlatform || p.width < size + 40) continue;
+                const pMin = Math.max(p.x + 24, minX);
+                const pMax = Math.min(p.x + p.width - 24, maxX);
+                if (pMax <= pMin) continue;
+                const cx = clamp(targetX, pMin, pMax);
+                const dist = Math.abs(cx - targetX);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    bestPlatform = p;
+                }
+            }
+            if (bestPlatform) {
+                const pMin = Math.max(bestPlatform.x + 24, minX);
+                const pMax = Math.min(bestPlatform.x + bestPlatform.width - 24, maxX);
+                const centerX = clamp(targetX, pMin, pMax);
+                const candidateX = clamp(centerX - size / 2, bestPlatform.x + 18, bestPlatform.x + bestPlatform.width - size - 18);
+                const candidateY = bestPlatform.y - size - 4;
+                if (!overlapsMovingPlatformSwept(candidateX + size / 2, candidateY + size / 2, size, size, 70, 60)) {
+                    picked = {
+                        x: candidateX,
+                        y: candidateY,
+                        support: bestPlatform
+                    };
+                }
+            }
+        }
+
+        if (!picked && rescuePlatform) {
+            const centerX = clamp(
+                minX + (maxX - minX) * 0.86,
+                rescuePlatform.x + 32,
+                rescuePlatform.x + rescuePlatform.width - 32
+            );
+            const candidateX = clamp(centerX - size / 2, rescuePlatform.x + 18, rescuePlatform.x + rescuePlatform.width - size - 18);
+            const candidateY = rescuePlatform.y - size - 4;
+            if (!overlapsMovingPlatformSwept(candidateX + size / 2, candidateY + size / 2, size, size, 70, 60)) {
+                picked = {
+                    x: candidateX,
+                    y: candidateY,
+                    support: rescuePlatform
+                };
+            }
+        }
+
+        if (picked) {
+            const barrel = new SpecialBarrel(picked.x, picked.y, size);
+            specialBarrels.push(barrel);
+        }
+    };
+
+    spawnSpecialBarrel();
+
+    if (specialBarrels.length === 0 && rescuePlatform) {
+        const size = 78;
+        const pathEndX = victoryPlatform.x + victoryPlatform.width;
+        const minX = pathEndX * 0.3;
+        const maxX = pathEndX * 0.9;
+        const centerX = clamp(
+            minX + (maxX - minX) * 0.86,
+            rescuePlatform.x + 32,
+            rescuePlatform.x + rescuePlatform.width - 32
+        );
+        const x = clamp(centerX - size / 2, rescuePlatform.x + 18, rescuePlatform.x + rescuePlatform.width - size - 18);
+        const y = rescuePlatform.y - size - 4;
+        if (!overlapsMovingPlatformSwept(x + size / 2, y + size / 2, size, size, 70, 60)) {
+            specialBarrels.push(new SpecialBarrel(x, y, size));
+        }
+    }
+
+    // Safety verification: prune any moving platform whose swept path intersects any barrel
+    const allBarrels = [...safeZones, ...specialBarrels];
+    for (let i = movingPlatforms.length - 1; i >= 0; i--) {
+        const mp = movingPlatforms[i];
+        const swept = getSweptRect(mp);
+        let clipsBarrel = false;
+        for (let j = 0; j < allBarrels.length; j++) {
+            const b = allBarrels[j];
+            if (!b) continue;
+            const bw = b.width || b.size || 100;
+            const bh = b.height || b.size || 100;
+            const bRect = {
+                x: b.x !== undefined ? b.x : (b.centerX - bw / 2),
+                y: b.y !== undefined ? b.y : (b.centerY - bh / 2),
+                width: bw,
+                height: bh
+            };
+            if (overlapsRect(swept, bRect, 65, 55)) {
+                clipsBarrel = true;
+                break;
+            }
+        }
+        if (clipsBarrel) {
+            movingPlatforms.splice(i, 1);
+        }
+    }
+
+    // ── 2. BARREL BREATHING ROOM BUFFER ──
+    // Clear buffer around all regular launch barrels and special bonus barrels so they are never crowded.
+    const isInsideBarrelBuffer = (x, y, extraMargin = 0) => {
+        for (let i = 0; i < safeZones.length; i++) {
+            const sz = safeZones[i];
+            if (!sz) continue;
+            const cx = sz.centerX;
+            const cy = sz.centerY;
+            const r = (sz.width / 2) + 95 + extraMargin; // ~145px breathing room from barrel center
+            const dx = x - cx;
+            const dy = y - cy;
+            if (dx * dx + dy * dy < r * r) return true;
+        }
+        for (let i = 0; i < specialBarrels.length; i++) {
+            const sb = specialBarrels[i];
+            if (!sb) continue;
+            const cx = sb.x + sb.width / 2;
+            const cy = sb.y + sb.height / 2;
+            const r = (sb.width / 2) + 95 + extraMargin; // ~135px breathing room from bonus barrel center
+            const dx = x - cx;
+            const dy = y - cy;
+            if (dx * dx + dy * dy < r * r) return true;
+        }
+        return false;
+    };
+
+    // Prune enemies inside barrel buffer zones so players can enter/exit barrels cleanly
+    for (let i = enemies.length - 1; i >= 0; i--) {
+        const e = enemies[i];
+        if (e && isInsideBarrelBuffer(e.x + e.width / 2, e.y + e.height / 2, 25)) {
+            enemies.splice(i, 1);
+        }
+    }
+
+    // Filter available locations so NO collectible can ever pick a location inside a barrel breathing room
+    const availableCoinLocations = safeCoinLocations.filter(loc => !isInsideBarrelBuffer(loc.x, loc.y, 0));
+
+    const isCollectibleTooClose = (x, y, size = 30, ignored = null) => {
+        const cx = x + size / 2;
+        const cy = y + size / 2;
+        for (let i = 0; i < collectibles.length; i++) {
+            const collectible = collectibles[i];
+            if (!collectible || collectible === ignored || collectible.markedForDeletion) continue;
+            const ox = collectible.x + collectible.width / 2;
+            const oy = collectible.baseY + collectible.height / 2;
+            const minDist = Math.max(46, (size + collectible.width) * 0.75);
+            const dx = ox - cx;
+            const dy = oy - cy;
+            if ((dx * dx + dy * dy) < minDist * minDist) return true;
+        }
+        return false;
+    };
+
+    // ── 3. COLLECTIBLE POPULATION ──
+    if (availableCoinLocations.length > 0) {
+        availableCoinLocations.sort((a, b) => a.x - b.x);
+
+        const occupiedIndices = new Set();
+        const letterSequence = ['E', 'M', 'O', 'J', 'I'];
+
+        // KONG-style fixed letter set scattered across progression outside barrel buffers
+        let letterCandidates = availableCoinLocations
+            .map((loc, index) => ({ loc, index }))
+            .filter(item => item.loc.y >= 80 && item.loc.y <= 760 && hasSupportBelow(item.loc.x, item.loc.y));
+
+        if (letterCandidates.length < letterSequence.length) {
+            letterCandidates = availableCoinLocations.map((loc, index) => ({ loc, index }));
+        }
+
+        if (letterCandidates.length >= letterSequence.length) {
+            const step = letterCandidates.length / letterSequence.length;
+            for (let i = 0; i < letterSequence.length; i++) {
+                const minIdx = Math.floor(i * step);
+                const maxIdx = Math.max(minIdx, Math.floor((i + 1) * step) - 1);
+                let pickIdx = minIdx + Math.floor(Math.random() * (maxIdx - minIdx + 1));
+                let attempts = 0;
+                while (attempts < 20) {
+                    const picked = letterCandidates[pickIdx];
+                    if (picked && !occupiedIndices.has(picked.index) && !isInsideBarrelBuffer(picked.loc.x, picked.loc.y)) {
+                        collectibles.push(new Collectible(picked.loc.x, picked.loc.y, 'letter', letterSequence[i]));
+                        occupiedIndices.add(picked.index);
+                        break;
+                    }
+                    pickIdx = minIdx + Math.floor(Math.random() * (maxIdx - minIdx + 1));
+                    attempts++;
+                }
+            }
+        }
+
+        const spawnSpecial = (type, count) => {
+            if (availableCoinLocations.length > occupiedIndices.size + count) {
+                const step = availableCoinLocations.length / count;
+                for (let i = 0; i < count; i++) {
+                    const minIdx = Math.floor(i * step);
+                    const maxIdx = Math.floor((i + 1) * step) - 1;
+                    let idx = Math.floor(Math.random() * (maxIdx - minIdx + 1)) + minIdx;
+                    let attempts = 0;
+                    while ((occupiedIndices.has(idx) || (availableCoinLocations[idx] && isInsideBarrelBuffer(availableCoinLocations[idx].x, availableCoinLocations[idx].y))) && attempts < 12) {
+                        idx = Math.floor(Math.random() * (maxIdx - minIdx + 1)) + minIdx;
+                        attempts++;
+                    }
+                    if (!occupiedIndices.has(idx) && availableCoinLocations[idx] && !isInsideBarrelBuffer(availableCoinLocations[idx].x, availableCoinLocations[idx].y)) {
+                        const loc = availableCoinLocations[idx];
+                        collectibles.push(new Collectible(loc.x, loc.y, type));
+                        occupiedIndices.add(idx);
+                    }
+                }
+            }
+        };
+
+        const numHealthPickups = Math.floor(Math.random() * 3) + 3; // 3 to 5
+        spawnSpecial('health', numHealthPickups);
+
+        const powerUpTypes = [
+            'diamond_powerup',
+            'fire_powerup',
+            'frost_powerup',
+            'lightning_powerup',
+            'wing_powerup'
+        ];
+        const availablePowerSlots = Math.max(0, availableCoinLocations.length - occupiedIndices.size);
+        const requestedPowerUps = 3 + Math.floor(Math.random() * 3); // 3–5 total
+        const maxPowerUps = Math.min(availablePowerSlots, powerUpTypes.length * 2);
+        const totalPowerUps = Math.min(requestedPowerUps, maxPowerUps);
+
+        if (totalPowerUps > 0) {
+            const stepPower = availableCoinLocations.length / totalPowerUps;
+            for (let i = 0; i < totalPowerUps; i++) {
+                const minIdx = Math.floor(i * stepPower);
+                const maxIdx = Math.floor((i + 1) * stepPower) - 1;
+                if (maxIdx < minIdx) continue;
+                let idx = Math.floor(Math.random() * (maxIdx - minIdx + 1)) + minIdx;
+                let attempts = 0;
+                while ((occupiedIndices.has(idx) || (availableCoinLocations[idx] && isInsideBarrelBuffer(availableCoinLocations[idx].x, availableCoinLocations[idx].y))) && attempts < 14) {
+                    idx = Math.floor(Math.random() * (maxIdx - minIdx + 1)) + minIdx;
+                    attempts++;
+                }
+                if (occupiedIndices.has(idx) || !availableCoinLocations[idx] || isInsideBarrelBuffer(availableCoinLocations[idx].x, availableCoinLocations[idx].y)) continue;
+                const loc = availableCoinLocations[idx];
+                const typeIndex = Math.floor(Math.random() * powerUpTypes.length);
+                const type = powerUpTypes[typeIndex];
+                collectibles.push(new Collectible(loc.x, loc.y, type));
+                occupiedIndices.add(idx);
+            }
+        }
+
+        const numBombPickups = Math.floor(Math.random() * 3) + 2; // 2 to 4
+        spawnSpecial('bomb', numBombPickups);
+
+        // Spawn fairy full_health powerup between 60% and 90% of the level
+        const fairyCandidates = availableCoinLocations.map((loc, index) => ({ loc, index }))
+            .filter(item => item.loc.x > victoryPlatform.x * 0.6 && item.loc.x < victoryPlatform.x * 0.9 && !isInsideBarrelBuffer(item.loc.x, item.loc.y));
+
+        if (fairyCandidates.length > 0) {
+            const randomPick = fairyCandidates[Math.floor(Math.random() * fairyCandidates.length)];
+            let fairyIdx = randomPick.index;
+            let attempts = 0;
+            while (occupiedIndices.has(fairyIdx) && attempts < 10) {
+                const anotherPick = fairyCandidates[Math.floor(Math.random() * fairyCandidates.length)];
+                fairyIdx = anotherPick.index;
+                attempts++;
+            }
+            if (!occupiedIndices.has(fairyIdx)) {
+                const loc = availableCoinLocations[fairyIdx];
+                if (loc && !isInsideBarrelBuffer(loc.x, loc.y)) {
+                    collectibles.push(new Collectible(loc.x, loc.y, 'full_health'));
+                    occupiedIndices.add(fairyIdx);
+                }
+            }
+        }
+
+        const count = Math.min(targetCoinCount, availableCoinLocations.length);
+        const step = availableCoinLocations.length / count;
+
+        for (let i = 0; i < count; i++) {
+            const minIdx = Math.floor(i * step);
+            const maxIdx = Math.floor((i + 1) * step) - 1;
+            const idx = Math.floor(Math.random() * (maxIdx - minIdx + 1)) + minIdx;
+
+            if (!occupiedIndices.has(idx)) {
+                const loc = availableCoinLocations[idx];
+                if (loc && !isInsideBarrelBuffer(loc.x, loc.y)) {
+                    collectibles.push(new Collectible(loc.x, loc.y, 'coin'));
+                }
+            }
+        }
+
+        // Final verification pass: purge any collectibles that ended up inside any barrel breathing room
+        for (let i = collectibles.length - 1; i >= 0; i--) {
+            const c = collectibles[i];
+            if (c && isInsideBarrelBuffer(c.x + c.width / 2, (c.baseY || c.y) + c.height / 2, 0)) {
+                collectibles.splice(i, 1);
+            }
+        }
+    }
+
+    // Make sure vines do not intersect platforms
+    vines.forEach(vine => {
+        platforms.forEach(platform => {
+            // Check horizontal overlap
+            if (vine.x + vine.width > platform.x && vine.x < platform.x + platform.width) {
+                if (vine.y <= platform.y && vine.y + vine.height > platform.y) {
+                    vine.height = platform.y - vine.y - 2;
+                }
+            }
+        });
+    });
+
+    // Remove any vines that ended up with zero or negative height
+    const validVines = vines.filter(v => v.height > 10);
+
+    const variantOrder = ['SOLID_GROUND', 'SKY_ISLANDS', 'STAIRS_UP', 'STAIRS_DOWN', 'TWO_TIER', 'THREE_TIER', 'FOUR_TIER', 'PILLARS'];
+    const variantCode = {
+        SOLID_GROUND: 'GND',
+        SKY_ISLANDS: 'SKY',
+        STAIRS_UP: 'UP',
+        STAIRS_DOWN: 'DOWN',
+        TWO_TIER: '2T',
+        THREE_TIER: '3T',
+        FOUR_TIER: '4T',
+        PILLARS: 'PIL'
+    };
+    const usedVariants = variantOrder.filter(v => layoutVariantsUsed.has(v));
+    const layoutVariantLabel = usedVariants.length > 0
+        ? `V:${usedVariants.map(v => variantCode[v] || v).join('+')}`
+        : 'V:N/A';
+
+    // ── 4. UPWARD AIR STREAMS / BUBBLE COLUMNS ──
+    // Place buoyant bubble columns across platform gaps to gently float the player and carry projectiles
+    const bubbleColumns = [];
+    const maxBubbleColumns = 4;
+    const sortedPlatforms = [...platforms].sort((a, b) => a.x - b.x);
+
+    for (let i = 0; i < sortedPlatforms.length - 1; i++) {
+        if (bubbleColumns.length >= maxBubbleColumns) break;
+
+        const p1 = sortedPlatforms[i];
+        const p2 = sortedPlatforms[i + 1];
+        if (!p1 || !p2) continue;
+
+        const gap = p2.x - (p1.x + p1.width);
+        if (gap < 110 || gap > 380) continue;
+
+        const gapLeft = p1.x + p1.width;
+        const centerX = gapLeft + gap / 2;
+
+        // Skip starter zone and boss arena area
+        if (centerX < 550 || centerX > victoryPlatform.x - 300) continue;
+
+        // Ensure well-spaced across the level (at least 850px apart)
+        const tooCloseToOther = bubbleColumns.some(bc => Math.abs((bc.x + bc.width / 2) - centerX) < 850);
+        if (tooCloseToOther) continue;
+
+        // Ensure clearance from launch barrels and special bonus barrels
+        if (isInsideBarrelBuffer(centerX, Math.min(p1.y, p2.y), 45)) continue;
+
+        // Spawn higher so the updraft reaches high into the sky above the platforms
+        const higherPlatY = Math.min(p1.y, p2.y);
+        const lowerPlatY = Math.max(p1.y, p2.y);
+
+        const colTopY = higherPlatY - 340;
+        const colBottomY = lowerPlatY + 45;
+        const colHeight = colBottomY - colTopY;
+        const colWidth = Math.min(100, Math.max(78, gap - 20));
+        const colX = centerX - colWidth / 2;
+
+        const colRect = { x: colX, y: colTopY, width: colWidth, height: colHeight };
+        const hitsMover = movingPlatforms.some(mp => overlapsRect(getSweptRect(mp), colRect, 16, 16));
+        if (hitsMover) continue;
+
+        bubbleColumns.push(new BubbleColumn(colX, colTopY, colWidth, colHeight));
+
+        // Signpost with floating coins ascending up the airstream
+        collectibles.push(new Collectible(centerX - 15, higherPlatY - 80, 'coin'));
+        collectibles.push(new Collectible(centerX - 15, higherPlatY - 200, 'coin'));
+    }
+
+    return {
+        platforms,
+        movingPlatforms,
+        enemies,
+        bossSpawns,
+        collectibles,
+        safeZones,
+        specialBarrels,
+        bubbleColumns,
+        vines: validVines,
+        swingingVines,
+        prisonerRescue: {
+            platformX: rescuePlatform.x,
+            platformY: rescuePlatform.y,
+            platformWidth: rescuePlatform.width,
+            platformHeight: rescuePlatform.height
+        },
+        theme,
+        layoutVariantsUsed: usedVariants,
+        layoutVariantLabel
+    };
+}

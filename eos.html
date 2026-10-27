@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echoes of Silence</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <meta name="description"
+        content="A calm, minimal web app for creating an endless, layered soundscape with Tibetan singing bowls.">
+
+    <style>
+        /* --- Reset & Base Styles --- */
+        :root {
+            --bg-deep-blue: #041735;
+            --bg-mid-blue: #0A2A4A;
+            --accent-gold: #C9A84D;
+            --text-light: #EDE8DC;
+            --shadow-color: rgba(0, 0, 0, 0.25);
+
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --font-serif-display: 'Lora', 'Georgia', serif;
+
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html,
+        body {
+            height: 100vh;
+            /* Use viewport height */
+            overflow: hidden;
+            /* Prevent scrolling on the body */
+        }
+
+        body {
+            background-color: var(--bg-deep-blue);
+            color: var(--text-light);
+            font-family: var(--font-sans);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            line-height: 1.5;
+        }
+
+        /* --- New Content Wrapper --- */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        /* --- Main App Container & Layout --- */
+        .app-container {
+            width: 100%;
+            max-height: 95vh;
+            background-color: var(--bg-mid-blue);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            /* Adjusted gap */
+            transition: all 0.3s ease;
+        }
+
+        @media (min-width: 640px) {
+            .app-container {
+                padding: 2rem;
+            }
+        }
+
+        /* --- Header --- */
+        .header {
+            text-align: center;
+        }
+
+        .header-image {
+            width: 280px;
+            height: 280px;
+            border-radius: 1rem;
+            object-fit: cover;
+            border: 0px solid var(--accent-gold);
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px var(--shadow-color);
+        }
+
+        .title-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .header h1 {
+            font-family: var(--font-serif-display);
+            color: var(--accent-gold);
+            font-size: 1.6rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-button {
+            background: none;
+            border: none;
+            width: 26px;
+            /* Sized to be similar to the old emoji */
+            height: 26px;
+            cursor: pointer;
+            color: var(--accent-gold);
+            padding: 0;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+
+        .info-button:hover {
+            opacity: 1;
+        }
+
+        .info-button svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* --- Controls --- */
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            /* Added margin for spacing */
+        }
+
+        .control-button {
+            background-color: var(--accent-gold);
+            color: var(--bg-deep-blue);
+            border: none;
+            border-radius: 50px;
+            padding: 0.9rem 2rem;
+            /* Increased padding */
+            font-size: 1.1rem;
+            /* Increased font size */
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+            width: 200px;
+            /* Set a fixed width */
+            text-align: center;
+        }
+        
+        .control-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .control-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(201, 168, 77, 0.3);
+        }
+
+        .control-button.active {
+            background-color: #a88d3e;
+            /* Darker gold when active */
+        }
+
+        /* --- Information Overlay --- */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .overlay-content {
+            background-color: var(--bg-mid-blue);
+            padding: 2.5rem 2rem 2rem 2rem;
+            border-radius: 1rem;
+            max-width: 450px;
+            width: 100%;
+            position: relative;
+            box-shadow: 0 5px 25px var(--shadow-color);
+            border: 1px solid var(--accent-gold);
+            text-align: center;
+        }
+
+        .overlay-content h2 {
+            font-family: var(--font-serif-display);
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        .overlay-content p {
+            opacity: 0.9;
+            line-height: 1.7;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--text-light);
+            cursor: pointer;
+            line-height: 1;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .close-button:hover {
+            opacity: 1;
+        }
+
+        /* --- Now Playing Element --- */
+        .now-playing-text {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            opacity: 0.1;
+            min-height: 1.5em;
+            /* Prevent layout shift */
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        /* --- Footer (example if needed inside app-container) --- */
+        .site-footer {
+            text-align: center;
+            margin-top: auto;
+            /* Pushes footer to the bottom of the flex container */
+            padding-top: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-light);
+            opacity: 0.6;
+        }
+
+        .site-footer a {
+            color: var(--accent-gold);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .site-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="content-wrapper">
+        <main class="app-container" aria-live="polite">
+            <header class="header">
+                <img src="tb.jpg" alt="An ornate brass Tibetan singing bowl" class="header-image">
+                <div class="title-container">
+                    <h1>Echoes of Silence</h1>
+                </div>
+                <div class="subtitle-container">
+                    <p>Sound Meditation</p>
+                    <br>
+                    <button id="infoBtn" class="info-button" aria-label="About">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
+                            aria-hidden="true">
+                            <path
+                                d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div class="controls">
+                <button id="toggleMeditationBtn" class="control-button">Start Meditation</button>
+            </div>
+        </main>
+
+        <p id="nowPlaying" class="now-playing-text"></p>
+    </div>
+
+    <div id="infoOverlay" class="overlay">
+        <div class="overlay-content">
+            <button id="closeOverlayBtn" class="close-button" aria-label="Close">&times;</button>
+            <h2>About</h2>
+            <p>
+                'Echoes of Silence' lets you meditate with the magic sounds of authentic Tibetan singing bowls. Press
+                <b>Start</b> to create an endless, evolving soundscape—randomized in a unique sequence and unique timing
+                every time—when you are done, press <b>Stop</b> to end.
+                <br><br>
+                The sounds are adapted from varied recordings by
+                <a href="https://kasper.bandcamp.com/album/singing-bowls" target="_blank" rel="noopener noreferrer"
+                    style="color:white; text-decoration:underline;">
+                    Kasper</a> and include over 15 different tones. Koshi chimes from <a href="https://freesound.org" target="_blank" rel="noopener noreferrer"
+                    style="color:white; text-decoration:underline;">  FreeSound</a>.
+                <br><br>
+                For the best experience, listen with headphones at low volume for at least five minutes while focusing
+                on your breath. This app will always be free, ad-free, and dedicated solely to well-being 🙏.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const toggleBtn = document.getElementById('toggleMeditationBtn');
+            const infoBtn = document.getElementById('infoBtn');
+            const infoOverlay = document.getElementById('infoOverlay');
+            const closeOverlayBtn = document.getElementById('closeOverlayBtn');
+            const nowPlayingEl = document.getElementById('nowPlaying');
+
+            // --- App State & Audio Config ---
+            const BOWL_SOUNDS = [
+                'tibetanbowls/110_a.mp3', 'tibetanbowls/130_c.mp3', 'tibetanbowls/147_d.mp3',
+                'tibetanbowls/164_e.mp3', 'tibetanbowls/174_f.mp3', 'tibetanbowls/198_g.mp3',
+                'tibetanbowls/220_a.mp3', 'tibetanbowls/264_c.mp3', 'tibetanbowls/50_g.mp3',
+                'tibetanbowls/50_g.mp3', 'tibetanbowls/50_g.mp3', 'tibetanbowls/64_c.mp3',
+                'tibetanbowls/75_d.mp3', 'tibetanbowls/82_e.mp3', 'tibetanbowls/87_f.mp3',
+                'tibetanbowls/98_g.mp3', 'tibetanbowls/bell_f.mp3', 'tibetanbowls/bell_a.mp3',
+                'tibetanbowls/bell_g.mp3', 'tibetanbowls/bell_e.mp3', 'tibetanbowls/drone_c.mp3',
+                'tibetanbowls/drone_a.mp3', 'tibetanbowls/drone_f.mp3', 'tibetanbowls/drone_c.mp3',
+                'tibetanbowls/drone_f.mp3'
+            ];
+            const CHIME_SOUNDS = [
+                'tibetanbowls/kcam1.mp3', 'tibetanbowls/kcam2.mp3'
+            ];
+
+            let isPlaying = false;
+            let soundScheduler = null;
+            let chimeScheduler = null;
+            let wakeLock = null; // To hold the WakeLockSentinel object
+
+            // --- Web Audio API specific variables ---
+            let audioContext = null;
+            let compressor = null; // NEW: To equalize volume
+            const audioBuffers = {};
+            let activeSources = [];
+            let soundsLoaded = false;
+            
+            // --- Wake Lock Functions ---
+            const requestWakeLock = async () => {
+                if ('wakeLock' in navigator) {
+                    try {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        wakeLock.addEventListener('release', () => {
+                            console.log('Screen Wake Lock was released by the system.');
+                        });
+                        console.log('Screen Wake Lock is active.');
+                    } catch (err) {
+                        console.error(`Wake Lock request failed: ${err.name}, ${err.message}`);
+                    }
+                } else {
+                    console.warn('Screen Wake Lock API is not supported on this browser.');
+                }
+            };
+
+            const releaseWakeLock = async () => {
+                if (wakeLock !== null) {
+                    try {
+                        await wakeLock.release();
+                        wakeLock = null;
+                        console.log('Screen Wake Lock released.');
+                    } catch (err) {
+                         console.error(`Wake Lock release failed: ${err.name}, ${err.message}`);
+                    }
+                }
+            };
+            
+            // Re-acquire the lock if the page becomes visible again (e.g., user switches tabs and comes back)
+            const handleVisibilityChange = async () => {
+                if (isPlaying && document.visibilityState === 'visible') {
+                   await requestWakeLock();
+                }
+            };
+
+            // --- Event Listeners ---
+            toggleBtn.addEventListener('click', toggleMeditation);
+            infoBtn.addEventListener('click', () => infoOverlay.style.display = 'flex');
+            closeOverlayBtn.addEventListener('click', () => infoOverlay.style.display = 'none');
+            infoOverlay.addEventListener('click', (e) => {
+                
+                    infoOverlay.style.display = 'none';
+                
+            });
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+
+            // --- Core Functions ---
+            async function toggleMeditation() {
+                isPlaying = !isPlaying;
+                if (isPlaying) {
+                    // Create AudioContext on first user interaction
+                    if (!audioContext) {
+                        audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                        
+                        // NEW: Create and configure the compressor for volume equalization
+                        compressor = audioContext.createDynamicsCompressor();
+                        // Connect the compressor to the final output (speakers)
+                        compressor.connect(audioContext.destination);
+                    }
+                    await startSoundscape();
+                } else {
+                    await stopSoundscape();
+                }
+                updateButtonUI();
+            }
+
+            async function startSoundscape() {
+                console.log("Starting soundscape...");
+                await requestWakeLock(); // Request the wake lock
+                
+                if (!soundsLoaded) {
+                    toggleBtn.textContent = 'Loading...';
+                    toggleBtn.disabled = true;
+                    await preloadAllSounds();
+                    soundsLoaded = true;
+                    toggleBtn.disabled = false;
+                    updateButtonUI(); // Update text back to 'Stop'
+                }
+                playRandomBowl(); // Play the first sound immediately
+                scheduleNextBowl();
+                scheduleNextChime();
+            }
+
+            async function stopSoundscape() {
+                console.log("Stopping soundscape...");
+                await releaseWakeLock(); // Release the wake lock
+
+                clearTimeout(soundScheduler);
+                clearTimeout(chimeScheduler);
+                soundScheduler = null;
+                chimeScheduler = null;
+
+                toggleBtn.disabled = true;
+
+                const fadeDuration = 4; // 4 seconds
+
+                // Fade out all currently playing sounds using Web Audio API
+                if (audioContext) {
+                    activeSources.forEach(({ gainNode }) => {
+                        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + fadeDuration);
+                    });
+                }
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, (fadeDuration * 1000) + 500); // Add a buffer
+            }
+
+            function scheduleNextBowl() {
+                if (!isPlaying) return;
+                const delay = Math.random() * 10000 + 10000; // 10-20 seconds
+                console.log(`[${new Date().toLocaleTimeString()}] Next bowl sound in ${(delay / 1000).toFixed(2)}s`);
+
+                soundScheduler = setTimeout(() => {
+                    playRandomBowl();
+                    scheduleNextBowl();
+                }, delay);
+            }
+
+           function scheduleNextChime() {
+                if (!isPlaying) return;
+                // Chimes are set to play once every 3 minutes
+                const delay = 180000; // 3 minutes in milliseconds
+                console.log(`[${new Date().toLocaleTimeString()}] Next chime in ${(delay / 1000).toFixed(2)}s`);
+
+                chimeScheduler = setTimeout(() => {
+                    playRandomChime();
+                    scheduleNextChime();
+                }, delay);
+            }
+
+            function playSound(soundSrc, type) {
+                if (!isPlaying || !audioContext) return;
+
+                const buffer = audioBuffers[soundSrc];
+                if (!buffer) {
+                    console.error(`Buffer for ${soundSrc} not found.`);
+                    return;
+                }
+
+                console.log(`[${new Date().toLocaleTimeString()}] Playing [${type}]: ${soundSrc}`);
+
+                // Only update the UI for the main bowl sounds
+                if (type === 'bowl') {
+                    const fileName = soundSrc.split('/').pop().replace('.mp3', '');
+                    nowPlayingEl.textContent = fileName;
+                }
+
+                // Setup Web Audio nodes
+                const source = audioContext.createBufferSource();
+                const gainNode = audioContext.createGain();
+
+                source.buffer = buffer;
+                // Make chimes slightly quieter
+                gainNode.gain.value = (type === 'chime') ? 0.6 : 0.8;
+
+                source.connect(gainNode);
+                // MODIFIED: Connect the gain node to the compressor instead of directly to the destination
+                gainNode.connect(compressor);
+                source.start(0);
+
+                // Track the source along with its type
+                const sourceData = { source, gainNode, type };
+                activeSources.push(sourceData);
+
+                // Clean up the source from the array once it has finished
+                source.onended = () => {
+                    activeSources = activeSources.filter(s => s !== sourceData);
+                    // If no more bowls are playing, clear the text
+                    if (!activeSources.some(s => s.type === 'bowl')) {
+                        nowPlayingEl.textContent = '';
+                    }
+                };
+            }
+
+            function playRandomBowl() {
+                if (!isPlaying || BOWL_SOUNDS.length === 0) return;
+                const soundIndex = Math.floor(Math.random() * BOWL_SOUNDS.length);
+                const soundSrc = BOWL_SOUNDS[soundIndex];
+                playSound(soundSrc, 'bowl');
+            }
+
+            function playRandomChime() {
+                if (!isPlaying || CHIME_SOUNDS.length === 0) return;
+
+                // CRITICAL CHECK: Only play chime if a bowl is currently active
+                const isBowlPlaying = activeSources.some(s => s.type === 'bowl');
+
+                if (isBowlPlaying) {
+                    const soundIndex = Math.floor(Math.random() * CHIME_SOUNDS.length);
+                    const soundSrc = CHIME_SOUNDS[soundIndex];
+                    playSound(soundSrc, 'chime');
+                } else {
+                    console.log(`[${new Date().toLocaleTimeString()}] Skipping chime: No bowl sound is currently playing.`);
+                }
+            }
+
+            // --- Web Audio API Helper Functions ---
+            async function loadSound(url) {
+                if (audioBuffers[url]) return audioBuffers[url]; // Return cached buffer
+                try {
+                    const response = await fetch(url);
+                    const arrayBuffer = await response.arrayBuffer();
+                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                    audioBuffers[url] = audioBuffer;
+                    return audioBuffer;
+                } catch (error) {
+                    console.error(`Error loading sound: ${url}`, error);
+                }
+            }
+
+            async function preloadAllSounds() {
+                console.log("Preloading all sounds...");
+                const allSounds = [...BOWL_SOUNDS, ...CHIME_SOUNDS];
+                const uniqueSounds = [...new Set(allSounds)];
+                const promises = uniqueSounds.map(url => loadSound(url));
+                await Promise.all(promises);
+                console.log("All sounds preloaded.");
+            }
+
+            function updateButtonUI() {
+                if (isPlaying) {
+                    toggleBtn.textContent = 'Stop Meditation';
+                    toggleBtn.classList.add('active');
+                    toggleBtn.setAttribute('aria-label', 'Stop the meditation soundscape');
+                } else {
+                    toggleBtn.textContent = 'Start Meditation';
+                    toggleBtn.classList.remove('active');
+                    toggleBtn.setAttribute('aria-label', 'Start the meditation soundscape');
+                    nowPlayingEl.textContent = '';
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

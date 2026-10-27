@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Mindfulness Pause 🪷</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Custom Properties (Variables) */
+    :root {
+      --bg-gradient-start: #3B3C6A;
+      --bg-gradient-end: #9067C6;
+      --primary-text-color: #F0F0F0;
+      --accent-color: #FFFFFF;
+      --glass-bg: rgba(255, 255, 255, 0.1);
+      --glass-border: rgba(255, 255, 255, 0.2);
+      --glass-hover-bg: rgba(255, 255, 255, 0.2);
+      --font-family-sans: 'Inter', Arial, Helvetica, sans-serif;
+      --base-font-size: 16px;
+    }
+
+    /* Reset and Base Styles */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: var(--base-font-size);
+    }
+
+    body {
+      background: linear-gradient(180deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--primary-text-color);
+      font-family: var(--font-family-sans);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden; /* Prevents scrolling */
+      text-align: center;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Main App Container */
+  .app-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center; /* This is the key change */
+    height: 100%;
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem 1.5rem;
+    gap: 2rem; /* Optional: adds space between elements */
+}
+    
+    header, main, footer {
+        width: 100%;
+    }
+
+    /* Header */
+    header {
+        position: relative; /* For positioning the info icon */
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 400;
+      color: var(--primary-text-color);
+      line-height: 1.2;
+    }
+
+    .lotus-icon {
+        font-size: 5rem;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    #info-icon {
+      position: absolute;
+      top: 0;
+      right: 0;
+      font-size: 1.75rem;
+      cursor: pointer;
+      user-select: none;
+      color: var(--accent-color);
+      opacity: 0.7;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    
+    #info-icon:hover,
+    #info-icon:focus {
+      opacity: 1;
+      transform: scale(1.1);
+      outline: none;
+    }
+
+    /* Main Content Area */
+    main {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Buttons */
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    button {
+      background: var(--glass-bg);
+      color: var(--accent-color);
+      border: 1px solid var(--glass-border);
+      padding: 1rem;
+      font-size: 1.125rem;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: background-color 0.3s ease, transform 0.2s ease;
+      font-weight: 700;
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+    }
+
+    button:hover,
+    button:focus-visible { /* Using focus-visible for better accessibility */
+      background-color: var(--glass-hover-bg);
+      outline: none;
+      transform: translateY(-3px);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: translateY(0);
+      background: var(--glass-bg);
+    }
+    
+    /* Footer & Messages */
+    footer {
+        min-height: 100px; /* Reserve space to prevent layout shift */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    #duration-message {
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      min-height: 1.2em;
+      color: var(--accent-color);
+      opacity: 0.9;
+    }
+
+    .speaker-name, .message {
+        display: none; /* Hidden as per request */
+    }
+    
+    /* Progress Indicator */
+    #progress-container {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .progress-ring {
+      width: 160px;
+      height: 160px;
+      transform: rotate(-90deg); /* Start from the top */
+    }
+
+    .progress-ring-bg,
+    .progress-ring-fg {
+      fill: none;
+      stroke-width: 10;
+    }
+
+    .progress-ring-bg {
+      stroke: var(--glass-bg); /* Background track color */
+    }
+
+    .progress-ring-fg {
+      stroke: var(--accent-color); /* Progress color */
+      stroke-linecap: round; /* Rounded ends for a softer look */
+      transition: stroke-dashoffset 0.25s linear;
+    }
+
+    #progress-percent {
+      position: absolute;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      user-select: none;
+    }
+
+    /* Countdown Splash Overlay */
+    #countdown-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 22, 38, 0.5);
+      display: none; /* Managed by JS */
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    #countdown-number {
+      font-size: 8rem;
+      color: var(--accent-color);
+      font-weight: 700;
+      animation: pop 1s ease-in-out infinite;
+    }
+
+    /* Info Overlay */
+    #info-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(22, 22, 38, 0.5);
+      display: none; /* Initially hidden */
+      align-items: center;
+      justify-content: center;
+      z-index: 1001; /* Higher than countdown */
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 1.5rem;
+      cursor: pointer;
+    }
+
+    .info-content {
+      background: var(--bg-gradient-start);
+      padding: 2rem;
+      border-radius: 16px;
+      border: 1px solid var(--glass-border);
+      max-width: 500px;
+      width: 100%;
+      text-align: left;
+      line-height: 1.6;
+      cursor: default;
+    }
+
+    .info-content h2,
+    .info-content h3 {
+      color: var(--accent-color);
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .info-content h3 {
+      margin-top: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    .info-content p,
+    .info-content li {
+      margin-bottom: 0.75rem;
+      color: var(--primary-text-color);
+    }
+
+    .info-content ol {
+      padding-left: 1.5rem;
+    }
+
+    .info-content strong {
+      color: var(--accent-color);
+      font-weight: 700;
+    }
+
+    @keyframes pop {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 0.9;
+      }
+      50% {
+        transform: scale(1.15);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-container">
+    <header>
+      <h1>
+        <span class="lotus-icon">🪷</span>
+        Mindfulness Pause
+      </h1>
+      <span id="info-icon" role="button" tabindex="0" title="How to use">ℹ️</span>
+    </header>
+
+    <main>
+        <div class="button-container">
+          <button id="five-min">5 Minutes</button>
+          <button id="seven-min">7 Minutes</button>
+          <button id="ten-min">10 Minutes</button>
+        </div>
+        <div id="progress-container" style="display: none;">
+            <svg class="progress-ring" viewbox="0 0 160 160">
+              <circle class="progress-ring-bg" r="70" cx="80" cy="80"></circle>
+              <circle id="progress-ring-fg" class="progress-ring-fg" r="70" cx="80" cy="80"></circle>
+            </svg>
+            <span id="progress-percent">0%</span>
+        </div>
+    </main>
+
+    <footer>
+        <div id="duration-message"></div>
+        <div class="speaker-name" id="speaker-name"></div>
+        <div class="message" id="message"></div>
+    </footer>
+  </div>
+
+  <div id="info-overlay">
+    <div class="info-content">
+      <h2>How to Use</h2>
+      <p><strong>Microsoft Edge is required</strong> for the intended high-quality text-to-speech voice.</p>
+      <p>The 'Read Aloud' feature must be manually triggered once before starting a session. This is a Microsoft requirement to enable the high-quality TTS engine.</p>
+      <h3>On MOBILE Microsoft Edge:</h3>
+      <ol>
+        <li>Click the <strong>☰</strong> menu and select 'Read Aloud'.</li>
+        <li>The TTS engine will start. Immediately press <strong>pause</strong>.</li>
+        <li>Choose a 5, 7, or 10-minute session to begin.</li>
+      </ol>
+      <h3>On DESKTOP Microsoft Edge:</h3>
+      <ol>
+        <li>Press <strong>CTRL+SHIFT+U</strong> to enable the TTS engine.</li>
+        <li>The TTS engine will start. Immediately press <strong>pause</strong>.</li>
+        <li>Click a button to begin your meditation.</li>
+      </ol>
+      <p>Enjoy your moment of mindfulness!</p>
+    </div>
+  </div>
+
+  <div id="countdown-overlay">
+    <div id="countdown-number">7</div>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      // Declare wakeLock sentinel variable
+      let wakeLock = null;
+      let aborter = null;
+      let progressInterval = null;
+
+
+      /* ───── Environment check ───── */
+      const ua = navigator.userAgent.toLowerCase();
+      const isAndroid = ua.includes('android');
+      const isEdge = ua.includes('edg/') || ua.includes('edga') || ua.includes('edge');
+
+      if (isAndroid) {
+        console.log('Running on Android. Wake Lock API will be attempted. Original app had specific Edge for Android issues.');
+      }
+      if (!isAndroid && !isEdge) {
+        console.warn('This WebApp was originally optimized for Microsoft Edge on desktop. Standard browser features will be used.');
+      } else if (isAndroid && isEdge) {
+        console.log('Running on Edge for Android. Original app noted issues here.');
+      }
+
+
+      /* ───── DOM helpers ───── */
+      const $ = id => document.getElementById(id);
+
+      const btn5 = $('five-min');
+      const btn7 = $('seven-min');
+      const btn10 = $('ten-min');
+      const msgElem = $('message');
+      const speakerLabel = $('speaker-name');
+      const durMsg = $('duration-message');
+      const infoIcon = $('info-icon');
+      const infoOverlay = $('info-overlay');
+      const buttonContainer = document.querySelector('.button-container');
+      const progressContainer = $('progress-container');
+      const progressRing = $('progress-ring-fg');
+      const progressPercent = $('progress-percent');
+      
+      /* ───── Progress Circle Setup ───── */
+      const radius = progressRing.r.baseVal.value;
+      const circumference = 2 * Math.PI * radius;
+
+      progressRing.style.strokeDasharray = `${circumference} ${circumference}`;
+      progressRing.style.strokeDashoffset = circumference;
+
+      const setProgress = (percent) => {
+        const offset = circumference - (percent / 100) * circumference;
+        progressRing.style.strokeDashoffset = offset;
+        progressPercent.textContent = `${Math.round(percent)}%`;
+      };
+
+
+      /* ───── Info Overlay Handlers ───── */
+      infoIcon.addEventListener('click', () => {
+        infoOverlay.style.display = 'flex';
+      });
+
+      infoIcon.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          infoOverlay.style.display = 'flex';
+        }
+      });
+
+      infoOverlay.addEventListener('click', (e) => {
+        infoOverlay.style.display = 'none';
+      });
+
+      /* ───── Meditation text (UNCHANGED) ───── */
+      const rand = a => a[Math.random() * a.length | 0];
+
+      const scriptVariations = {
+        0: [
+          "Welcome. Let's begin. First, find a comfortable position and gently close your eyes.",
+          "Welcome. Start by settling into a relaxed position. Softly close your eyes.",
+          "Welcome. Begin by finding a comfortable position. Close your eyes gently and rest your hands.",
+          "Welcome. Let's start by getting comfortable. Close your eyes and bring your focus inward.",
+          "Welcome. Take a moment to get settled. Find stillness and softly let your eyes close.",
+          "Welcome. Ease into stillness by finding a relaxed posture, and gently close your eyes.",
+          "Welcome. Begin in a comfortable, restful position. Close your eyes and let your attention turn inward."
+        ],
+        30: [
+          "Take a few deep breaths. In through your nose, and out through your mouth. Let your body settle on its own.",
+          "Breathe deeply, inhale through the nose, exhale through the mouth. Let yourself arrive here, in this moment.",
+          "Take deep breaths. Feel the air enter and leave. In through the nose, and out through the mouth.",
+          "Inhale deeply... exhale fully, in through the nose, and out through the mouth. Allow each breath to settle your body and mind.",
+          "Breathe in deeply... and breathe out fully through your mouth. Let your breath bring you to the Now.",
+          "Draw in a full breath, and release it fully through your mouth. Let your body start to unwind."
+        ],
+        60: [
+          "Begin to notice how your body feels. Soften any tension in your face, your jaw, your shoulders, your hands. Releasing all tension from head to toe.",
+          "Start scanning your body from head to toe. Relax your shoulders, your face, your hands. Let tension dissolve on its own.",
+          "Tune into your physical body. Gently release any tightness in your jaw, your neck, your hands, in all areas of the body.",
+          "Feel into your body. Allow each part to soften. Your face, your chest, your limbs, the whole body.",
+          "Bring attention to your body. Loosen the areas that feel tight. Let go of tension.",
+          "Gently check in with your body. Soften any tight areas. Let tension melt away.",
+          "Let your body relax. Soften your face, your hands, your belly, your whole body. Let tension dissolve."
+        ],
+        90: [
+          "Bring awareness to surrounding sounds and any sensations within. Notice your current mood and any emotions present. Let everything be as it is, like clouds in the sky.",
+          "Listen to the sounds around you. Feel sensations as they come and go. Let your emotions be, without judgment.",
+          "Observe the moment—sounds, feelings, thoughts—without clinging. Let everything drift by like clouds.",
+          "Feel the world around and within you. Allow it all to flow without needing to change anything. Everything comes and goes, you simply observe.",
+          "Notice what’s present, within and around you. Let it be, just as it is.",
+          "Bring awareness to surrounding sounds and any sensations within. Notice your current mood and any emotions present. Let them rise and fall like waves."
+        ],
+        120: [
+          "..."
+        ],
+        180: [
+          "Settle your attention on the breath. Notice its natural rhythm, rising with the inhale, falling with the exhale. Nothing else to do.",
+          "Bring your focus to the breath. Feel it flow in and out, naturally. Nothing to do at all. Nothing to change.",
+          "Notice the breath, how it moves in your body. Rising and falling. Let it guide your awareness gently.",
+          "Focus on the breath. Inhale, exhale, rise and fall. Let the natural rhythm soothe you into stillness.",
+          "Feel your breath like a gentle wave, riding it moment by moment, rising and falling."
+        ],
+        240: [
+          "Nothing to change, simply witnessing.",
+          "Everything comes and goes, as it is. Just observing.",
+          "Be the simple observer. Let things be as they are.",
+          "Resting in awareness, everything as it is, nothing to change.",
+          "Simply witnessing, nothing to pursue, nothing to reject."
+        ],
+        270: [
+          "As we begin to close, take a few deep breaths and exhale letting go of any remaining tension.",
+          "As we begin to close, take some deep breaths. Inhale peace... exhale any remaining tension.",
+          "As we near the end of the meditation, breathe in gently... and breathe out with ease."
+        ],
+        290: [
+          "Gently start to wiggle your fingers and toes. Bring movement back to the body.",
+          "Begin to move your body slowly—wiggle your fingers, your toes—feel into the physical world.",
+          "Awaken the body with gentle movements; stretch or shift softly.",
+          "Introduce some small movements back to the body, gently rotate your wrists or ankles.",
+          "Let movement return naturally: small shifts in your body, light stretches.",
+          "Ease your way back with subtle motion. Stretch and move the body gently."
+        ],
+        295: [
+          "When you're ready, slowly open your eyes. Notice this sense of stillness and calm within you.",
+          "Slowly open your eyes when you're ready. Take some time to feel the difference in your inner state.",
+          "Open your eyes at your own pace, bringing that gentle awareness with you.",
+          "When ready, let your eyes open gently. Notice that stillness within.",
+          "In your own time, let your eyes open slowly, soft and easy.",
+          "Open your eyes when it feels right, returning with a sense of quiet clarity.",
+          "Let the world come back into focus. Eyes open, heart calm."
+        ],
+        300: [
+          "Your mindfulness pause is complete. Wishing you a peaceful rest of your day. Until next time, goodbye.",
+          "Your meditation is complete. Take this stillness with you; have a beautiful day ahead. Until next time, goodbye.",
+          "You've completed a moment of mindful presence—well done. May the rest of your day unfold with ease. Until next time, goodbye.",
+          "Your pause is complete. Carry this calm with you into whatever comes next. Be well. Until next time, goodbye.",
+          "The meditation is complete—well done. Let the benefits of this pause ripple through your day. Until next time, goodbye.",
+          "You’ve taken a wonderful time for yourself. May your day continue with ease, balance and clarity. Until next time, goodbye."
+        ]
+      };
+
+      const baseSteps = Object.entries(scriptVariations).map(([sec, v]) => ({ sec: +sec, varis: v }));
+
+      const makePlan = total => {
+        const gap = Math.floor(total / (baseSteps.length - 1));
+        return baseSteps.map((s, i) => ({ t: i * gap, text: rand(s.varis) }));
+      };
+
+      /* ───── Wake Lock Functions ───── */
+      const requestWakeLock = async () => {
+        if ('wakeLock' in navigator) {
+          try {
+            wakeLock = await navigator.wakeLock.request('screen');
+            console.log('Screen Wake Lock is active.');
+            wakeLock.addEventListener('release', () => {
+              console.log('Screen Wake Lock was released by the system.');
+            });
+          } catch (err) {
+            wakeLock = null;
+            console.error(`Failed to acquire screen wake lock: ${err.name}, ${err.message}`);
+          }
+        } else {
+          console.warn('Screen Wake Lock API not supported in this browser.');
+        }
+      };
+
+      const releaseWakeLock = async () => {
+        if (wakeLock !== null) {
+          try {
+            await wakeLock.release();
+            wakeLock = null;
+            console.log('Screen Wake Lock released programmatically.');
+          } catch (err) {
+            console.error(`Failed to release screen wake lock: ${err.name}, ${err.message}`);
+            wakeLock = null;
+          }
+        }
+      };
+
+      /* ───── Speech helpers ───── */
+      const loadVoices = () =>
+        new Promise(res => {
+          const ready = () => {
+            speechSynthesis.onvoiceschanged = null;
+            res(speechSynthesis.getVoices());
+          };
+          const v = speechSynthesis.getVoices();
+          v.length ? res(v) : (speechSynthesis.onvoiceschanged = ready);
+        });
+
+      const pickVoice = vs => {
+        const prefs = ['Steffan'];
+        const en = vs.filter(v => v.lang.toLowerCase().startsWith('en'));
+        const match = en.filter(v => prefs.some(n => new RegExp(`\\b${n}\\b`, 'i').test(v.name)));
+        return match.length ? rand(match) : en[0] || null;
+      };
+
+      const speak = (voice, text) => new Promise(done => {
+        if (!text || text.trim() === "...") {
+          done();
+          return;
+        }
+        const u = new SpeechSynthesisUtterance(text);
+        u.rate = .85; u.pitch = .5;
+        if (voice) u.voice = voice;
+        u.onend = done;
+        u.onerror = (event) => {
+          console.error('SpeechSynthesisUtterance.onerror', event);
+          done(); // Ensure promise resolves even on error
+        };
+        speechSynthesis.speak(u);
+      });
+
+      /* ───── Session control ───── */
+      const resetUI = async () => {
+        if (aborter) aborter.abort();
+        speechSynthesis.cancel();
+        durMsg.textContent = '';
+        
+        if (progressInterval) {
+            clearInterval(progressInterval);
+            progressInterval = null;
+        }
+        
+        progressContainer.style.display = 'none';
+        buttonContainer.style.display = 'flex';
+        
+        await releaseWakeLock();
+      };
+
+      const countdown = (n = 7) => new Promise(res => {
+        const overlay = $('countdown-overlay');
+        const num = $('countdown-number');
+        overlay.style.display = 'flex';
+        num.textContent = n;
+        const iv = setInterval(() => {
+          n--; num.textContent = n;
+          if (n === 0) {
+            clearInterval(iv);
+            overlay.style.display = 'none';
+            res();
+          }
+        }, 1000);
+      });
+
+      const runSession = async (plan, dur, voice, signal, sessionStartTime) => {
+        for (let i = 0; i < plan.length; i++) {
+          if (signal.aborted) {
+            console.log("Session aborted during loop.");
+            await releaseWakeLock();
+            return;
+          }
+          const waitTime = plan[i].t * 1000 - (Date.now() - sessionStartTime);
+          if (waitTime > 0) await new Promise(r => setTimeout(r, waitTime));
+
+          if (signal.aborted) {
+            console.log("Session aborted after wait.");
+            await releaseWakeLock();
+            return;
+          }
+
+          // These lines are removed from updating the UI, but speech still happens.
+          // msgElem.textContent = plan[i].text;
+          // speakerLabel.textContent = voice ? `${voice.name}:` : 'Default Voice:';
+          await speak(voice, plan[i].text);
+        }
+
+        await new Promise(r => setTimeout(r, 2000));
+        window.location.href = window.location.href;
+      };
+
+      const startSession = async totalSeconds => {
+        await resetUI();
+        
+        buttonContainer.style.display = 'none';
+        progressContainer.style.display = 'flex';
+        setProgress(0);
+
+        await requestWakeLock();
+
+        durMsg.textContent = `${totalSeconds / 60} minutes session in progress...`;
+        try {
+          await countdown();
+          const voices = await loadVoices();
+          const voice = pickVoice(voices);
+          aborter = new AbortController();
+
+          const sessionStartTime = Date.now();
+          progressInterval = setInterval(() => {
+              const elapsed = Date.now() - sessionStartTime;
+              const percentage = (elapsed / (totalSeconds * 1000)) * 100;
+              if (percentage >= 100) {
+                  setProgress(100);
+                  clearInterval(progressInterval);
+              } else {
+                  setProgress(percentage);
+              }
+          }, 250); // Update progress 4 times a second
+
+          await runSession(makePlan(totalSeconds), totalSeconds, voice, aborter.signal, sessionStartTime);
+        } catch (err) {
+          console.error("Error during session setup or execution:", err);
+          await releaseWakeLock(); // Ensure wake lock is released on error
+          if(progressInterval) clearInterval(progressInterval);
+        }
+      };
+
+      /* ───── Button handlers ───── */
+      btn5.addEventListener('click', () => startSession(300));
+      btn7.addEventListener('click', () => startSession(420));
+      btn10.addEventListener('click', () => startSession(600));
+
+      /* ───── Visibility Change Handler ───── */
+      document.addEventListener('visibilitychange', async () => {
+        if (document.visibilityState === 'visible') {
+          if (durMsg.textContent !== '' && wakeLock === null) {
+            console.log('Page became visible, attempting to re-acquire screen wake lock.');
+            await requestWakeLock();
+          }
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>

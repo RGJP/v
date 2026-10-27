@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serendipity Yoga 🧘</title>
+    <script src="https://js.puter.com/v2/"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------- */
+        /* --- Global Styles & Variables --- */
+        /* ------------------- */
+        :root {
+            --color-background: #F8F5F2;
+            --color-text-primary: #3D405B;
+            --color-text-secondary: #5c6081;
+            --color-primary-accent: #E07A5F;
+            /* Terracotta orange */
+            --color-primary-accent-dark: #c9684c;
+            /* Darker orange */
+            --color-secondary-accent: #E9C46A;
+            /* Saffron/gold */
+            --color-card-background: #FFFFFF;
+            --color-border: #ddd;
+            --color-input-background: #fff;
+            --color-footer-border: #e0e0e0;
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 12px;
+            --font-family-main: 'Inter', sans-serif;
+        }
+
+        html.dark-theme {
+            --color-background: #1A1A2E;
+            --color-text-primary: #EAEAEA;
+            --color-text-secondary: #a7a9be;
+            --color-card-background: #162447;
+            --color-border: #4a4a6a;
+            --color-input-background: #1f4068;
+            --color-footer-border: #3a3a5a;
+            --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.2);
+            --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+        }
+
+        body {
+            font-family: var(--font-family-main);
+            background-color: var(--color-background);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.overlay-open {
+            overflow: hidden;
+            /* Prevent scrolling when overlay is open */
+        }
+
+        .container {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+                .footer-link {
+  color: #888888; /* A soft, medium gray color */
+  text-decoration: none; /* Removes the underline */
+  font-weight: bold; /* Makes the link text stand out a bit */
+  transition: color 0.3s ease; /* Adds a smooth color change effect */
+}
+
+/* This rule applies when you hover your mouse over the link */
+.footer-link:hover {
+  color: #555555; /* A darker gray for the hover effect */
+  text-decoration: underline; /* Optional: adds underline back on hover */
+}
+    
+
+        /* ------------------- */
+        /* --- Theme Toggle --- */
+        /* ------------------- */
+        .theme-switch-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            /* Space between toggler and title */
+        }
+
+        .theme-label {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: var(--color-text-secondary);
+        }
+
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 4px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--color-primary-accent);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(22px);
+        }
+
+        .sun-icon,
+        .moon-icon {
+            font-size: 14px;
+        }
+
+        .moon-icon {
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sun-icon {
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        html.dark-theme .moon-icon {
+            opacity: 1;
+        }
+
+        html.dark-theme .sun-icon {
+            opacity: 0;
+        }
+
+
+        /* ------------------- */
+        /* --- Header & Typography --- */
+        /* ------------------- */
+        header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            animation: fadeInDown 0.8s ease-out;
+            padding-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        h1 .logo-highlight {
+            color: var(--color-primary-accent);
+        }
+
+        .about-button {
+            display: inline-block;
+            background-color: transparent;
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+            padding: 0.5rem 1.25rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: var(--font-family-main);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .about-button:hover {
+            background-color: var(--color-primary-accent);
+            border-color: var(--color-primary-accent);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* ------------------- */
+        /* --- Controls Section (Mobile-First) --- */
+        /* ------------------- */
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+            padding: 1.5rem;
+            background-color: var(--color-card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            animation: fadeInUp 0.8s 0.2s ease-out backwards;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: 100%;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--color-text-primary);
+            text-align: center;
+        }
+
+        .pose-count-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .pose-count-btn {
+            flex-grow: 1;
+            flex-basis: calc(25% - 1rem);
+            max-width: 70px;
+            height: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--color-primary-accent);
+            background-color: var(--color-input-background);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, color 0.3s, border-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pose-count-btn:hover {
+            border-color: var(--color-primary-accent);
+            transform: translateY(-2px);
+        }
+
+        .pose-count-btn.active {
+            background-color: var(--color-primary-accent);
+            border-color: var(--color-primary-accent);
+            color: white;
+            transform: translateY(0);
+        }
+
+        .sequence-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+        }
+
+        .sequence-btn {
+            flex-grow: 1;
+            flex-basis: calc(50% - 1rem);
+            /* Allow more space for text */
+            padding: 0.75rem 1rem;
+            min-height: 60px;
+            /* Match number button height */
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--color-primary-accent);
+            background-color: var(--color-input-background);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: capitalize;
+            line-height: 1.2;
+        }
+
+        .sequence-btn:hover {
+            border-color: var(--color-secondary-accent);
+            background-color: var(--color-secondary-accent);
+            color: #3D405B;
+            transform: translateY(-2px);
+        }
+
+        /* ------------------- */
+        /* --- Session Display & Pose Cards --- */
+        /* ------------------- */
+        .session-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .pose-card,
+        .controls {
+            transition: background-color 0.3s ease;
+        }
+
+        .pose-card {
+            background-color: var(--color-card-background);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-medium);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s ease;
+            animation: popIn 0.5s ease-out forwards;
+        }
+
+        .pose-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+        }
+
+        html.dark-theme .pose-card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+        }
+
+        .card-image-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background-color: rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        html.dark-theme .card-image-container {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .pose-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            transition: opacity 0.5s ease-in-out;
+            cursor: pointer;
+        }
+
+        .pose-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 1rem 1.25rem;
+            text-align: center;
+            text-transform: capitalize;
+        }
+
+        .pose-name a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .pose-name a:hover {
+            color: var(--color-primary-accent);
+            text-decoration: underline;
+        }
+
+        /* ------------------- */
+        /* --- Image Overlay --- */
+        /* ------------------- */
+        .image-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .image-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .image-overlay img {
+            max-width: 90vw;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        /* ------------------- */
+        /* --- About Overlay --- */
+        /* ------------------- */
+        .about-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            padding: 1rem;
+        }
+
+        .about-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .about-content {
+            background-color: var(--color-card-background);
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            max-width: 600px;
+            width: 100%;
+            box-shadow: var(--shadow-medium);
+            cursor: default;
+            animation: popIn 0.4s ease-out;
+            color: var(--color-text-secondary);
+            line-height: 1.7;
+        }
+
+        .about-content p {
+            font-size: 1rem;
+        }
+
+        /* ------------------- */
+        /* --- General Animations --- */
+        /* ------------------- */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: scale(0.8);
+            }
+
+            to {
+                transform: scale(1);
+            }
+        }
+
+        /* ------------------- */
+        /* --- Footer --- */
+        /* ------------------- */
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-footer-border);
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            animation: fadeInUp 0.8s 0.4s ease-out backwards;
+            transition: border-color 0.3s ease;
+        }
+
+        footer p {
+            margin-bottom: 1rem;
+        }
+
+        footer a {
+            color: var(--color-primary-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        footer a:not(.about-button):hover {
+            text-decoration: underline;
+        }
+
+        /* ------------------- */
+        /* --- Responsive Design --- */
+        /* ------------------- */
+        @media (min-width: 600px) {
+            .container {
+                padding: 2rem 1.5rem;
+            }
+
+            .header {
+                padding-top: 0;
+            }
+
+            .controls {
+                justify-content: center;
+                align-items: center;
+            }
+
+            .control-group {
+                align-items: center;
+                gap: 1rem;
+                width: auto;
+            }
+
+            .pose-count-buttons {
+                max-width: 450px;
+            }
+
+            .sequence-btn {
+                flex-basis: auto;
+                /* Allow buttons to size to content */
+                flex-grow: 0;
+            }
+
+            .session-grid {
+                gap: 2rem;
+            }
+        }
+
+        @media (min-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+    <script>
+        // IIFE to set theme instantly, preventing FOUC
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark-theme');
+            }
+        })();
+    </script>
+</head>
+
+<body>
+    <div class="container">
+
+        <header>
+            <div class="theme-switch-container">
+                <span class="theme-label">🌓</span>
+                <label class="theme-switch" for="theme-toggle" title="Toggle theme">
+                    <input type="checkbox" id="theme-toggle" />
+                    <div class="slider">
+                        <span class="sun-icon"></span>
+                        <span class="moon-icon"></span>
+                    </div>
+                </label>
+            </div>
+            <h1> Serendipity<span class="logo-highlight"> Yoga 🧘</span></h1>
+            <button id="about-btn" class="about-button">About ℹ️</button>
+        </header>
+
+        <main>
+            <section class="controls">
+                <div class="control-group">
+                    <label>How many poses?</label>
+                    <div class="pose-count-buttons" id="pose-count-buttons">
+                        <button type="button" class="pose-count-btn" data-value="3">3</button>
+                        <button type="button" class="pose-count-btn" data-value="5">5</button>
+                        <button type="button" class="pose-count-btn" data-value="7">7</button>
+                        <button type="button" class="pose-count-btn" data-value="9">9</button>
+                        <button type="button" class="pose-count-btn" data-value="11">11</button>
+                        <button type="button" class="pose-count-btn" data-value="13">13</button>
+                        <button type="button" class="pose-count-btn" data-value="15">15</button>
+                        <button type="button" class="pose-count-btn" data-value="17">17</button>
+                        <button type="button" class="pose-count-btn" data-value="19">19</button>
+                        <button type="button" class="pose-count-btn" data-value="21">21</button>
+                        <button type="button" class="pose-count-btn" data-value="23">23</button>
+                        <button type="button" class="pose-count-btn" data-value="25">25</button>
+                    </div>
+                    <input type="hidden" id="pose-count-value" value="">
+                </div>
+                <div class="control-group">
+                    <label>Or explore a sequence</label>
+                    <div class="sequence-buttons" id="sequence-buttons">
+                    </div>
+                </div>
+            </section>
+
+            <section id="session-display" class="session-grid">
+            </section>
+        </main>
+
+        <footer>
+            <p>
+                🪷<br><br>
+                Created with love for well-being.<br>
+                Images have been sourced from publicly available content via Google and are used here strictly for educational and illustrative purposes only.<br>
+                No copyright infringement is intended, and there is no commercial use or profit derived from these materials.<br>
+                This tool will always be free, with no ads.<br>
+                <br>
+                See also <a href="https://rgjp.github.io/varia/mudra.html" target="_blank" rel="noopener noreferrer" class="footer-link">'Serendipity Mudra'</a>, the companion app to Serendipity Yoga.<br><br>                
+
+                🙏
+            
+            </p>
+            <a href="mailto:raffael.jomphe@gmail.com" class="about-button">Contact 📧</a>
+        </footer>
+    </div>
+
+    <div id="image-overlay" class="image-overlay">
+        <img id="overlay-img" src="" alt="Enlarged yoga pose">
+    </div>
+
+    <div id="about-overlay" class="about-overlay">
+        <div class="about-content">
+            <p>"Serendipity Yoga" is a minimalistic random yoga session generator designed to bring variety and
+                playfulness to your practice. Simply choose how many poses you'd like, breathe deeply, and enjoy
+                exploring the sequence.<br><br> This tool celebrates the spirit of serendipity—finding joy in the
+                unexpected—so the sequences may obviously sometimes be too challenging or not suited to your personal
+                needs or abilities. You can regenerate them as often as you like to discover new or better
+                combinations.<br><br> Think of it as an exploration tool, offering endless unique sessions drawn from a
+                growing library of nearly 200 yoga poses and a few sequences. Clicking a pose name will open a YouTube search for that pose, providing additional instructions. Enjoy your practice, stay curious, and
+                above all, remember to listen to your body.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ------------------- //
+            // --- THEME TOGGLE LOGIC --- //
+            // ------------------- //
+            const themeToggle = document.getElementById('theme-toggle');
+            const htmlElement = document.documentElement;
+
+            if (htmlElement.classList.contains('dark-theme')) {
+                themeToggle.checked = true;
+            }
+
+            themeToggle.addEventListener('change', () => {
+                if (themeToggle.checked) {
+                    htmlElement.classList.add('dark-theme');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    htmlElement.classList.remove('dark-theme');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // ------------------- //
+            // --- LOCAL IMAGE DATABASE --- //
+            // ------------------- //
+            const localImageFiles = [
+                'yogaposes/accomplished-pose-siddhasana.jpg',
+                'yogaposes/knee to chest apanasana.jpg',
+                'yogaposes/auspicious-pose-swastikasana.jpg',
+                'yogaposes/awkward-pose-utkatasana.jpg',
+                'yogaposes/baby-cobra-pose-ardha-bhujangasana.jpg',
+                'yogaposes/balancing-table-pose-dandayamana-bharmanasana.jpg',
+                'yogaposes/beam-pose.jpg',
+                'yogaposes/beginner-vinyasa-flow-sequence.jpg',
+                'yogaposes/bharadvajas-twist-bharadvajasana.jpg',
+                'yogaposes/boat-pose-navasana.jpg',
+                'yogaposes/bound-angle-pose-baddha-konasana.jpg',
+                'yogaposes/bow-pose-dhanurasana.jpg',
+                'yogaposes/bridge-pose-setu-bandhasana.jpg',
+                'yogaposes/butterfly-pose-baddha-konasana.jpg',
+                'yogaposes/camel-pose-ustrasana.jpg',
+                'yogaposes/cat-cow-pose-marjaryasana-bitilasana.jpg',
+                'yogaposes/cat-pulling-its-tail-pose.jpg',
+                'yogaposes/caterpillar-pose-paschimottanasana.jpg',
+                'yogaposes/chair-pose-utkatasana.jpg',
+                'yogaposes/childs-pose-balasana.jpg',
+                'yogaposes/cobra-pose-bhujangasana.jpg',
+                'yogaposes/corpse-pose-savasana.jpg',
+                'yogaposes/cow-face-pose-gomukhasana.jpg',
+                'yogaposes/cow-pose-bitilasana.jpg',
+                'yogaposes/cradle-the-baby-pose-hindolasana.jpg',
+                'yogaposes/crane-pose-bakasana.jpg',
+                'yogaposes/crescent-lunge-ashta-chandrasana.jpg',
+                'yogaposes/crocodile-pose-makarasana.jpg',
+                'yogaposes/crow-pose-bakasana.jpg',
+                'yogaposes/cycling-pose-pada-sanchalanasana.jpg',
+                'yogaposes/dancer-pose-natarajasana.jpg',
+                'yogaposes/dancing-shiva-pose-tandavasana.jpg',
+                'yogaposes/dangling-pose-uttanasana-variation.jpg',
+                'yogaposes/deer-pose.jpg',
+                'yogaposes/dolphin-plank-pose-makara-adho-mukha-svanasana.jpg',
+                'yogaposes/downward-facing-dog-adho-mukha-svanasana.jpg',
+                'yogaposes/dragon-pose.jpg',
+                'yogaposes/dragonfly-pose-upavistha-konasana-variation.jpg',
+                'yogaposes/eagle-pose-garudasana.jpg',
+                'yogaposes/easy-pose-sukhasana.jpg',
+                'yogaposes/extended-hand-to-big-toe-utthita-hasta-padangusthasana.jpg',
+                'yogaposes/extended-puppy-pose-uttana-shishosana.jpg',
+                'yogaposes/extended-side-angle-pose-utthita-parsvakonasana.jpg',
+                'yogaposes/extended-triangle-pose-utthita-trikonasana.jpg',
+                'yogaposes/fallen-triangle-pose-patita-tarasana.jpg',
+                'yogaposes/fire-log-pose-agnistambhasana.jpg',
+                'yogaposes/firefly-pose-tittibhasana.jpg',
+                'yogaposes/fish-pose-matsyasana.jpg',
+                'yogaposes/five-pointed-star-pose-utthita-tadasana.jpg',
+                'yogaposes/forearm-plank-pose.jpg',
+                'yogaposes/four-limbed-staff-pose-chaturanga-dandasana.jpg',
+                'yogaposes/full-locust-pose-poorna-salabhasana.jpg',
+                'yogaposes/garland-pose-malasana.jpg',
+                'yogaposes/gate-pose-parighasana.jpg',
+                'yogaposes/goddess-pose-utkata-konasana.jpg',
+                'yogaposes/gorilla-pose-padahastasana.jpg',
+                'yogaposes/half-boat-pose-ardha-navasana.jpg',
+                'yogaposes/half-butterfly-pose-ardha-baddha-konasana.jpg',
+                'yogaposes/half-frog-pose-ardha-bhekasana.jpg',
+                'yogaposes/half-lord-of-the-fishes-pose-ardha-matsyendrasana.jpg',
+                'yogaposes/half-moon-pose-ardha-chandrasana.jpg',
+                'yogaposes/half-splits-pose-ardha-hanumanasana.jpg',
+                'yogaposes/half-standing-forward-bend-ardha-uttanasana.jpg',
+                'yogaposes/hamstrings-stretch-sequence.jpg',
+                'yogaposes/happy-baby-pose-ananda-balasana.jpg',
+                'yogaposes/head-to-knee-forward-bend-janu-sirsasana.jpg',
+                'yogaposes/headstand-pose-sirsasana.jpg',
+                'yogaposes/hero-pose-virasana.jpg',
+                'yogaposes/heron-pose-krounchasana.jpg',
+                'yogaposes/high-lunge-pose-ashta-chandrasana.jpg',
+                'yogaposes/high-lunge-variation-ashta-chandrasana.jpg',
+                'yogaposes/horse-pose-vatayanasana.jpg',
+                'yogaposes/humble-warrior-pose-baddha-virabhadrasana.jpg',
+                'yogaposes/king-cobra-pose-raja-bhujangasana.jpg',
+                'yogaposes/legs-up-the-wall-pose-viparita-karani.jpg',
+                'yogaposes/lion-pose-simhasana.jpg',
+                'yogaposes/lizard-pose-utthan-pristhasana.jpg',
+                'yogaposes/locust-pose-salabhasana.jpg',
+                'yogaposes/low-lunge-pose-anjaneyasana.jpg',
+                'yogaposes/lunge-pose.jpg',
+                'yogaposes/marichis-pose-marichyasana.jpg',
+                'yogaposes/mermaid-pose-eka-pada-rajakapotasana-variation.jpg',
+                'yogaposes/monkey-pose-hanumanasana.jpg',
+                'yogaposes/moon-salutation-chandra-namaskar.jpg',
+                'yogaposes/mountain-pose-tadasana.jpg',
+                'yogaposes/neck-rolls-exercise.jpg',
+                'yogaposes/noose-pose-pasasana.jpg',
+                'yogaposes/one-legged-bridge-pose-eka-pada-setu-bandhasana.jpg',
+                'yogaposes/one-legged-king-pigeon-eka-pada-rajakapotasana.jpg',
+                'yogaposes/one-legged-mountain-pose-eka-pada-tadasana.jpg',
+                'yogaposes/one-legged-plank-pose-eka-pada-phalakasana.jpg',
+                'yogaposes/one-legged-seated-forward-bend-janu-sirsasana.jpg',
+                'yogaposes/one-legged-wheel-pose-eka-pada-urdhva-dhanurasana.jpg',
+                'yogaposes/palm-tree-pose-urdhva-hastasana.jpg',
+                'yogaposes/peacock-pose-mayurasana.jpg',
+                'yogaposes/pendant-pose-lolasana.jpg',
+                'yogaposes/pigeon-pose-eka-pada-rajakapotasana.jpg',
+                'yogaposes/plank-pose-phalakasana.jpg',
+                'yogaposes/plow-pose-halasana.jpg',
+                'yogaposes/prone-savasana-makarasana.jpg',
+                'yogaposes/pyramid-pose-parsvottanasana.jpg',
+                'yogaposes/rabbit-pose-sasangasana.jpg',
+                'yogaposes/reclined-bound-angle-pose-supta-baddha-konasana.jpg',
+                'yogaposes/reclined-spinal-twist-supta-matsyendrasana.jpg',
+                'yogaposes/reclining-hand-to-big-toe-pose-supta-padangusthasana.jpg',
+                'yogaposes/reclining-hero-pose-supta-virasana.jpg',
+                'yogaposes/reclining-staff-pose.jpg',
+                'yogaposes/reverse-table-top-pose-ardha-purvottanasana.jpg',
+                'yogaposes/reverse-warrior-pose-viparita-virabhadrasana.jpg',
+                'yogaposes/revolved-bound-angle-pose-parivrtta-baddha-konasana.jpg',
+                'yogaposes/revolved-chair-pose-parivrtta-utkatasana.jpg',
+                'yogaposes/revolved-half-moon-pose-parivrtta-ardha-chandrasana.jpg',
+                'yogaposes/revolved-hand-to-big-toe-pose-parivrtta-hasta-padangusthasana.jpg',
+                'yogaposes/revolved-head-to-knee-pose-parivrtta-janu-sirsasana.jpg',
+                'yogaposes/revolved-lunge-pose-parivrtta-parsvakonasana.jpg',
+                'yogaposes/revolved-triangle-pose-parivrtta-trikonasana.jpg',
+                'yogaposes/revolved-wide-legged-forward-bend-parivrtta-prasarita-padottanasana.jpg',
+                'yogaposes/saddle-pose-supta-virasana-variation.jpg',
+                'yogaposes/scale-pose-tolasana.jpg',
+                'yogaposes/seated-forward-bend-paschimottanasana.jpg',
+                'yogaposes/seated-spinal-twist-ardha-matsyendrasana.jpg',
+                'yogaposes/seated-twist-ardha-matsyendrasana.jpg',
+                'yogaposes/shoulder-pressing-pose-bhujapidasana.jpg',
+                'yogaposes/shoulder-rolls-exercise.jpg',
+                'yogaposes/shoulder-stand-pose-sarvangasana.jpg',
+                'yogaposes/side-bend-bananasana.jpg',
+                'yogaposes/side-lunge-pose-skandasana.jpg',
+                'yogaposes/side-plank-pose-vasisthasana.jpg',
+                'yogaposes/side-reclining-leg-lift-anantasana.jpg',
+                'yogaposes/simple-seated-twist.jpg',
+                'yogaposes/sleeping-swan-pose.jpg',
+                'yogaposes/sleeping-vishnu-pose-anantasana.jpg',
+                'yogaposes/snail-pose-halasana-variation.jpg',
+                'yogaposes/sphinx-pose-salamba-bhujangasana.jpg',
+                'yogaposes/staff-pose-dandasana.jpg',
+                'yogaposes/standing-big-toe-pose-padangusthasana.jpg',
+                'yogaposes/standing-forward-bend-uttanasana.jpg',
+                'yogaposes/standing-pigeon-pose-eka-pada-galavasana-prep.jpg',
+                'yogaposes/standing-side-bend-pose-ardha-kati-chakrasana.jpg',
+                'yogaposes/standing-split-pose-urdhva-prasarita-eka-padasana.jpg',
+                'yogaposes/standing-strong-sequence.jpg',
+                'yogaposes/sugarcane-pose-ardha-chandra-chapasana.jpg',
+                'yogaposes/sun-salutation-surya-namaskar.jpg',
+                'yogaposes/superman-pose-viparita-shalabhasana.jpg',
+                'yogaposes/swan-pose.jpg',
+                'yogaposes/table-top-pose-bharmanasana.jpg',
+                'yogaposes/thread-the-needle-pose-urdhva-mukha-pasasana.jpg',
+                'yogaposes/three-legged-downward-dog-eka-pada-adho-mukha-svanasana.jpg',
+                'yogaposes/three-legged-side-plank.jpg',
+                'yogaposes/thunderbolt-pose-vajrasana.jpg',
+                'yogaposes/tiger-pose-vyaghrasana.jpg',
+                'yogaposes/tiptoe-pose-prapadasana.jpg',
+                'yogaposes/tree-pose-vrksasana.jpg',
+                'yogaposes/triangle-pose-trikonasana.jpg',
+                'yogaposes/twisted-roots-pose.jpg',
+                'yogaposes/universal-spinal-twist-jathara-parivartanasana.jpg',
+                'yogaposes/upward-extended-feet-pose-urdhva-prasarita-padasana.jpg',
+                'yogaposes/upward-facing-dog-urdhva-mukha-svanasana.jpg',
+                'yogaposes/upward-facing-seated-forward-bend-urdhva-mukha-paschimottanasana.jpg',
+                'yogaposes/upward-plank-pose-purvottanasana.jpg',
+                'yogaposes/upward-salute-pose-urdhva-hastasana.jpg',
+                'yogaposes/vamadevas-pose-vamadevasana.jpg',
+                'yogaposes/Wake Up sequence.jpg',
+                'yogaposes/wall-squat-exercise.jpg',
+                'yogaposes/warrior-i-pose-virabhadrasana-i.jpg',
+                'yogaposes/warrior-ii-pose-virabhadrasana-ii.jpg',
+                'yogaposes/warrior-iii-pose-virabhadrasana-iii.jpg',
+                'yogaposes/wheel-pose-chakrasana.jpg',
+                'yogaposes/wide-angle-seated-forward-bend-upavistha-konasana.jpg',
+                'yogaposes/wide-legged-forward-bend-prasarita-padottanasana.jpg',
+                'yogaposes/wild-thing-pose-camatkarasana.jpg',
+                'yogaposes/wind-relieving-pose-pavanamuktasana.jpg',
+                'yogaposes/yin-yoga-sequence.jpg'
+            ];
+
+            // --- Separate poses from sequences --- //
+            const sequenceKeywords = ['sequence', 'flow', 'salutation'];
+            const poseFiles = [];
+            const sequenceFiles = [];
+            localImageFiles.forEach(file => {
+                if (sequenceKeywords.some(keyword => file.includes(keyword))) {
+                    sequenceFiles.push(file);
+                } else {
+                    poseFiles.push(file);
+                }
+            });
+
+            // ------------------- //
+            // --- DOM ELEMENTS --- //
+            // ------------------- //
+            const sessionDisplay = document.getElementById('session-display');
+            const poseCountButtonsContainer = document.getElementById('pose-count-buttons');
+            const sequenceButtonsContainer = document.getElementById('sequence-buttons');
+            const poseCountValueInput = document.getElementById('pose-count-value');
+            const imageOverlay = document.getElementById('image-overlay');
+            const overlayImg = document.getElementById('overlay-img');
+            const aboutBtn = document.getElementById('about-btn');
+            const aboutOverlay = document.getElementById('about-overlay');
+            const aboutContent = document.querySelector('.about-content');
+         
+
+            // ------------------- //
+            // --- EVENT LISTENERS --- //
+            // ------------------- //
+            poseCountButtonsContainer.addEventListener('click', (e) => {
+                if (e.target.classList.contains('pose-count-btn')) {
+                    const selectedValue = e.target.dataset.value;
+                    poseCountValueInput.value = selectedValue;
+                    poseCountButtonsContainer.querySelector('.pose-count-btn.active')?.classList.remove('active');
+                    e.target.classList.add('active');
+                    generateSession();
+                }
+            });
+
+            sequenceButtonsContainer.addEventListener('click', (e) => {
+                const targetButton = e.target.closest('.sequence-btn');
+                if (targetButton) {
+                    const imageSrc = targetButton.dataset.src;
+                    if (imageSrc) {
+                        overlayImg.src = imageSrc;
+                        overlayImg.alt = targetButton.textContent;
+                        imageOverlay.classList.add('show');
+                        document.body.classList.add('overlay-open');
+                    }
+                }
+            });
+
+            sessionDisplay.addEventListener('click', (e) => {
+                if (e.target.classList.contains('pose-image')) {
+                    overlayImg.src = e.target.src;
+                    overlayImg.alt = e.target.alt;
+                    imageOverlay.classList.add('show');
+                    document.body.classList.add('overlay-open');
+                }
+            });
+
+            imageOverlay.addEventListener('click', () => {
+                imageOverlay.classList.remove('show');
+                document.body.classList.remove('overlay-open');
+            });
+
+            aboutBtn.addEventListener('click', () => {
+                aboutOverlay.classList.add('show');
+                document.body.classList.add('overlay-open');
+            });
+
+            aboutOverlay.addEventListener('click', () => {
+                aboutOverlay.classList.remove('show');
+                document.body.classList.remove('overlay-open');
+            });
+
+            // ------------------- //
+            // --- CORE FUNCTIONS --- //
+            // ------------------- //
+            function populateSequenceButtons() {
+                sequenceFiles.forEach(filePath => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'sequence-btn';
+                    button.dataset.src = filePath;
+
+                    const fileName = filePath.split('/').pop();
+                    const sequenceName = fileName.substring(0, fileName.lastIndexOf('.')).replace(/-/g, ' ');
+
+                    button.textContent = sequenceName;
+                    sequenceButtonsContainer.appendChild(button);
+                });
+            }
+
+            function generateSession() {
+                const poseCount = parseInt(poseCountValueInput.value);
+                if (isNaN(poseCount) || poseCount <= 0) return;
+
+                sessionDisplay.innerHTML = '';
+
+                const shuffledFiles = [...poseFiles];
+                for (let i = shuffledFiles.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledFiles[i], shuffledFiles[j]] = [shuffledFiles[j], shuffledFiles[i]];
+                }
+
+                const selectedFiles = shuffledFiles.slice(0, poseCount);
+
+                selectedFiles.forEach((filePath, index) => {
+                    const card = createPoseCard(filePath, index);
+                    sessionDisplay.appendChild(card);
+                });
+            }
+
+            function createPoseCard(filePath, index) {
+                const card = document.createElement('article');
+                card.className = 'pose-card';
+                card.style.animationDelay = `${index * 100}ms`;
+
+                const fileName = filePath.split('/').pop();
+                const poseName = fileName.substring(0, fileName.lastIndexOf('.')).replace(/-/g, ' ');
+
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'card-image-container';
+
+                const img = document.createElement('img');
+                img.src = filePath;
+                img.alt = poseName;
+                img.loading = 'lazy';
+                img.className = 'pose-image';
+                imageContainer.appendChild(img);
+
+                const nameHeader = document.createElement('h3');
+                nameHeader.className = 'pose-name';
+
+                const link = document.createElement('a');
+                const searchQuery = encodeURIComponent(poseName + " yoga");
+                link.href = `https://www.youtube.com/results?search_query=${searchQuery}`;
+                link.target = '_blank';
+                link.rel = 'noopener noreferrer';
+                link.textContent = poseName;
+                link.title = `Search for "${poseName}" on YouTube`;
+
+                nameHeader.appendChild(link);
+                card.appendChild(imageContainer);
+                card.appendChild(nameHeader);
+
+                return card;
+            }
+
+            // ------------------- //
+            // --- INITIALIZATION --- //
+            // ------------------- //
+            populateSequenceButtons();
+
+          
+
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,2020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kirtan Songbook</title>
+    <meta name="description" content="Audio samples, chords and words to learn Kirtan chants.">
+    <meta name="keywords" content="Shambho, Kirtan, Chants, Chanting, Chant, Guitar, Chords, Words, Audio, Sample, Excerpt">
+    <style>
+        :root {
+             --bg-color: #1d2c1d;
+            --text-color: white;
+            --link-color: white;
+            --accent-color: white;
+            --font-family: Arial, sans-serif;
+            --header-font-family: arial, serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 1rem;
+            line-height: 1.5;
+        }
+
+        a {
+            color: var(--link-color);
+            text-decoration: underline;
+        }
+
+        h1, h2 {
+            font-family: var(--header-font-family);
+            font-weight: bold;
+            color: var(--text-color);
+            text-align: left;
+        }
+
+        .intro-section, .chants-list {
+            max-width: 800px;
+            margin: auto;
+        }
+
+        .intro-image {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .intro-message, .disclaimer-text {
+            font-family: var(--font-family);
+            margin-bottom: 1rem;
+        }
+
+     .random-chant-btn {
+position: fixed;
+top: 20px;
+left: 50%;
+transform: translateX(-50%);
+z-index: 1000;
+background-color: black;
+color: white;
+border: 2px solid white;
+padding: 1rem 2rem;
+font-size: 1rem;
+cursor: pointer;
+text-decoration: none;
+transition: background-color 0.3s ease;
+}
+
+       
+
+        .chant {
+            border-top: 2px solid white;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
+
+        .chant-title {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+
+        .audio-player {
+            margin: 1rem 0;
+        }
+
+        .audio-player audio {
+            width: 100%;
+        }
+
+        .chords {
+            font-family: monospace;
+            white-space: pre-wrap;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .lyrics p {
+            margin: 0.5rem 0;
+            font-size: 1.1rem;
+        }
+
+        .lyrics .translation {
+            font-style: italic;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        @media (min-width: 600px) {
+            body {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+  <center>
+    <header class="site-header">
+      <br><br><br>
+        <img class="intro-image" alt="kirtan" src="img.jpg">
+  
+        <p class="intro-message">
+            <span style="font-family: arial;">This page serves as a simple personal songbook of kirtan chants collected and composed over time. It's a resource for remembering the words and chords to various songs, including well-known classics. The accompanying audio samples are quick, one-take recordings intended as a memory aid, not good performances. They provide a brief overview of each chant's core structure to help recall the full spontaneous versions. Enjoy if it can be of any use to you as well.
+            </span>
+        </p>
+     
+    </header>
+</center> 
+    <main class="chants-list">
+        <form method="post" style="text-align: center;">
+<input class="random-chant-btn" name="B1" value="Random Chant" onclick="scrollToRandom()" type="button">
+
+        <article class="chant">
+            <h2 class="chant-title">Jai Shiva Shankara</h2>
+            <div class="audio-player">
+                <audio controls><source src="jaishivashankara.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm   Bb   C    Dm</pre>
+            <div class="lyrics">
+                <p>Om Namo, Om Namo, Namah Shivaya</p>
+                <p>Om Namo, Om Namo, Namo Namo</p>
+                <p>Jai Shiva Shankara, Namami Shankara</p>
+                <p>Jai Shiva Shankara, Namo Namo</p>
+                <p>Hara Hara Mahadeva, Jai Shiva Shambho</p>
+                <p>Hara Hara Mahadeva, Jai Shiva Shambho</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hari Om Shivay</h2>
+            <div class="audio-player">
+                <audio controls><source src="omshivay.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C    G    F    C
+C    C    G    C</pre>
+            <div class="lyrics">
+                <p>Om Shivay Hari Om Shivay</p>
+                <p>Om Shivay Hari Om Shivay</p>
+                <p>Om Shivay Hari Om Shivay</p>
+                <p>Hari Om Shivay Hari Om Shivay</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Parameshwara</h2>
+            <div class="audio-player">
+                <audio controls><source src="shankarakaruna.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am   G    F    Am
+Am   C    G    Am</pre>
+            <div class="lyrics">
+                <p>Shankara, Karunakara, Jagadeeshwara, Parameshwara</p>
+                <p>Shankara, Karunakara, Jagadeeshwara, Parameshwara</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Namah Shivaya</h2>
+            <div class="audio-player">
+                <audio controls><source src="omnamahshivayakd.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm   G    A    Bm
+D    A    G    Bm</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya, Om Namah Shivaya</p>
+                <p>Shivaya Namaha, Shivaya Namah Om</p>
+                <p>Shambho Shankara Namah Shivaya</p>
+                <p>Girijaa Shankara Namah Shivaya</p>
+                <p>Arunachala Shiva Namah Shivaya</p>
+                <p>Om Namah Shivaya, Om Namah Shivaya</p>
+                <p>Namah Shivaya Om</p>
+                <p>Arunachala Shiva</p>
+                <p>Om Namah Shivaya, Om Namah Shivaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Shivoham</h2>
+            <div class="audio-player">
+                <audio controls><source src="sachara.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm   C    Bb   C    Dm</pre>
+            <div class="lyrics">
+                <p>Sachara Chara Para Purna, Shivoham Shivoham</p>
+                <p>Nityananda Svarupa, Shivoham Shivoham</p>
+                <p>Anandoham, Anandoham</p>
+                <p>Anandoham, Anandoham</p>
+                <p>Om Namah Shivay</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Namah Shivaya II</h2>
+            <div class="audio-player">
+                <audio controls><source src="namahshivayakd.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm   A
+D    A    G    D    A</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya</p>
+                <p>Om Namah Shivaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Namah Shivaya III</h2>
+            <div class="audio-player">
+                <audio controls><source src="omnamahshivayamooji.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A    A    D    E
+A    D    E</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya, Om Namah Shivaya, Om Namah Shivaya</p>
+                <p>Shiva Om Namah</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Shiva Shambho</h2>
+            <div class="audio-player">
+                <audio controls><source src="classicshiva.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Classic version is just : Dm   C (or Dm   F   C)
+but there is an interesting variation using Bb which gives it more colour: 
+Dm   C
+Bb   F    Gm   Dm
+and finally a reggae style rythm can be played with good results.</pre>
+            <div class="lyrics">
+                <p>Jai Jai Shiva Shambho, Jai Shiva Shambho</p>
+                <p>Mahadeva Shambho, Mahadeva Shambho</p>
+                <p>Shiva Shiva Shiva Shambho, Shiva Shiva Shiva Shambho</p>
+                <p>Mahadeva Shambho, Mahadeva Shambho</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Shiva Shambho II</h2>
+            <div class="audio-player">
+                <audio controls><source src="shivashambhodn.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D    Em
+D    Em   G    D
+Em   G    D</pre>
+            <div class="lyrics">
+                <p>Shiva Shiva Shiva Shambho, Mahadeva Shambho</p>
+                <p>Mahadeva Shambho, Mahadeva Shambho</p>
+                <p>Bom Bom Hara Hara Mahadeva</p>
+                <p>Bom Bom Bolo Bolo Namah Shivaya</p>
+                <p>Namah Shivaya, Namah Shivaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Amritam</h2>
+            <div class="audio-player">
+                <audio controls><source src="amritam.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A    D    F#m    
+Bm    E    A
+Bm    E    C#m    D</pre>
+            <div class="lyrics">
+                <p>Tryambakam Yajamahe Sugandhim Pushti-vardanam</p>
+                <p>Urvarukam-iva Bandhanan Mrityor Mukshiya Ma Mritate</p>
+                <p>Om Namah Shivaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Jai Ganesha</h2>
+            <div class="audio-player">
+                <audio controls><source src="jaiganeshadn.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C#m   A    B    C#m
+F#m   B    C#m
+A    B    C#m</pre>
+            <div class="lyrics">
+                <p>Jai Ganesha, Jai Ganesha, Jai Ganesha Pahimam</p>
+                <p>Sri Ganesha, Sri Ganesha, Sri Ganesha Rakshamam</p>
+                <p>Gam Ganapataye Namo Namah</p>
+                <p>Gam Ganapataye Namo Namah</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Ganapati Om</h2>
+            <div class="audio-player">
+                <audio controls><source src="ganapatiom.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">*Played here with Capo 2 (in D/Bm) or as you prefer.
+F    G    Am   F
+Am   F    C    G or original progression is : Am   Dm   F    G</pre>
+            <div class="lyrics">
+                <p>Om Ganesha, Om Ganapati, Om</p>
+                <p>Ganapati Om, Ganapati Om, Ganapati Om, Ganapati Om</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sharanam Ganesha</h2>
+            <div class="audio-player">
+                <audio controls><source src="omhariom.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">*Played here with Capo 1 or as you prefer.
+C    Am   Bb   F    C
+Am     C
+Bb     Am</pre>
+            <div class="lyrics">
+                <p>Om Hari Om, Om Hari Om</p>
+                <p>Sharanam Ganesha, Sharanam Ganesha</p>
+                <p>Sharanam Ganesha, Sharanam Ganesha</p>
+                <p>Om Gam Ganapataye Namah</p>
+                <p>Om Gam Ganapataye Namah</p>
+                <p>Ganesha</p>
+                <p>Vakktratunda...Mahaakaaya</p>
+                <p>Surya-Koti....Sama-Prabha</p>
+                <p>Nir-Vighnam..Kurume Deva</p>
+                <p>Sarva- Kaaryeshu...Sarvadaa</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Radhe Shyam</h2>
+            <div class="audio-player">
+                <audio controls><source src="radheshyam.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">F#m    A     E     F#m
+D    A    E    F#m</pre>
+            <div class="lyrics">
+                <p>Radhe Radhe Shyam Bolo</p>
+                <p>Radhe Radhe Shyam</p>
+                <p>Radhe Radhe, Jai Sri Radhe</p>
+                <p>Radhe Radhe, Jai Sri Radhe</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Radhe Shyam II</h2>
+            <div class="audio-player">
+                <audio controls><source src="sriradhe.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">*Played here with Capo 1 or as you prefer.
+Em  D  Em
+G  D  Em</pre>
+            <div class="lyrics">
+                <p>Sri Radhe Radhe Radhe Shyam, Govinda Radhe</p>
+                <p>Govinda Radhe Radhe Shyam, Gopala Radhe Radhe Shyam</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Jai Radha Madhav</h2>
+            <div class="audio-player">
+                <audio controls><source src="radhamadhava.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm   F    C    Dm
+D  C  F  C  Dm</pre>
+            <div class="lyrics">
+                <p>Jai Radha Madhav, Jai Kunj Bihari</p>
+                <p>Jai Gopi Jana Vallabha, jai giridhar hari</p>
+                <p>Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare</p>
+                <p>Hare Rama, Hare Rama, Rama Rama, Hare Hare</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Govinda Jai Jai</h2>
+            <div class="audio-player">
+                <audio controls><source src="govindajaya.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C    F    C    G
+C    F    G</pre>
+            <div class="lyrics">
+                <p>Govinda Jai Jai, Gopala Jai Jai</p>
+                <p>Radha Ramana Hari Govinda Jai Jai</p>
+                <p>Govinda Jai Jai, Gopala Jai Jai</p>
+                <p>Radha Ramana Hari Om</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hare Krishna</h2>
+            <div class="audio-player">
+                <audio controls><source src="harekrishnakd.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am   C    F    C    G
+Am     F    C    G</pre>
+            <div class="lyrics">
+                <p>Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare</p>
+                <p>Hare Rama, Hare Rama, Rama Rama, Hare Hare</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hare Krishna II</h2>
+            <div class="audio-player">
+                <audio controls><source src="harekrishnakd2.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C    Am   F    G
+C    G    F    C    G
+C    F    G    C    F   G    C    F   G    Am    Am   F    G    C</pre>
+            <div class="lyrics">
+                <p>Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare</p>
+                <p>Hare Rama, Hare Rama, Rama Rama, Hare Hare</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hare Krishna III</h2>
+            <p>***Can't remember the melody for now :(</p>
+            <pre class="chords">Am – C – Dm – F – C</pre>
+            <div class="lyrics">
+                <p>Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare</p>
+                <p>Hare Rama, Hare Rama, Rama Rama, Hare Hare</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sri Krishna Govinda</h2>
+            <div class="audio-player">
+                <audio controls><source src="srikrishnagovinda.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C    G    F    C    G
+F    C    F    Am    F    G</pre>
+            <div class="lyrics">
+                <p>Sri Krishna Govinda Hare Murare,</p>
+                <p>Hey Naatha Narayana Vasudeva</p>
+                <p>Hey Naatha Narayana Vasudeva</p>
+                <p>Hey Naatha Narayana Vasudeva</p>
+                <p>Govinda Hare, Gopala Hare</p>
+                <p>Hey Prabhu Deena Dayaala Hare</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Namo Bhagavate Vasudevaya</h2>
+            <div class="audio-player">
+                <audio controls><source src="vasudevaya.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">F#m    D    E    F#m</pre>
+            <div class="lyrics">
+                <p>Om Namo Bhagavate Vasudevaya,</p>
+                <p>Om Namo Bhagavate Vasudevaya,</p>
+                <p>Vasudevaya, Vasudevaya, Vasudevaya Om</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Namo Bhagavate Vasudevaya II</h2>
+            <div class="audio-player">
+                <audio controls><source src="omnamoooo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A    E    A    E    D    A    E    B    E</pre>
+            <div class="lyrics">
+                <p>Om Namo Bhagavate Vasudevaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Satya Narayana</h2>
+            <div class="audio-player">
+                <audio controls><source src="narayanahariom.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C    G    Am    F    C    G
+C    Am    F    C    G</pre>
+            <div class="lyrics">
+                <p>Narayana Hari Om, Satya Narayana Hari Om</p>
+                <p>Govinda Krishna Hari Om, Gopala Krishna Hari Om</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Namo Narayana</h2>
+            <div class="audio-player">
+                <audio controls><source src="hariomnamo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm    A    A    Bb    A</pre>
+            <div class="lyrics">
+                <p>Hari Om Namo Narayana, Om Namo Narayana</p>
+                <p>Hari Om Namo Narayana, Hari Om Namo Narayana</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sita Ram</h2>
+            <div class="audio-player">
+                <audio controls><source src="sitarammooji.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am    C    G    F
+F    Am   C    G</pre>
+            <div class="lyrics">
+                <p>Sita Ram Jai Jai Ram</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sita Ram II</h2>
+            <div class="audio-player">
+                <audio controls><source src="sitaramkd.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A    D    A    E    A
+E    D    E    A</pre>
+            <div class="lyrics">
+                <p>Sita Ram, Sita Ram, Sita Ram Jai, Sita Ram</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sri Ram II</h2>
+            <div class="audio-player">
+                <audio controls><source src="omsriram.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 3 (Gm) 
+Em    Am    D    G
+Am    G
+Am    C    G</pre>
+            <div class="lyrics">
+                <p>Om Sri Ram Jai Ram Jai Jai Ram - Hari Om</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sri Ram III</h2>
+            <div class="audio-player">
+                <audio controls><source src="sitaramooji2.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm    G    D    A</pre>
+            <div class="lyrics">
+                <p>Om Sri Ram Jai Ram Jai Jai Ram</p>
+                <p>Sita Ram</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Bhajelo-ji hanuman</h2>
+            <div class="audio-player">
+                <audio controls><source src="bhajelojikd.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C    G    F    F
+F    G    Am/Em    F</pre>
+            <div class="lyrics">
+                <p>Bhajelo ji hanuman, Bhajelo ji hanuman</p>
+                <p>Sri Ram Jai Ram Jai Jai Ram</p>
+                <p>Sri Ram Jai Ram Jai Jai Ram</p>
+                <p>Sita Ram, Sita Ram</p>
+                <p>Sita Ram, Sita Ram</p>
+                <p>Hare Rama Rama Ram Sharanam Bhava Rama Ram</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sri Ram (Heart as wide as the world)</h2>
+            <div class="audio-player">
+                <audio controls><source src="heartaswide.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">F#m   C#m    F#m   C#m      A    E    B
+F#m   C#m    F#m   C#m      A    E    B
+D    A    E    F#m   D    A    E
+D    A    E    F#m    A    E    B
+Gamme : Fa# mineur</pre>
+            <div class="lyrics">
+                <p>Holding me in your arms’ vast embrace</p>
+                <p>Only love shining in endless space</p>
+                <p>All I need is to be with you</p>
+                <p>All my prayers have been heard</p>
+                <p>All I want is to rest inside</p>
+                <p>Your heart as wide as the world</p>
+                <p>I looked away</p>
+                <p>Your beauty too much to bear</p>
+                <p>Where could I run?</p>
+                <p>Your eyes,</p>
+                <p>I found them everywhere</p>
+                <p>All I want is to sing to you</p>
+                <p>The song that no one has heard</p>
+                <p>All my life has lead me to</p>
+                <p>A heart as wide as the world</p>
+                <p>Sri Ram Jai Ram Jai Jai Ram</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Ong Namo Gurudev Namo</h2>
+            <div class="audio-player">
+                <audio controls><source src="gurudevnamo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 3 :
+A   F#m   Dmaj7 A
+A    D    A    E</pre>
+            <div class="lyrics">
+                <p>Ong Namo Gurudev Namo</p>
+                <p>Gurudev Gurudev Namo, Gurudev Gurudev Namo</p>
+                <p class="translation">The Adi Mantra Ong is "Infinite Creative energy in manifestation and activity". ("Om" or Aum is God absolute and unmanifested), Namo is "reverent greetings' implying humility, Guru means "teacher or wisdom", Dev means "Divine or of God" and Namo reaffirms humility and reverence. In all it means, "I call upon Divine Wisdom".</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Adi Shakti</h2>
+            <div class="audio-player">
+                <audio controls><source src="adishakti.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A - G - Bm - C#m - D
+E - Bm - F#m - E - Abm - A - E - Bm - F#m - E - E7</pre>
+            <div class="lyrics">
+                <p>Adi Shakti, Adi Shakti, Adi Shakti, Namo Namo</p>
+                <p>Sarab Shakti, Sarab Shakti, Sarab Shakti, Namo Namo</p>
+                <p>Prithum Bhagawati, Prithum Bhagawati,</p>
+                <p>Prithum Bhagawati, Namo Namo</p>
+                <p>Kundalini Mata Shakti, Mata Shakti, Namo Namo</p>
+                <p class="translation">The First Shakti Mantra tunes into the frequency of the Divine Mother, and to primal protective, generating energy. Chanting it eliminates fears and fulfils desires. Adi Shakti means the "Primal Power," Sarab Shakti means "All Power", and Prithum Bhagawati means "which creates through God."</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Har Har Ram Das Guru</h2>
+            <div class="audio-player">
+                <audio controls><source src="ramdas.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am - D - Am
+Em - Am
+Am - D - Am
+Am   D  Am
+Am   Em   Am
+Am   D  Am
+...
+F - G - Am
+F   G   Am
+F   Dm    E</pre>
+            <div class="lyrics">
+                <p>Har Har Ram Das Guru Hai</p>
+                <p>Ram Das Guru Hai, Har Har Ram Das Guru Hai</p>
+                <p>Ram Das Guru Hai</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Namah Shivaya (Lila)</h2>
+            <div class="audio-player">
+                <audio controls><source src="onslila.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A - D
+A - E - D</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Soham Shivoham (Suryachandra)</h2>
+            <div class="audio-player">
+                <audio controls><source src="soham.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm - A - G - A - Bm
+Em - Bm - Em - Bm - A</pre>
+            <div class="lyrics">
+                <p>Soham Shivoham, Soham Shivoham</p>
+                <p>Shivoham, Shivoham, Shivoham, Shivoham</p>
+                <p>Namah Shivay</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hare Krishna (lila)</h2>
+            <div class="audio-player">
+                <audio controls><source src="harekrishnalila.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D- A - Bm - G</pre>
+            <div class="lyrics">
+                <p>Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare</p>
+                <p>Hare Rama, Hare Rama, Rama Rama, Hare Hare</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Namo Bhagavate (Ambika)</h2>
+            <div class="audio-player">
+                <audio controls><source src="ambika.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1 : A C#m D E
+F#m  A  D</pre>
+            <div class="lyrics">
+                <p>Om Namo Bhagavate Vasudevaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Namo Narayani (maitraya)</h2>
+            <div class="audio-player">
+                <audio controls><source src="namonarayani.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm - G - A
+D- Em - F#m -G</pre>
+            <div class="lyrics">
+                <p>Namo Narayani Jai Ma</p>
+                <p>Jai Ma, Jai Ma, Jai Ma, Jai Ma</p>
+                <p>Om Aim Hreem Kleem (3x) Chamundaye Viche Namaha</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ong Namo Gurudev Namo (Mirabai)</h2>
+            <div class="audio-player">
+                <audio controls><source src="ongnamomira.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm - Bb - C , Dm - C - Bb - Gm - F -Dm</pre>
+            <div class="lyrics">
+                <p>Ong Namo Gurudev Namo</p>
+                <p>Gurudev Namo, Gurudeva</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Radhe Shyam (kirtan soul revival)</h2>
+            <div class="audio-player">
+                <audio controls><source src="radheksr.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2
+F#m  E  A  D  A E
+F#m  E  A  D  E
+D  A  Bm  AD  A  Bm E</pre>
+            <div class="lyrics">
+                <p>Radhe Radhe Shyam, Govinda</p>
+                <p>Radhe Radhe Shyam, Gopala</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hare Krishna (kirtan soul revival)</h2>
+            <div class="audio-player">
+                <audio controls><source src="harekrishnaksr.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C - Am - G - C || F - G || C - Am - G - F ||</pre>
+            <div class="lyrics">
+                <p>Hare Krishna Hare Krishna, Krishna Krishna Hare Hare</p>
+                <p>Hare Rama Hare Rama, Rama Rama Hare Hare</p>
+                <p>Hare Krishna......Hare Rama | Hare Krishna......Hare Rama</p>
+                <p>Radhe, Radhe Govinda, Radhe Govinda, Radhe Gopala</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jai Shiva Shankara (satyaa pari)</h2>
+            <div class="audio-player">
+                <audio controls><source src="jaishivasp.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm - A - E - D - A Bm || Bm - A - E - Bm</pre>
+            <div class="lyrics">
+                <p>Jai Shiva Shankara, Jai Shiva Shankara</p>
+                <p>Jai Shiva Shankarâ Hari Om</p>
+                <p>He Shiva Shankara, Parameshwara</p>
+                <p>He Shiva Shankara™ Hari Om -- Om Namah Shivaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hari Hari Om Namo (satyaa pari)</h2>
+            <div class="audio-player">
+                <audio controls><source src="harihariomnamo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C1 : Bm-F#m-A-G-A-Bm</pre>
+            <div class="lyrics">
+                <p>Hari Hari Om Namo, Hari Hari Om Namo</p>
+                <p>Hari Hari Om Namo, Hari Hari Hari</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hare Krishna (satyaa pari)</h2>
+            <div class="audio-player">
+                <audio controls><source src="harekrishnasp.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm - C - Dm - C - F - C - Dm - Gamme : Rï¿½ mineur</pre>
+            <div class="lyrics">
+                <p>Hare Krishna Hare Krishna, Krishna Krishna Hare Hare</p>
+                <p>Hare Rama Hare Rama, Rama Rama Hare Hare</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Gopala Govinda Rama (Mantra Room)</h2>
+            <div class="audio-player">
+                <audio controls><source src="mohana.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Em - Bm - C - G</pre>
+            <div class="lyrics">
+                <p>Gopala Govinda Rama Madana Mohana</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jaya Bhagavan (Kevin james caroll)</h2>
+            <div class="audio-player">
+                <audio controls><source src="mayweall.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C - F || F - Dm - C, F - Am - G</pre>
+            <div class="lyrics">
+                <p>May we all awaken to the One, as the moon reflects the sun</p>
+                <p>May we all awaken to the One, beyond the veils</p>
+                <p>Jaya Bhagavan</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ganesha Sharanam (KSR)</h2>
+            <div class="audio-player">
+                <audio controls><source src="ganeshasharanam.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">E Abm C#m A || E Abm C#m B || B A E</pre>
+            <div class="lyrics">
+                <p>Ganesha Sharanam, Sharanam Ganesha</p>
+                <p>Gam Gam Ganapati Sharanam</p>
+                <p>Ganesha Sharanam.... Jai Ganesha</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jaya Bhagavan Shivaya</h2>
+            <div class="audio-player">
+                <audio controls><source src="mooji.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am - F - C - G</pre>
+            <div class="lyrics">
+                <p>Jaya Bhagavan Shivaya, Jaya Bhagavan Sri Mooji ji</p>
+                <p>Jaya Bhagavan Shivaya, Jaya Bhagavan</p>
+                <p>Om Namo Shivaya Gurudev Namo</p>
+                <p>Sri Mooji Baba Ki Jai</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jaya Shiva Shankara</h2>
+            <div class="audio-player">
+                <audio controls><source src="bombomharihari.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C2 : Bm - A || G - A - Bm</pre>
+            <div class="lyrics">
+                <p>Jaya Shiva Shankara Bom Bom Hari Hari</p>
+                <p>Hari Hari Hari Hari Bom Bom Hari Hari</p>
+                <p>Jai Shiva Shankara, Jai Shiva Shankara,</p>
+                <p>Jai Shiva Shankara Om</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Parameshwari Jaya Durga</h2>
+            <div class="audio-player">
+                <audio controls><source src="parameshwari.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C - G - F - G - C</pre>
+            <div class="lyrics">
+                <p>Parameshwari Jaya Durga</p>
+                <p>Jagadeeshwari Jaya Amba</p>
+                <p>Jai Jai Ma, Jai Jai Ma</p>
+                <p>Jai Jai Ma, Jai Jai Ma</p>
+                <p>Jaya Durga Jaya Durga Mahamaya Jagadamba</p>
+                <p>Jaya Durga Jaya Durga Mahamaya Jagadamba</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ganesha Puja (chandra lacombe)</h2>
+            <div class="audio-player">
+                <audio controls><source src="ganeshapuja.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm - Am - Bb - C - Dm || Dm - C - F- F - C</pre>
+            <div class="lyrics">
+                <p>Om parvati pataye</p>
+                <p>Hara hara hara mahadeva</p>
+                <p>Gajana-nam buta</p>
+                <p>2x</p>
+                <p>Ganadi sevatam</p>
+                <p>Kapitha jambu</p>
+                <p>Palacharu bhakshanam</p>
+                <p>2x</p>
+                <p>Umasota shoka</p>
+                <p>Vinasha karakam</p>
+                <p>Namami vigneshuara</p>
+                <p>Pada pankajam</p>
+                <p>2x</p>
+                <p>Om gam ganapathaye namah</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Gate Gate</h2>
+            <div class="audio-player">
+                <audio controls><source src="gate.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm - C - F - Dm || F- C- Am - Dm Instru : Bb - F - C Dm</pre>
+            <div class="lyrics">
+                <p>Gate Gate Paragate Parasamgate Bodhi Soha</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hara Hara Bole</h2>
+            <div class="audio-player">
+                <audio controls><source src="harabole.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm -C -Am - Gm - F - Am - Dm
+Dm -Gm Dm</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya Om Namah Shivaya Hara Hara Bole Namah Shivaya</p>
+                <p>Rameshwaray Shiva Rameshwaray Hara Hara Bole Namah Shivaya</p>
+                <p>Ganga Dhara Shiva Ganga Dhara Hara Hara Bole Namah Shivaya</p>
+                <p>Jatadhara Shiva Jatadhara Hara Hara Bole Namah Shivaya</p>
+                <p>Someshwara Shiva Someshwara Hara Hara Bole Namah Shivaya</p>
+                <p>Vishweshvara Shiva Vishweshvara Hara Hara Bole Namah Shivaya</p>
+                <p>Lingeshvara Shiva Lingeshvara Hara Hara Bole Namah Shivaya</p>
+                <p>Parameshwaraya Shiva Parameshwaraya Hara Hara Bole Namah Shivaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Sarva Mangala tina malia</h2>
+            <div class="audio-player">
+                <audio controls><source src="sarva.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm - Gm - Gm - C - A - Dm
+Dm- Gm - Dm - C - Dm - Gm - A - Dm
+Dm - Bb - C || Dm - Gm - A</pre>
+            <div class="lyrics">
+                <p>Sar-va Man-gala Mangalye</p>
+                <p>Shi-ve Sarvar-tha Sadhike</p>
+                <p>Sharanye --Tryambake Gau--ri</p>
+                <p>Narayani --Namostute</p>
+                <p>Om Namah Shivaya! (Hari) Om Namah Shiva! -- Shivaya Shivaya Shivaya!</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ang Sung Wahe Guru</h2>
+            <div class="audio-player">
+                <audio controls><source src="makelove.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C1 ou 2 : E/Abm - A || E - A</pre>
+            <div class="lyrics">
+                <p>Even After All this time The Sun never says to the Earth,"You owe me."</p>
+                <p>Look What happens With a love like that, It lights the whole sky.</p>
+                <p>Make your Love, like the sun</p>
+                <p>Shine down on everyone</p>
+                <p>-Ang Sung Wahe Guru-</p>
+                <p>Shine On Benevolant Sun</p>
+                <p>Shine down upon the Broken and make it One (We™re all One)</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Shiva! (Edo & Jo)</h2>
+            <div class="audio-player">
+                <audio controls><source src="shiva!.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C1 : C - F - G</pre>
+            <div class="lyrics">
+                <p>Shiva! Om Namah Shivaya</p>
+                <p>Namah Namah Namah Namah Namah, Namah Shivaya</p>
+                <p>(Shiva Shambho Shankara, Jagadeeshwara // Parameshwara</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Govinda Jaya Jaya (Lakshmi ananda)</h2>
+            <div class="audio-player">
+                <audio controls><source src="govindalak.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C2 : Am - G</pre>
+            <div class="lyrics">
+                <p>Gonvinda Jaya Jaya, Gopala Jaya Jaya</p>
+                <p>Radha Ramana Hari Govinda Jaya Jaya</p>
+                <p>Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare</p>
+                <p>Hare Rama Hare Rama, Rama Rama, Hare Hare</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Namo Narayani Om (Edo &Jo)</h2>
+            <div class="audio-player">
+                <audio controls><source src="omnamo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">G - C || G - Em - C - G || G- C</pre>
+            <div class="lyrics">
+                <p>Om Namo Narayani Om</p>
+                <p>Narayani, Narayani, Narayani (Om)</p>
+                <p>Devi Mangalam - Devi Sharanam</p>
+                <p>Devi Mangalam - Devi Sharanam</p>
+                <p>Narayani, Om</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jagatambe (chant for amma)</h2>
+            <div class="audio-player">
+                <audio controls><source src="amma.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm--F--C--F--Dm || Dm--C--F--C--Dm</pre>
+            <div class="lyrics">
+                <p>Jai Ma, Jagatambe, Jagatambe Jai Jai Ma (2x)</p>
+                <p>Jai Jai Ma Jagatambe Ma (4x rapide)</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Sat Narayan - Sirgun Kaur</h2>
+            <div class="audio-player">
+                <audio controls><source src="satnarayan.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C--G--Am--G || F--G--Am--G - ou Bb (A avec Capo)</pre>
+            <div class="lyrics">
+                <p>Sat Narayan Wahe Guru Hari Narayan Sat Nam</p>
+                <p>Hare Ram Hare Ram Hare Krishna (Krishna Krishna Om)</p>
+                <p>Hare Ram Hare Ram Hare Krishna</p>
+                <p>Hare Rama Hare Rama Dhutam</p>
+                <p>Hare Rama Hare Rama Dhutam</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Purnamadah (keshavacharya das)</h2>
+            <div class="audio-player">
+                <audio controls><source src="purna1.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm D A Bm | Bm D D A | A A Bm</pre>
+            <div class="lyrics">
+                <p>Om Purnamadah Purnamidam</p>
+                <p>Purnat Purna Mudachyate</p>
+                <p>Purnasya Purnamadaya</p>
+                <p>Purnameva Vashishyate</p>
+                <p>Anandoham Shivoham</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Mata Om Kali</h2>
+            <div class="audio-player">
+                <audio controls><source src="ommata.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm A Bm | Bm A Em Bm A G A Bm | Em Bm</pre>
+            <div class="lyrics">
+                <p>Om Mata Om Kali Durga Devi Namo Namaha</p>
+                <p>Shakti Kundalini Jagadambe Mata Shakti Kundalini Jagadambe Mata</p>
+                <p>He Ma Durga He Ma Durgaya</p>
+                <p>Kali Durge Namah Shivaya Kali Durge Namah Shivaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hanuman Bolo</h2>
+            <div class="audio-player">
+                <audio controls><source src="hanumanbolo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C1 : E-B-C#m-A</pre>
+            <div class="lyrics">
+                <p>Rama Bolo, Rama Bolo, Bolo Bolo Ram</p>
+                <p>Sita Bolo, Sita Bolo, Bolo Sita Ram</p>
+                <p>Hanuman Bolo Hanuman Bolo Bolo Hanuman!</p>
+                <p>Jai Jai Hanuman, Jai Jai Hanuman, Jai Jai Hanuman!</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Tara Mantra</h2>
+            <div class="audio-player">
+                <audio controls><source src="tare.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C2 Am
+Om Tare Tuttare Ture Soha
+Em
+Om Tare Tuttare Ture Soha
+Am Em Dm
+Om Tare Tuttare Ture Soha
+F Em Am
+Om Tare Tuttare Ture Soha</pre>
+            <div class="lyrics">
+                <p>Om Tare Tuttare Ture Soha</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Asato Ma (Karen St-Laurent)</h2>
+            <div class="audio-player">
+                <audio controls><source src="asatoka.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C3  Am, C ,G Am C G | F C G</pre>
+            <div class="lyrics">
+                <p>Om Asatoma Sat Gamaya</p>
+                <p>Tamaso Ma Jyotir Gamaya</p>
+                <p>Mrityor Ma Amritam Gamaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Tara Mantra Mixo</h2>
+            <div class="audio-player">
+                <audio controls><source src="taramixo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D C G /Em  D
+Om Tare Tuttare Ture Swaha
+Am C Em/G D
+Om Tare Tuttare Ture Swaha</pre>
+            <div class="lyrics">
+                <p>Om Tare Tuttare Ture Swaha</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Medicine Buddha</h2>
+            <div class="audio-player">
+                <audio controls><source src="medicine1.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C G Am
+Teyatha Om Bekanze Bekanze Maha Bekanze
+Dm F G
+Radza Samudgate Soha</pre>
+            <div class="lyrics">
+                <p>Om Mani Peme Hum</p>
+                <p>Om Mani Peme Hum</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Sat Narayana - (Guru Ganesha & Snatam Kaur)</h2>
+            <div class="audio-player">
+                <audio controls><source src="satnara.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C3 A   G   Em   A
+G   Bm   A</pre>
+            <div class="lyrics">
+                <p>Sat Narayana Wahe Guru Hari Narayana Sat Nam</p>
+                <p>Hare Ram Hare Ram Hare Krishna (Krishna Krishna Om)</p>
+                <p>Hare Ram Hare Ram Hare Krishna</p>
+                <p>Hare Rama Hare Rama Dhutam</p>
+                <p>Hare Rama Hare Rama Dhutam</p>
+                <p>Wahe Guru</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Ma Durga (Shantala - Live)</h2>
+            <div class="audio-player">
+                <audio controls><source src="omdum.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C2 Am G Am
+Am G C G
+Am G Dm Am</pre>
+            <div class="lyrics">
+                <p>Om Dum Durgayei Namaha x4</p>
+                <p>Om Mata Om Kali Om Durga</p>
+                <p>He Durga Ma Durga</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Govinda Narayana (Kristin Luna Ray)</h2>
+            <div class="audio-player">
+                <audio controls><source src="govindana.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C2: Am - G
+Am G Am
+Govinda Narayana, Gopala Narayana
+Am G Am
+Govinda Gopala Narayana
+Govinda Gopala Narayana
+C G Em Am
+Hari Govinda Gopala Narayana</pre>
+            <div class="lyrics">
+                <p>Govinda Narayana, Gopala Narayana</p>
+                <p>Govinda Gopala Narayana</p>
+                <p>Govinda Gopala Narayana</p>
+                <p>Hari Govinda Gopala Narayana</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Shiva Parvati (Jaya Lakshmi , Ananda)</h2>
+            <div class="audio-player">
+                <audio controls><source src="umaparvati.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">E A
+Om Namah Shivaya Om Namah Shivaya
+E A
+Uma Parvati Namo Namah
+Bsus2 - Asus2 - E</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya Om Namah Shivaya</p>
+                <p>Uma Parvati Namo Namah</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Omkaraya (Karen St-Laurent)</h2>
+            <div class="audio-player">
+                <audio controls><source src="omkaraya.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2 (F#): E
+Om, Omkaraya Om, Omkaraya
+A E A E
+Om Shanti Om - Om Shanti Om</pre>
+            <div class="lyrics">
+                <p>Om, Omkaraya Om, Omkaraya</p>
+                <p>Om Shanti Om - Om Shanti Om</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jay Ambe (Karen-St-Laurent)</h2>
+            <div class="audio-player">
+                <audio controls><source src="jayambe.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1 : D A Bm G D A Bm G</pre>
+            <div class="lyrics">
+                <p>Jay Ambe, Jagatambe Mata Bhavani Jay Ambe</p>
+                <p>D....</p>
+                <p>Sri Ma, Jai Ma</p>
+                <p>Sri Ma, Jai Ambe</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Mani Pedme Hung (Samanvaya Kirtan)</h2>
+            <div class="audio-player">
+                <audio controls><source src="mani.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Mixolydian capo 2,3 D Am C Em D</pre>
+            <div class="lyrics">
+                <p>Om Mani Pedme Hung</p>
+                <p>Om Mani....Pedme Hung</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Para Gate (Istvan Sky)</h2>
+            <div class="audio-player">
+                <audio controls><source src="gategate.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2 (D)
+C G Am
+Gate Gate Gate Para Gate
+F Dm G
+Parasamgate Bodhi Soha</pre>
+            <div class="lyrics">
+                <p>Gate Gate Gate Para Gate</p>
+                <p>Parasamgate Bodhi Soha</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Wendeyaho (Sudha)</h2>
+            <div class="audio-player">
+                <audio controls><source src="wendeyaho.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D G D Bm G
+We n' de ya ho, We n' de ya ho,
+We n' de ya, We n' de ya Ho ho ho
+D - D - Bm  Bm
+We n' de ya ho, We n' de ya</pre>
+            <div class="lyrics">
+                <p>We n' de ya ho, We n' de ya ho,</p>
+                <p>We n' de ya, We n' de ya Ho ho ho</p>
+                <p>We n' de ya ho, We n' de ya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ad Guray Nameh</h2>
+            <div class="audio-player">
+                <audio controls><source src="ad.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C1: C- G  Dm  F</pre>
+            <div class="lyrics">
+                <p>Aad Guray Nameh</p>
+                <p>Jugaad Guray Nameh</p>
+                <p>Sat Guray Nameh</p>
+                <p>Siri Guroo Dayvay Nameh</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Govinda Damodara Madhaveti (Like a River - Jahnavi Harrison)</h2>
+            <div class="audio-player">
+                <audio controls><source src="govindadamo.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C  G   Am F  C/E G</pre>
+            <div class="lyrics">
+                <p>govinda damodara madhaveti</p>
+                <p>he krsna he yadhava he sakheti</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Namo Bhagavate Vasudevaya</h2>
+            <div class="audio-player">
+                <audio controls><source src="bhag.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am C G D</pre>
+            <div class="lyrics">
+                <p>Om Namo Bhagavate Vasudevaya</p>
+                <p>Vasudevaya</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Gonvinda Jaya Jaya (Karen)</h2>
+            <div class="audio-player">
+                <audio controls><source src="govkar.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C4 Am   F  G</pre>
+            <div class="lyrics">
+                <p>Govinda Jaya Jaya Gopala Jaya Jaya</p>
+                <p>Radha Ramana Hari Govinda Jaya Jaya</p>
+                <p>Hari Om Hari Om Hari Om (tat sat)</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">He Krishna Govinda</h2>
+            <div class="audio-player">
+                <audio controls><source src="hekrishna.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C3 A  D   E || D   F#m D E</pre>
+            <div class="lyrics">
+                <p>He Krishna Govinda</p>
+                <p>Mukunda Hare, Gopala Hare</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">He Maha Lakshmi David Newman</h2>
+            <div class="audio-player">
+                <audio controls><source src="hemaha.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D G ... G D
+G   D   A  Bm  G  D  A   D
+He Maha Lakshmi
+He Saraswati
+He Mata Kali
+Jagadambe Jay Jay Ma
+Jagadambe Jay Jay Ma
+He Ma Durga, He Ma Durga
+He Ma Durga Jagadambe Jay Jay Ma
+Jay Jay Ma Ma Ma, Jay Jay Ma Ma Ma</pre>
+            <div class="lyrics">
+                <p>He Maha Lakshmi</p>
+                <p>He Saraswati</p>
+                <p>He Mata Kali</p>
+                <p>Jagadambe Jay Jay Ma</p>
+                <p>Jagadambe Jay Jay Ma</p>
+                <p>He Ma Durga, He Ma Durga</p>
+                <p>He Ma Durga Jagadambe Jay Jay Ma</p>
+                <p>Jay Jay Ma Ma Ma, Jay Jay Ma Ma Ma</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om namo bhagavate (teardrop massive attack)</h2>
+            <div class="audio-player">
+                <audio controls><source src="teardrop.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A - G - D II : F - G   A</pre>
+            <div class="lyrics">
+                <p>Om Namo Bhagavate, Vasudevaya</p>
+                <p>Om, Hari Om</p>
+                <p>Hari Om, Hari Om , Hari Om</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Asato Ma</h2>
+            <div class="audio-player">
+                <audio controls><source src="asatodev.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D  Bb- D- Bb  D- Bb- D- Bb- C | F Gm Am Bb</pre>
+            <div class="lyrics">
+                <p>Asato Ma Sat Gamaya</p>
+                <p>Tamaso Ma Jyotir Gamaya</p>
+                <p>Mrityor Ma Amritam Gamaya</p>
+                <p>Mrityor Ma Amritam Gamaya</p>
+                <p>Om Shanti Om Shanti Om Shanti Om</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ide Were Were Nita Ochun</h2>
+            <div class="audio-player">
+                <audio controls><source src="idewere.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 3 : Em - D -Em
+Em - D -Em -C -D-G-C-D-B</pre>
+            <div class="lyrics">
+                <p>Ide were were nita ochun</p>
+                <p>Ide were were</p>
+                <p>Ide were were nita ochun</p>
+                <p>Ide were were nita ya</p>
+                <p>Ocha kiniba nita ochun</p>
+                <p>Cheke cheke cheke</p>
+                <p>Nita ya</p>
+                <p>Ide were were</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jaya Ganesha (sundaram mantras for silence)</h2>
+            <div class="audio-player">
+                <audio controls><source src="jgs.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am - G - Em</pre>
+            <div class="lyrics">
+                <p>Jaaaaa---ya…Ganesha</p>
+                <p>Namah Om, Namah Om</p>
+                <p>Om Gam Ganapataye Namaaaah Om</p>
+                <p>Om Gam Ganapataye Namaaaah Om</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hare Ram</h2>
+            <div class="audio-player">
+                <audio controls><source src="hrkd.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C1: A - E - F#m- D</pre>
+            <div class="lyrics">
+                <p>Sri Ram Jai Ram Jai Jai Ram</p>
+                <p>Sri Ram Jai Ram Jai Jai Ram</p>
+                <p>Hare Rama Rama Ram</p>
+                <p>Sharanam Bhava Rama Ram</p>
+                <p>Hare Rama Rama Ram</p>
+                <p>Raghunandana Rama Ram</p>
+                <p>Sita Rama, Sita Ram, Sita Ram Jaya Sita Ram</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Durge Jai Jai Ma</h2>
+            <div class="audio-player">
+                <audio controls><source src="durge.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Bm A D A Bm -- Bm E A E Bm -- D A Bm</pre>
+            <div class="lyrics">
+                <p>Durge Durge Durge Jai Jai Ma</p>
+                <p>Jagatambe Jai Jai Ma</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Sita Ram (Tina Malia)</h2>
+            <div class="audio-player">
+                <audio controls><source src="sitaramtina.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C3 : Am C G Am -- C...G...Am -- C G Em Am</pre>
+            <div class="lyrics">
+                <p>Sita Sita Ram, Sita Ram Kahiye</p>
+                <p>Jahi Vidhi Rakhe Ram, Tahi Vidhi Rahiye</p>
+                <p>Sita Ram, Pyare</p>
+            </div>
+        </article>
+        
+       
+        
+        <article class="chant">
+            <h2 class="chant-title">Namostute (alex)</h2>
+            <div class="audio-player">
+                <audio controls><source src="namostu.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">A F#m E -- A F#m -D -E</pre>
+            <div class="lyrics">
+                <p>Namostute Namostute, Jay Sri Mata Namostute</p>
+                <p>Namostute Namostute, Jay Jagatambe Namostute</p>
+                <p>Namostute Namostute, Jay Balaprada Namostute</p>
+                <p>Namostute Namostute, Jay Satya Devi Namostute</p>
+                <p>Namostute Namostute, Jay Parvati Namostute</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Chamundaye - A dorian</h2>
+            <div class="audio-player">
+                <audio controls><source src="chamundaye.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am F/C G Am -- D Am 4x F G Am -- Am G Am F G Am--- - Am C G</pre>
+            <div class="lyrics">
+                <p>Chamundaye, Kali Ma...Kali Ma, Kali Ma, Kali Ma</p>
+                <p>Kali..MA Kali MA!</p>
+                <p>Namah Shivaya</p>
+                <p>Kali Kali Maaaa Kali Kali Ma</p>
+                <p>Om Chamundaye Viche Namaha¦</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Puranamada</h2>
+            <div class="audio-player">
+                <audio controls><source src="purna2.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C2: Am G Am G F G F G</pre>
+            <div class="lyrics">
+                <p>Purnamadah Purnamidam</p>
+                <p>Purnat Purnamudachyate</p>
+                <p>Prunasya Purnamadaya</p>
+                <p>Purnameva Vashishyate</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">By your grace (Omkara)</h2>
+            <div class="audio-player">
+                <audio controls><source src="byg.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2 : Am F C G</pre>
+            <div class="lyrics">
+                <p>By your grace, I am</p>
+                <p>I come to life in you, I come to life in you</p>
+                <p>Shiva Shiva Mahadeva Shiva Shiva Mahadeva</p>
+                <p>Mahadeeeevaaaaaaaaaaa¦.Mahadeeeeevaaaaaaa</p>
+                <p>Guru Kripa Kevalam¦.Guru Kripa Kevalam...</p>
+                <p>Ommm Satguru Sri...Moojibabaya Namaha</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ad Guray Nameh (mirabai)</h2>
+            <div class="audio-player">
+                <audio controls><source src="admira.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C1 C Am F G</pre>
+            <div class="lyrics">
+                <p>Aad Guray Nameh, Jugad Guray Nameh,</p>
+                <p>Sat Guray Nameh, Siri Guru Devay Nameh</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Ra ma da sa sa say so hung (ajeet kaur)</h2>
+            <div class="audio-player">
+                <audio controls><source src="rmds.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C4 Am F G</pre>
+            <div class="lyrics">
+                <p>Ra Ma Da Sa Sa Say So Hung</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">om ah ra pa ca na dhih</h2>
+            <div class="audio-player">
+                <audio controls><source src="omara.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D Bm Em A</pre>
+            <div class="lyrics">
+                <p>Om Ah Ra Pa Ca Na Dhih</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hare Krishna (compilation)</h2>
+            <div class="audio-player">
+                <audio controls><source src="harecomp.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C4 Am   Em   F   C   G
+ Am   Em   F   G</pre>
+            <div class="lyrics">
+                <p>Hare Krishna, Hare Krishna, Krishna Krishna, Hare Hare</p>
+                <p>Hare Rama, Hare Rama, Rama Rama, Hare Hare</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Shiva Shankara Mahadeva Om</h2>
+            <div class="audio-player">
+                <audio controls><source src="bombom.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C2 Am G Am
+Am G C G
+Am G Am
+--
+C G Am</pre>
+            <div class="lyrics">
+                <p>Shiva Shankara Mahadeva Om</p>
+                <p>Shiva Shankara Mahadeva Om</p>
+                <p>Mahadeva Shivay Mahadeva Shivay</p>
+                <p>Shiva Shankara Mahadeva Om</p>
+                <p>Bom Bom Bolo Bolo Bom Bom Bom</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Hare Rama Rama Ram</h2>
+            <div class="audio-player">
+                <audio controls><source src="hareramcomp.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">F#m D A E
+F#m D E</pre>
+            <div class="lyrics">
+                <p>Hare Rama Rama Ram, Sita Rama Rama Ram</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Om Sri Ram Jai Jai Ram</h2>
+            <div class="audio-player">
+                <audio controls><source src="osrcomp.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">E B A
+C#m B Abm A
+C#m B A</pre>
+            <div class="lyrics">
+                <p>Om Sri Ram Jai Jai Ram</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Guru Ram Das meditation</h2>
+            <div class="audio-player">
+                <audio controls><source src="grdmed.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">F#m A D A E
+D E D A E</pre>
+            <div class="lyrics">
+                <p>Guru Guru Wahe Guru</p>
+                <p>Guru Ram Das Guru</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">He mahalakshmi</h2>
+            <div class="audio-player">
+                <audio controls><source src="lak.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">G   C   G   C   G   D
+C   D   G   C   C   D   G
+G  D  Em  C  G  D  G</pre>
+            <div class="lyrics">
+                <p>He mahalakshmi Durgayei Namaha</p>
+                <p>He mahalakshmi Durga</p>
+                <p>He Ma He Ma Durga</p>
+                <p>He Ma Jai Jai Ma Durga</p>
+                <p>He Ma Jai Jai Ma</p>
+                <p>Jai Jai Ma Jai Jai Ma</p>
+                <p>Jai Jai Ma Durga</p>
+                <p>Jai Jai Ma Jai Jai Ma</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">He Bhagavan (Gurumayi)</h2>
+            <div class="audio-player">
+                <audio controls><source src="hebha.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C G Am / Dm G Em Am/ G D Am C G Am</pre>
+            <div class="lyrics">
+                <p>He Bhagavan He Bhagavan</p>
+                <p>Jaya Guru Muktananda Tuma Ho Mahan</p>
+                <p>Sharan Aye Ham Tumhare Raksha Karo Bhagavan</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Kali Durge Namo Namah</h2>
+            <div class="audio-player">
+                <audio controls><source src="kalidurge.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C F C F C G C
+C F C
+F C G C</pre>
+            <div class="lyrics">
+                <p>Kali Durge Namo Namah</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Narayana</h2>
+            <div class="audio-player">
+                <audio controls><source src="nara.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C C C G
+G F G</pre>
+            <div class="lyrics">
+                <p>Narayana Narayana Jaya Govinda Hare</p>
+                <p>Narayana Narayana Jaya Gopala Hare</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">Jai Ma Jai Kali Ma (Sacred earth call of the Divine)</h2>
+            <div class="audio-player">
+                <audio controls><source src="jaimajai.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1 C G C
+Am G Am G Am G C</pre>
+            <div class="lyrics">
+                <p>Jai ma jai Kali ma</p>
+                <p>Jai Jai Kali ma</p>
+                <p>Jai ma Jai Kali Devi</p>
+                <p>Jai ma Jai Kali Devi</p>
+                <p>Jai maaaaa Kali ma</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hari Om</h2>
+            <div class="audio-player">
+                <audio controls><source src="hariom.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1
+Em G C D
+Em G Am C G</pre>
+            <div class="lyrics">
+                <p>Hari Om Hari Om Hari Om Hari Om</p>
+                <p>Hari Om Hari Om Hari Om Tat Sat Hari Om</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Anandamayi</h2>
+            <div class="audio-player">
+                <audio controls><source src="anandamayi.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1
+G C G D</pre>
+            <div class="lyrics">
+                <p>Om anandamayi chaitanyamayi satyamayi parameshwari</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Gam Ganapataye Namaha insp. Sam Garrett</h2>
+            <div class="audio-player">
+                <audio controls><source src="omgam.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 3
+Am F C Dm Am Dm G
+C G Am / C G Am F/ C G F</pre>
+            <div class="lyrics">
+                <p>Om Gam Ganapataye Namaha</p>
+                <p>Ganesha Sharanam</p>
+                <p>Ganesha Sharanam</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hari Om (mooji kirtan)</h2>
+            <div class="audio-player">
+                <audio controls><source src="hariommooji.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2 Am F C G</pre>
+            <div class="lyrics">
+                <p>Hari Om Hari Om Hari Om Namah Shivaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Gangadaraya Namah</h2>
+            <div class="audio-player">
+                <audio controls><source src="omganga.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2 A E A
+F#m E D F#m E Bm D</pre>
+            <div class="lyrics">
+                <p>Om Gangadaraya Namah</p>
+            </div>
+        </article>
+        
+        <article class="chant">
+            <h2 class="chant-title">One With you (Stephen deruby)</h2>
+            <div class="audio-player">
+                <audio controls><source src="onewithyou.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Dm C</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya Om Namah Shivaya</p>
+                <p>I open my heart, feel the love go through</p>
+                <p>I'm One with everything, I am One with You</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Namah Shivaya (Omkara)</h2>
+            <div class="audio-player">
+                <audio controls><source src="Onsomkara.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1
+Am F G Em F Dm Dm G</pre>
+            <div class="lyrics">
+                <p>Om Namah Shivaya Om Namah Shivaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hara Hara Shankara (Steve Ross)</h2>
+            <div class="audio-player">
+                <audio controls><source src="Harash.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Am G
+F G Am</pre>
+            <div class="lyrics">
+                <p>Hara Hara Shankara Hara Hara Shankara Parabrahma Parameshwara Parabrahma Parameshwara</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Hara Hara Hara Mahadev (Jai uttal)</h2>
+            <div class="audio-player">
+                <audio controls><source src="hhhmahadev.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">C Dm
+F Dm C
+F Dm G</pre>
+            <div class="lyrics">
+                <p>Hara Hara Hara Mahadev...</p>
+                <p>Jaya Shivaya Parameshwara Arunachala Shiva Om</p>
+                <p>Jaya Shivaya Parameshwara Arunachala</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Bolo Bolo Sadashiva Bolo Om Namah Shivaya (Steve Ross)</h2>
+            <div class="audio-player">
+                <audio controls><source src="Bolossb.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1 Am G</pre>
+            <div class="lyrics">
+                <p>Bolo Bolo Sadashiva Bolo Om Namah Shivaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Arunachala  Shiva</h2>
+            <div class="audio-player">
+                <audio controls><source src="ArunaSR.mp3" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2
+A E D E
+A E F#mD</pre>
+            <div class="lyrics">
+                <p>Arunachala Shiva Arunachala</p>
+                <p>Shiva Om Namah Shivaya Om</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Gayatri Sam Bb</h2>
+            <div class="audio-player">
+                <audio controls><source src="GayatriSam.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1
+A - E - Bm - D
+F#m - E - A - D
+F#m - E - D</pre>
+            <div class="lyrics">
+                <p>Om Bhur Bhuva Swaha Tat Savitur Varenyam</p>
+                <p>Bhargo Devasya Dhimahi Diyoyonah prachodayat</p>
+                <p>Om Arkaya Namaha Arkaya</p>
+                <p>Om Arkaya Namaha</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Ganesha Om Sam Bm</h2>
+            <div class="audio-player">
+                <audio controls><source src="OmGaneshaSam.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2
+Am - Dm - F - C - Am
+Dm -Am
+Dm - Am
+F - G - Am</pre>
+            <div class="lyrics">
+                <p>Om Gam Ganapataye Namaha</p>
+                <p>Om Gam Ganapataye Namaha</p>
+                <p>Ganesha Sharanam Ganesha Sharanam</p>
+                <p>Om Ganesha Om Ganapati</p>
+                <p>Om Ganesha - Om Gam Ganapati</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Asatoma Sat Gamaya (Deva Premal)</h2>
+            <div class="audio-player">
+                <audio controls><source src="asatomamixo.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 3 (C Mixolydian) or original Capo 4 (Db Mixolydian)
+A - Em</pre>
+            <div class="lyrics">
+                <p>Om Asatoma Sat Gamaya Tamaso ma Jyotir Gamaya</p>
+                <p>Mritoyr ma amritam gamaya</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Gam Ganapataye (Karen)</h2>
+            <div class="audio-player">
+                <audio controls><source src="omgamkaren.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D - G   C - G - D (D mixolydian)</pre>
+            <div class="lyrics">
+                <p>Om Gam Ganapataye Namaha</p>
+                <p>Ganesha</p>
+                <p>Om Sri Ganesha</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">He Ma Durga (melody by gurrumul)</h2>
+            <div class="audio-player">
+                <audio controls><source src="jayadevamata.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">D - Em - G - A</pre>
+            <div class="lyrics">
+                <p>Jaya Devamata Jaya Bhavani</p>
+                <p>Sarvamantramayi Parameshwari</p>
+                <p>He Ma Durga</p>
+                <p>Jaya Balaprada Jaya Sundari</p>
+                <p>Sarvamantramayi Parameshwari</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Kashi Vishwanatha Gange (Krishna Das)</h2>
+            <div class="audio-player">
+                <audio controls><source src="kashivish.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <img class="intro-image" alt="kashivishwanathgange" src="kashi.png">
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Madana Mohana Murari - Haribol</h2>
+            <div class="audio-player">
+                <audio controls><source src="madanamixo.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 1
+A D A
+G D A</pre>
+            <div class="lyrics">
+                <p>Madana Mohana Murari - Haribol</p>
+            </div>
+        </article>
+
+        <article class="chant">
+            <h2 class="chant-title">Om Gam Ganapataye Namo Namaha (trad)</h2>
+            <div class="audio-player">
+                <audio controls><source src="vinayak.m4a" type="audio/mpeg">Your browser does not support the audio element.</source></audio>
+            </div>
+            <pre class="chords">Capo 2
+A
+Om Gam Ganapataye Namo Namaha
+E
+Sri Siddhi Vinayak Namo Namah
+Ashtavinayak Namo Namaha
+D      E     A
+Ganapati Bappa Moraya
+-------------
+A
+Om Gam Ganapataye Namo Namaha
+D              A
+Sri Siddhi Vinayak Namo Namah
+E
+Ashtavinayak Namo Namaha
+D      E       A
+Ganapati Bappa Moraya</pre>
+            <div class="lyrics">
+                <p>Om Gam Ganapataye Namo Namaha</p>
+                <p>Sri Siddhi Vinayak Namo Namah</p>
+                <p>Ashtavinayak Namo Namaha</p>
+                <p>Ganapati Bappa Moraya</p>
+            </div>
+        </article>
+    </main>
+
+    
+    <script>
+    function stopAllAudio() {
+        // Select all audio elements on the page
+        const audioPlayers = document.querySelectorAll('audio');
+
+        // Loop through each audio player and pause it
+        audioPlayers.forEach(player => {
+            player.pause();
+            player.currentTime = 0; // Optional: Reset the playback to the beginning
+        });
+    }
+
+    function scrollToRandom() {
+        // First, stop all playing audio on the page
+        stopAllAudio();
+
+        // Then, proceed with the scrolling logic
+        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const randomPosition = Math.random() * scrollableHeight;
+
+        window.scrollTo({
+            top: randomPosition,
+            behavior: 'smooth'
+        });
+    }
+</script>
+   
+</body>
+</html>

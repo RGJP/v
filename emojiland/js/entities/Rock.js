@@ -1,0 +1,111 @@
+import { Entity } from './Entity.js';
+import { Physics } from '../Physics.js';
+import { getEmojiCanvas } from '../EmojiCache.js';
+
+export class Rock extends Entity {
+    constructor(x, y, facingRight, options = {}) {
+        const sizeMultiplier = options.sizeMultiplier || 1;
+        const size = 20 * sizeMultiplier;
+        super(x, y, size, size);
+        this.speed = 1500;
+        this.vx = facingRight ? this.speed : -this.speed;
+        this.vy = 0;
+        this.facingRight = facingRight;
+        this.rotation = 0;
+        this.damage = options.damage || 1;
+        this.phaseThroughSurfaces = !!options.phaseThroughSurfaces;
+        this.reflectedByEnemy = false;
+        this._enemyCandidates = [];
+        this._platformCandidates = [];
+        this._cachedEmoji = getEmojiCanvas('\u{1FAA8}', Math.round(24 * sizeMultiplier));
+    }
+
+    update(dt, game) {
+        this.x += this.vx * dt;
+        this.y += this.vy * dt;
+        this.rotation += (this.vx > 0 ? 10 : -10) * dt;
+
+        // Check if Rock hits a nearby enemy
+        const enemyCandidates = (game && typeof game.queryEnemiesInAABB === 'function')
+            ? game.queryEnemiesInAABB(this.x, this.y, this.x + this.width, this.y + this.height, this._enemyCandidates)
+            : game.enemies;
+        for (let i = 0; i < enemyCandidates.length; i++) {
+            const enemy = enemyCandidates[i];
+            if (enemy.markedForDeletion || this.markedForDeletion || !Physics.checkAABB(this, enemy)) continue;
+
+            if (enemy.shouldReflectRock && enemy.shouldReflectRock(this, game)) {
+                const playerCenterX = game.player.x + game.player.width / 2;
+                const rockCenterX = this.x + this.width / 2;
+                const toPlayer = Math.sign(playerCenterX - rockCenterX);
+                const reflectDir = toPlayer || (this.vx >= 0 ? -1 : 1);
+                const reflectedSpeed = Math.max(this.speed, Math.abs(this.vx));
+                this.reflectedByEnemy = true;
+                this.vx = reflectDir * reflectedSpeed;
+                this.facingRight = this.vx >= 0;
+                this.x = reflectDir > 0 ? (enemy.x + enemy.width + 2) : (enemy.x - this.width - 2);
+                break;
+            }
+
+            this.markedForDeletion = true;
+            if (game.particles) game.particles.emitHit(this.x + this.width / 2, this.y + this.height / 2);
+            if (game.audio) game.audio.playHit();
+
+            if (enemy.takeDamage) {
+                const isTurtle = enemy.type === 'patrol' && enemy.emoji === '🐢';
+                if (isTurtle && typeof enemy.stomp === 'function') {
+                    enemy.stomp(game);
+                } else {
+                    enemy.takeDamage(this.damage, game);
+                }
+            } else {
+                enemy.markedForDeletion = true;
+                game.player.score += 50;
+                game.audio.playHit();
+                game.particles.emitHit(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
+                if (typeof game.registerEnemyDefeat === 'function') game.registerEnemyDefeat(enemy);
+            }
+            break;
+        }
+
+        if (this.reflectedByEnemy && !this.markedForDeletion && game.player && game.player.invulnerableTimer <= 0) {
+            if (Physics.checkAABB(this, game.player.getHitbox())) {
+                this.markedForDeletion = true;
+                game.player.takeDamage(game);
+                if (game.particles) game.particles.emitHit(this.x + this.width / 2, this.y + this.height / 2);
+                if (game.audio) game.audio.playHit();
+            }
+        }
+
+        // Check if Rock hits platforms (mostly walls or ground)
+        if (!this.markedForDeletion && !this.phaseThroughSurfaces) {
+            const platforms = (game && typeof game.queryVisiblePlatformsInAABB === 'function')
+                ? game.queryVisiblePlatformsInAABB(this.x, this.y, this.x + this.width, this.y + this.height, this._platformCandidates)
+                : game._visiblePlatforms;
+            for (let i = 0; i < platforms.length; i++) {
+                const platform = platforms[i];
+                if (Physics.checkAABB(this, platform)) {
+                    this.markedForDeletion = true;
+                    // Optional: hit effect on wall
+                    game.particles.emitHit(this.x + this.width / 2, this.y + this.height / 2);
+                    break;
+                }
+            }
+        }
+
+        // Delete if it goes way offscreen
+        if (Math.abs(this.x - game.player.x) > 2000) {
+            this.markedForDeletion = true;
+        }
+    }
+
+    draw(ctx) {
+        ctx.save();
+        ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
+        ctx.rotate(this.rotation);
+
+        const cached = this._cachedEmoji;
+        ctx.drawImage(cached.canvas, -cached.width / 2, -cached.height / 2);
+
+        ctx.restore();
+    }
+}

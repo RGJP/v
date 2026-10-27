@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mandala Maker</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%E2%9C%BF</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-deep: #050510;
+            --text: #e0e7ff;
+            --text-dim: rgba(255, 255, 255, 0.5);
+            --primary: #a5b4fc;
+            --primary-glow: rgba(165, 180, 252, 0.4);
+            --glass: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-hover: rgba(255, 255, 255, 0.15);
+            --danger: #f87171;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            height: 100dvh;
+            overflow: hidden;
+            cursor: crosshair;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body.light-mode {
+            --bg-deep: #ffffff;
+            --text: #1a1a1a;
+            --text-dim: rgba(0, 0, 0, 0.5);
+            --glass: rgba(0, 0, 0, 0.05);
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --glass-hover: rgba(0, 0, 0, 0.1);
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.4);
+        }
+
+        body.light-mode button {
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        body.light-mode select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath stroke='rgba(0,0,0,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m1 1 4 4 4-4'/%3E%3C/svg%3E");
+        }
+
+        body.light-mode .color-custom {
+            border-color: rgba(0, 0, 0, 0.2);
+            background: #f1f5f9;
+        }
+
+        body.light-mode .color-custom::after {
+            color: #000;
+        }
+
+        body.light-mode .color-custom.selected::after {
+            color: #fff;
+        }
+
+        body.light-mode .color-option.selected,
+        body.light-mode .color-custom.selected {
+            border-color: #000;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ── Canvas Container ── */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ── UI Overlay ── */
+        .ui-overlay {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            align-items: center;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            z-index: 10;
+        }
+
+        body.drawing .ui-overlay {
+            opacity: 0.15;
+            pointer-events: none;
+            transform: translateX(-50%) translateY(8px);
+        }
+
+        body.idle .ui-overlay {
+            opacity: 0.25;
+            transform: translateX(-50%) translateY(8px);
+        }
+
+        body.idle .ui-overlay:hover,
+        body.drawing .ui-overlay:hover {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: var(--glass-border);
+            flex-shrink: 0;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-dim);
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .value-badge {
+            font-size: 0.7rem;
+            font-weight: 500;
+            min-width: 1.5em;
+            text-align: center;
+            color: var(--primary);
+        }
+
+        /* ── Select Dropdown ── */
+        select {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            color: var(--text);
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath stroke='rgba(255,255,255,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m1 1 4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            padding-right: 30px;
+        }
+
+        select:hover {
+            background: var(--glass-hover);
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(165, 180, 252, 0.1);
+        }
+
+        select:focus-visible {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px var(--primary-glow);
+        }
+
+        select option {
+            background: #0f172a;
+            /* Deep blue-black for dropdown menu */
+            color: var(--text);
+        }
+
+        /* ── Buttons ── */
+        button {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text);
+            padding: 0.4rem 0.85rem;
+            border-radius: 20px;
+            font-family: inherit;
+            font-weight: 400;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        button:hover {
+            background: var(--glass-hover);
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(165, 180, 252, 0.15);
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        button:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        button.active {
+            background: var(--primary);
+            color: #0a0a1a;
+            font-weight: 500;
+            border-color: var(--primary);
+            box-shadow: 0 0 16px var(--primary-glow);
+        }
+
+        button.danger-confirm {
+            border-color: var(--danger);
+            color: var(--danger);
+            animation: pulse-danger 0.6s ease;
+        }
+
+        @keyframes pulse-danger {
+
+            0%,
+            100% {
+                box-shadow: none;
+            }
+
+            50% {
+                box-shadow: 0 0 12px rgba(248, 113, 113, 0.3);
+            }
+        }
+
+        /* ── Color Picker ── */
+        .color-picker {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        .color-option {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid var(--glass-border);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+        }
+
+        .color-option.selected {
+            border-color: #fff;
+            transform: scale(1.15);
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+        }
+
+        .color-custom {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            border: 1.5px solid rgba(255, 255, 255, 0.4);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #1e293b;
+            /* Dark slate background */
+        }
+
+        .color-custom::after {
+            content: 'P';
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #fff;
+            pointer-events: none;
+        }
+
+        .color-custom:hover {
+            border-color: #fff;
+            transform: scale(1.1);
+            background: #334155;
+        }
+
+        .color-custom.selected {
+            border-color: #fff;
+            border-width: 2px;
+            transform: scale(1.1);
+            box-shadow: 0 0 15px var(--primary-glow);
+            background: var(--primary);
+        }
+
+        .color-custom.selected::after {
+            color: #050510;
+        }
+
+        .color-custom input[type=color] {
+            position: absolute;
+            inset: -8px;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        /* ── Tip / Onboarding ── */
+        .tip {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: rgba(255, 255, 255, 0.15);
+            font-size: 1rem;
+            pointer-events: none;
+            opacity: 1;
+            transition: opacity 0.8s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .tip.hidden {
+            opacity: 0;
+        }
+
+
+
+        /* ── Toast Notification ── */
+        .toast {
+            position: fixed;
+            top: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            z-index: 20;
+            letter-spacing: 0.04em;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 800px) {
+            .ui-overlay {
+                width: calc(100% - 2rem);
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 0.6rem 0.8rem;
+                bottom: 0.75rem;
+                border-radius: 16px;
+                gap: 0.5rem;
+            }
+
+            .divider {
+                display: none;
+            }
+
+            .control-group {
+                gap: 0.3rem;
+            }
+
+            label {
+                font-size: 0.65rem;
+            }
+
+            button {
+                padding: 0.35rem 0.65rem;
+                font-size: 0.65rem;
+            }
+
+            select {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                padding-right: 24px;
+                background-position: right 6px center;
+            }
+
+            .color-option,
+            .color-custom {
+                width: 20px;
+                height: 20px;
+            }
+
+
+        }
+
+        @media (max-width: 400px) {
+            .ui-overlay {
+                padding: 0.5rem;
+                gap: 0.4rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="tip" id="startTip">Click & drag to draw</div>
+    <div id="canvas-container">
+        <canvas id="glCanvas"></canvas>
+    </div>
+
+
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="ui-overlay" role="toolbar" aria-label="Drawing controls">
+        <div class="control-group">
+            <button id="fullscreenBtn" title="Enter Fullscreen" aria-label="Toggle Fullscreen"
+                style="padding: 0.35rem 0.5rem; min-width: 2.4rem; font-weight: 500; letter-spacing: -1px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;">[
+                + ]</button>
+            <label for="symmetryRange">Sym</label>
+            <select id="symmetryRange" aria-label="Symmetry fold count"></select>
+        </div>
+
+        <div class="control-group">
+            <label for="brushRange">Size</label>
+            <select id="brushRange" aria-label="Brush size"></select>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+            <button id="mirrorBtn" title="Toggle mirror reflection" aria-pressed="false">Mirror</button>
+            <button id="bgBtn" title="Toggle Background Color" aria-pressed="false">BG</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="control-group color-picker" id="colorPicker" role="radiogroup" aria-label="Color palette"></div>
+
+        <div class="divider"></div>
+
+        <div class="control-group">
+            <button id="undoBtn" title="Undo Last Stroke" aria-label="Undo">Undo</button>
+            <button id="redoBtn" title="Redo Last Stroke" aria-label="Redo">Redo</button>
+            <button id="clearBtn" title="Clear Canvas" aria-label="Clear canvas">Clear</button>
+            <button id="saveBtn" title="Save as PNG" aria-label="Save as PNG">Save</button>
+        </div>
+    </div>
+
+    <script>
+        (() => {
+            'use strict';
+
+            // ── DOM References ──
+            const canvasContainer = document.getElementById('canvas-container');
+            const glCanvas = document.getElementById('glCanvas');
+            const $ = id => document.getElementById(id);
+            const symmetryRange = $('symmetryRange');
+            const brushRange = $('brushRange');
+            const mirrorBtn = $('mirrorBtn');
+            const bgBtn = $('bgBtn');
+            const clearBtn = $('clearBtn');
+            const saveBtn = $('saveBtn');
+            const undoBtn = $('undoBtn');
+            const redoBtn = $('redoBtn');
+            const colorPicker = $('colorPicker');
+            const startTip = $('startTip');
+            const toast = $('toast');
+            const fullscreenBtn = $('fullscreenBtn');
+
+            // ── Populate Selects ──
+            for (let i = 2; i <= 32; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i;
+                if (i === 6) opt.selected = true;
+                symmetryRange.appendChild(opt);
+            }
+            for (let i = 1; i <= 20; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.textContent = i;
+                if (i === 2) opt.selected = true;
+                brushRange.appendChild(opt);
+            }
+
+            // ── WebGL 2 Initialization ──
+            const gl = glCanvas.getContext('webgl2', {
+                antialias: true,
+                alpha: false,
+                preserveDrawingBuffer: true,
+                premultipliedAlpha: false,
+            });
+            if (!gl) {
+                alert('WebGL 2 is not supported in this browser.');
+                return;
+            }
+
+            gl.enable(gl.BLEND);
+            gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+            // Background color matching --bg-deep (#050510)
+            gl.clearColor(5 / 255, 5 / 255, 16 / 255, 1.0);
+
+            // ── Shaders ──
+            const VERT_SRC = `#version 300 es
+            precision highp float;
+            uniform vec2 u_resolution;
+            uniform mat3 u_viewMatrix;
+            uniform float u_angle;
+            uniform float u_mirror;
+
+            in vec2 a_position;
+            in vec4 a_color;
+
+            out vec4 v_color;
+
+            void main() {
+                vec2 p = a_position;
+                p.y *= u_mirror;
+                float c = cos(u_angle), s = sin(u_angle);
+                p = vec2(c * p.x - s * p.y, s * p.x + c * p.y);
+                vec3 world = u_viewMatrix * vec3(p, 1.0);
+                // Map to clip space; negate Y so screen-space Y-down becomes GL Y-up
+                vec2 clip = vec2(world.x / u_resolution.x, -world.y / u_resolution.y);
+                gl_Position = vec4(clip, 0.0, 1.0);
+                v_color = a_color;
+            }`;
+
+            const FRAG_SRC = `#version 300 es
+            precision highp float;
+            in vec4 v_color;
+            out vec4 fragColor;
+            void main() {
+                fragColor = v_color;
+            }`;
+
+            function createShader(type, src) {
+                const s = gl.createShader(type);
+                gl.shaderSource(s, src);
+                gl.compileShader(s);
+                if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                    console.error('Shader compile error:', gl.getShaderInfoLog(s));
+                    gl.deleteShader(s);
+                    return null;
+                }
+                return s;
+            }
+
+            function createProgram(vs, fs) {
+                const p = gl.createProgram();
+                gl.attachShader(p, vs);
+                gl.attachShader(p, fs);
+                gl.linkProgram(p);
+                if (!gl.getProgramParameter(p, gl.LINK_STATUS)) {
+                    console.error('Program link error:', gl.getProgramInfoLog(p));
+                    return null;
+                }
+                return p;
+            }
+
+            const vertShader = createShader(gl.VERTEX_SHADER, VERT_SRC);
+            const fragShader = createShader(gl.FRAGMENT_SHADER, FRAG_SRC);
+            const program = createProgram(vertShader, fragShader);
+            gl.useProgram(program);
+
+            // Uniform locations
+            const u_resolution = gl.getUniformLocation(program, 'u_resolution');
+            const u_viewMatrix = gl.getUniformLocation(program, 'u_viewMatrix');
+            const u_angle = gl.getUniformLocation(program, 'u_angle');
+            const u_mirror = gl.getUniformLocation(program, 'u_mirror');
+
+            // Attribute locations
+            const a_position = gl.getAttribLocation(program, 'a_position');
+            const a_color = gl.getAttribLocation(program, 'a_color');
+
+            // VAO + VBO
+            const vao = gl.createVertexArray();
+            gl.bindVertexArray(vao);
+
+            const vbo = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+
+            // Vertex layout: [x, y, r, g, b, a] = 6 floats per vertex
+            const FLOATS_PER_VERTEX = 6;
+            const BYTES_PER_VERTEX = FLOATS_PER_VERTEX * 4;
+
+            gl.enableVertexAttribArray(a_position);
+            gl.vertexAttribPointer(a_position, 2, gl.FLOAT, false, BYTES_PER_VERTEX, 0);
+
+            gl.enableVertexAttribArray(a_color);
+            gl.vertexAttribPointer(a_color, 4, gl.FLOAT, false, BYTES_PER_VERTEX, 8);
+
+            // Initial buffer allocation (will grow dynamically)
+            let gpuBufferCapacity = 65536 * FLOATS_PER_VERTEX;
+            gl.bufferData(gl.ARRAY_BUFFER, gpuBufferCapacity * 4, gl.DYNAMIC_DRAW);
+
+            // ── State ──
+            const state = {
+                drawing: false,
+                symmetry: 6,
+                brushSize: 2,
+                hue: 0,
+                mirrorMode: false,
+
+                // View (infinite canvas)
+                viewScale: 1,
+                viewX: 0,
+                viewY: 0,
+
+                // Gesture state
+                gestureScale: 1,
+                gestureX: 0,
+                gestureY: 0,
+                gestureActive: false,
+
+                hasDrawn: false,
+                clearPending: false,
+                clearTimer: null,
+                touchDelayTimer: null,
+                bufferedEvents: [],
+                needsRender: true,
+            };
+
+            // ── Stroke Storage ──
+            const strokes = [];
+            let currentStroke = null;
+
+            // ── GPU Geometry Cache ──
+            // Each stroke gets a precomputed array of vertex floats
+            // We rebuild the full VBO on undo/redo/clear, and append on new strokes
+            let strokeGeometries = []; // parallel to strokes[], each is Float32Array
+            let totalVertexFloats = 0;
+
+            // ── History ──
+            const history = {
+                stack: [],
+                index: -1,
+                maxSize: 50,
+                push() {
+                    this.stack.length = this.index + 1;
+                    const snapshot = strokes.map(s => ({
+                        ...s,
+                        points: [...s.points],
+                        colors: s.colors ? [...s.colors] : []
+                    }));
+                    this.stack.push(snapshot);
+                    if (this.stack.length > this.maxSize) this.stack.shift();
+                    else this.index++;
+                    this.updateButtons();
+                },
+                undo() {
+                    if (this.index <= 0) return;
+                    this.index--;
+                    this.restore();
+                },
+                redo() {
+                    if (this.index >= this.stack.length - 1) return;
+                    this.index++;
+                    this.restore();
+                },
+                restore() {
+                    strokes.length = 0;
+                    const snapshot = this.stack[this.index];
+                    for (const s of snapshot) {
+                        strokes.push({
+                            ...s,
+                            points: [...s.points],
+                            colors: s.colors ? [...s.colors] : []
+                        });
+                    }
+                    rebuildAllGeometry();
+                    markGpuDirty();
+                    this.updateButtons();
+                    const msg = this.index === 0 ? 'Undo (Empty)' : `Undo/Redo (${this.index})`;
+                    showToast(msg);
+                },
+                clear() {
+                    this.stack = [];
+                    this.index = -1;
+                    this.updateButtons();
+                },
+                updateButtons() {
+                    undoBtn.disabled = this.index <= 0;
+                    redoBtn.disabled = this.index >= this.stack.length - 1;
+                    undoBtn.style.opacity = undoBtn.disabled ? '0.3' : '1';
+                    redoBtn.style.opacity = redoBtn.disabled ? '0.3' : '1';
+                }
+            };
+
+            // ── Palettes ──
+            const PALETTES = [
+                { color: 'rainbow', name: 'Rainbow' },
+                { color: 'hsl(220, 100%, 80%)', name: 'Ice' },
+                { color: 'hsl(280, 100%, 80%)', name: 'Violet' },
+                { color: 'hsl(30, 100%, 70%)', name: 'Amber' },
+                { color: 'hsl(150, 100%, 70%)', name: 'Mint' },
+                { color: 'hsl(350, 100%, 75%)', name: 'Rose' },
+                { color: '#000000', name: 'Black' },
+            ];
+            let currentColor = PALETTES[0];
+            let customColor = '#ffffff';
+
+            // ── Color Parsing ──
+            // Convert any CSS color string to [r, g, b, a] in 0..1
+            const _colorCanvas = document.createElement('canvas');
+            _colorCanvas.width = _colorCanvas.height = 1;
+            const _colorCtx = _colorCanvas.getContext('2d', { willReadFrequently: true });
+
+            function parseColor(str) {
+                _colorCtx.clearRect(0, 0, 1, 1);
+                _colorCtx.fillStyle = str;
+                _colorCtx.fillRect(0, 0, 1, 1);
+                const d = _colorCtx.getImageData(0, 0, 1, 1).data;
+                return [d[0] / 255, d[1] / 255, d[2] / 255, d[3] / 255];
+            }
+
+            // Pre-parse palette colors
+            const parsedPaletteColors = {};
+            for (const p of PALETTES) {
+                if (p.color !== 'rainbow') {
+                    parsedPaletteColors[p.color] = parseColor(p.color);
+                }
+            }
+
+            function getColorRGBA(colorStr) {
+                if (parsedPaletteColors[colorStr]) return parsedPaletteColors[colorStr];
+                return parseColor(colorStr);
+            }
+
+            // ── Thick-Line Geometry Builder ──
+            // Each line segment (p0→p1) becomes a quad (2 triangles = 6 vertices)
+            // with width = lineWidth in world units
+            // Plus round caps at each endpoint (triangle fan)
+
+            const CAP_SEGMENTS = 8; // segments per half-circle cap
+
+            function buildStrokeGeometry(stroke) {
+                const pts = stroke.points;
+                if (pts.length < 2) return new Float32Array(0);
+
+                const hw = stroke.lineWidth * 0.5; // half-width in world units
+                const isRainbow = stroke.color === 'rainbow';
+                const solidColor = isRainbow ? null : getColorRGBA(stroke.color);
+
+                // Pre-calculate total vertices needed
+                const segmentCount = pts.length - 1;
+                const quadsVerts = segmentCount * 6; // 2 triangles per segment
+                const capsVerts = pts.length * CAP_SEGMENTS * 3; // triangle fan per point
+                const totalVerts = quadsVerts + capsVerts;
+                const arr = new Float32Array(totalVerts * FLOATS_PER_VERTEX);
+                let offset = 0;
+
+                function pushVertex(x, y, r, g, b, a) {
+                    arr[offset++] = x;
+                    arr[offset++] = y;
+                    arr[offset++] = r;
+                    arr[offset++] = g;
+                    arr[offset++] = b;
+                    arr[offset++] = a;
+                }
+
+                for (let i = 0; i < segmentCount; i++) {
+                    const p0 = pts[i], p1 = pts[i + 1];
+                    const dx = p1.x - p0.x, dy = p1.y - p0.y;
+                    const len = Math.sqrt(dx * dx + dy * dy) || 1e-6;
+                    const nx = -dy / len * hw, ny = dx / len * hw;
+
+                    // Color for this segment
+                    let r, g, b, a;
+                    if (isRainbow) {
+                        const c = stroke.colors[i];
+                        if (c) {
+                            const rgba = parseColor(c);
+                            r = rgba[0]; g = rgba[1]; b = rgba[2]; a = rgba[3];
+                        } else {
+                            r = g = b = a = 1;
+                        }
+                    } else {
+                        r = solidColor[0]; g = solidColor[1]; b = solidColor[2]; a = solidColor[3];
+                    }
+
+                    // Quad: p0+n, p0-n, p1+n, p1+n, p0-n, p1-n
+                    pushVertex(p0.x + nx, p0.y + ny, r, g, b, a);
+                    pushVertex(p0.x - nx, p0.y - ny, r, g, b, a);
+                    pushVertex(p1.x + nx, p1.y + ny, r, g, b, a);
+                    pushVertex(p1.x + nx, p1.y + ny, r, g, b, a);
+                    pushVertex(p0.x - nx, p0.y - ny, r, g, b, a);
+                    pushVertex(p1.x - nx, p1.y - ny, r, g, b, a);
+                }
+
+                // Round caps at every point
+                for (let i = 0; i < pts.length; i++) {
+                    const p = pts[i];
+                    let r, g, b, a;
+                    if (isRainbow) {
+                        const ci = Math.min(i, stroke.colors.length - 1);
+                        const c = stroke.colors[ci];
+                        if (c) {
+                            const rgba = parseColor(c);
+                            r = rgba[0]; g = rgba[1]; b = rgba[2]; a = rgba[3];
+                        } else {
+                            r = g = b = a = 1;
+                        }
+                    } else {
+                        r = solidColor[0]; g = solidColor[1]; b = solidColor[2]; a = solidColor[3];
+                    }
+
+                    for (let j = 0; j < CAP_SEGMENTS; j++) {
+                        const a0 = (j / CAP_SEGMENTS) * Math.PI * 2;
+                        const a1 = ((j + 1) / CAP_SEGMENTS) * Math.PI * 2;
+                        pushVertex(p.x, p.y, r, g, b, a);
+                        pushVertex(p.x + Math.cos(a0) * hw, p.y + Math.sin(a0) * hw, r, g, b, a);
+                        pushVertex(p.x + Math.cos(a1) * hw, p.y + Math.sin(a1) * hw, r, g, b, a);
+                    }
+                }
+
+                return arr.subarray(0, offset);
+            }
+
+            function rebuildAllGeometry() {
+                strokeGeometries = [];
+                totalVertexFloats = 0;
+                for (const stroke of strokes) {
+                    const geo = buildStrokeGeometry(stroke);
+                    strokeGeometries.push(geo);
+                    totalVertexFloats += geo.length;
+                }
+                uploadAllGeometry();
+            }
+
+            function uploadAllGeometry() {
+                const totalFloats = totalVertexFloats + (currentStroke ? (currentStrokeGeo ? currentStrokeGeo.length : 0) : 0);
+                if (totalFloats === 0) return;
+
+                // Grow buffer if needed
+                if (totalFloats > gpuBufferCapacity) {
+                    gpuBufferCapacity = totalFloats * 2;
+                    gl.bufferData(gl.ARRAY_BUFFER, gpuBufferCapacity * 4, gl.DYNAMIC_DRAW);
+                }
+
+                // Upload all stroke geometries
+                let byteOffset = 0;
+                for (const geo of strokeGeometries) {
+                    if (geo.length > 0) {
+                        gl.bufferSubData(gl.ARRAY_BUFFER, byteOffset, geo);
+                        byteOffset += geo.byteLength;
+                    }
+                }
+            }
+
+            let currentStrokeGeo = null;
+
+            // ── Canvas Setup ──
+            function resize() {
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvasContainer.getBoundingClientRect();
+                glCanvas.width = rect.width * dpr;
+                glCanvas.height = rect.height * dpr;
+                gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+                state.needsRender = true;
+            }
+
+            window.addEventListener('resize', debounce(resize, 100));
+            resize();
+            history.push();
+            history.updateButtons();
+
+            // ── View Matrix ──
+            // Uses screen-space Y (down = positive). The vertex shader negates Y
+            // when mapping to clip space so GL renders correctly.
+            function getViewMatrix() {
+                const s = state.viewScale * state.gestureScale;
+                const tx = state.viewX * state.gestureScale + state.gestureX;
+                const ty = state.viewY * state.gestureScale + state.gestureY;
+                // Column-major 3x3
+                return new Float32Array([
+                    s, 0, 0,
+                    0, s, 0,
+                    tx, ty, 1
+                ]);
+            }
+
+            // ── Coordinate Mapping ──
+            // All coordinates use screen-space convention (Y down),
+            // the vertex shader maps to clip space via u_resolution.
+            function getWorldCoords(e) {
+                const rect = canvasContainer.getBoundingClientRect();
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+                // Center-relative screen coords (Y down)
+                const cx = clientX - rect.left - rect.width / 2;
+                const cy = clientY - rect.top - rect.height / 2;
+
+                // Remove view transform: world = (screen - translate) / scale
+                const s = state.viewScale;
+                return {
+                    x: (cx - state.viewX) / s,
+                    y: (cy - state.viewY) / s
+                };
+            }
+
+            // ── Input Handling ──
+            const pointers = new Map();
+            let prevPinchDist = 0;
+            let prevPinchCx = 0, prevPinchCy = 0;
+
+            canvasContainer.addEventListener('pointerdown', e => {
+                canvasContainer.setPointerCapture(e.pointerId);
+                pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+                if (pointers.size === 1) {
+                    if (e.pointerType === 'touch') {
+                        state.touchDelayTimer = setTimeout(() => {
+                            if (pointers.size === 1 && !state.drawing) {
+                                handleStart(e);
+                                state.bufferedEvents.forEach(ev => handleDrawMove(ev));
+                            }
+                            state.bufferedEvents = [];
+                            state.touchDelayTimer = null;
+                        }, 80);
+                    } else {
+                        handleStart(e);
+                    }
+                } else {
+                    if (state.touchDelayTimer) {
+                        clearTimeout(state.touchDelayTimer);
+                        state.touchDelayTimer = null;
+                        state.bufferedEvents = [];
+                    }
+                    if (state.drawing) handleEnd(true);
+
+                    const pts = Array.from(pointers.values());
+                    prevPinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                    prevPinchCx = (pts[0].x + pts[1].x) / 2;
+                    prevPinchCy = (pts[0].y + pts[1].y) / 2;
+                    state.gestureActive = true;
+                }
+            });
+
+            canvasContainer.addEventListener('pointermove', e => {
+                if (!pointers.has(e.pointerId)) return;
+                pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+                const pts = Array.from(pointers.values());
+
+                if (pts.length === 1) {
+                    if (state.drawing) {
+                        handleDrawMove(e);
+                    } else if (state.touchDelayTimer) {
+                        state.bufferedEvents.push(e);
+                    }
+                } else if (pts.length === 2) {
+                    const dist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+                    const cx = (pts[0].x + pts[1].x) / 2;
+                    const cy = (pts[0].y + pts[1].y) / 2;
+
+                    if (prevPinchDist > 0) {
+                        const deltaScale = dist / prevPinchDist;
+                        const dx = cx - prevPinchCx;
+                        const dy = cy - prevPinchCy;
+
+                        state.gestureScale *= deltaScale;
+                        state.gestureX += dx;
+                        state.gestureY += dy;
+                    }
+
+                    prevPinchDist = dist;
+                    prevPinchCx = cx;
+                    prevPinchCy = cy;
+                    state.needsRender = true;
+                    commitTransformDebounced();
+                }
+            });
+
+            canvasContainer.addEventListener('pointerup', e => {
+                pointers.delete(e.pointerId);
+                if (pointers.size < 2) prevPinchDist = 0;
+
+                if (state.touchDelayTimer) {
+                    clearTimeout(state.touchDelayTimer);
+                    state.touchDelayTimer = null;
+                    state.bufferedEvents = [];
+                }
+                if (state.drawing) handleEnd();
+
+                if (pointers.size === 0 && state.gestureActive) {
+                    commitTransformNow();
+                    state.gestureActive = false;
+                }
+            });
+
+            canvasContainer.addEventListener('pointercancel', e => {
+                pointers.delete(e.pointerId);
+                if (state.touchDelayTimer) {
+                    clearTimeout(state.touchDelayTimer);
+                    state.touchDelayTimer = null;
+                    state.bufferedEvents = [];
+                }
+                if (state.drawing) handleEnd(true);
+            });
+
+            // Mouse Wheel Zoom
+            canvasContainer.addEventListener('wheel', e => {
+                e.preventDefault();
+                const rect = canvasContainer.getBoundingClientRect();
+                const mx = e.clientX - rect.left - rect.width / 2;
+                const my = e.clientY - rect.top - rect.height / 2;
+
+                const delta = e.deltaY > 0 ? 0.9 : 1.1;
+                const oldScale = state.viewScale;
+                const newScale = clamp(oldScale * delta, 0.01, 200);
+                const factor = newScale / oldScale;
+
+                // Zoom towards mouse position
+                state.viewX = mx - factor * (mx - state.viewX);
+                state.viewY = my - factor * (my - state.viewY);
+                state.viewScale = newScale;
+
+                state.needsRender = true;
+            }, { passive: false });
+
+            function commitTransformNow() {
+                const newScale = clamp(state.viewScale * state.gestureScale, 0.01, 200);
+                const newX = state.viewX * state.gestureScale + state.gestureX;
+                const newY = state.viewY * state.gestureScale + state.gestureY;
+
+                state.viewScale = newScale;
+                state.viewX = newX;
+                state.viewY = newY;
+                state.gestureScale = 1;
+                state.gestureX = 0;
+                state.gestureY = 0;
+                state.needsRender = true;
+            }
+
+            const commitTransformDebounced = debounce(commitTransformNow, 250);
+
+            // ── Drawing Logic ──
+            function handleStart(e) {
+                if (e.button !== 0 && e.pointerType === 'mouse') return;
+                e.preventDefault();
+                startTip.classList.add('hidden');
+
+                state.drawing = true;
+                document.body.classList.add('drawing');
+
+                const pos = getWorldCoords(e);
+
+                currentStroke = {
+                    points: [{ x: pos.x, y: pos.y }],
+                    color: currentColor.color === 'rainbow' ? 'rainbow' : currentColor.color,
+                    colors: [],
+                    lineWidth: state.brushSize,
+                    symmetry: state.symmetry,
+                    mirror: state.mirrorMode,
+                };
+                currentStrokeGeo = null;
+
+                state.hasDrawn = true;
+            }
+
+            function handleDrawMove(e) {
+                if (!state.drawing || !currentStroke) return;
+                const { x, y } = getWorldCoords(e);
+
+                const lastPt = currentStroke.points[currentStroke.points.length - 1];
+                if (lastPt) {
+                    const dist = Math.hypot(x - lastPt.x, y - lastPt.y);
+                    if (dist < 1.0) return;
+                }
+
+                currentStroke.points.push({ x, y });
+
+                if (currentStroke.color === 'rainbow') {
+                    const segColor = `hsl(${state.hue}, 90%, 65%)`;
+                    state.hue = (state.hue + 1.5) % 360;
+                    currentStroke.colors.push(segColor);
+                }
+
+                // Rebuild current stroke geometry
+                currentStrokeGeo = buildStrokeGeometry(currentStroke);
+                state.needsRender = true;
+            }
+
+            function handleEnd(isCancelled = false) {
+                if (!state.drawing) return;
+                state.drawing = false;
+                document.body.classList.remove('drawing');
+
+                if (!isCancelled && currentStroke && currentStroke.points.length > 1) {
+                    strokes.push(currentStroke);
+                    const geo = buildStrokeGeometry(currentStroke);
+                    strokeGeometries.push(geo);
+                    totalVertexFloats += geo.length;
+                    markGpuDirty();
+                    history.push();
+                }
+                currentStroke = null;
+                currentStrokeGeo = null;
+                state.needsRender = true;
+            }
+
+            // ── Render ──
+            let gpuDirty = true; // True when committed geometry needs re-upload
+
+            function markGpuDirty() {
+                gpuDirty = true;
+                state.needsRender = true;
+            }
+
+            function ensureGpuData() {
+                if (!gpuDirty) return;
+                gpuDirty = false;
+                uploadAllGeometry();
+            }
+
+            function render() {
+                requestAnimationFrame(render);
+                if (!state.needsRender) return;
+                state.needsRender = false;
+
+                const w = glCanvas.width;
+                const h = glCanvas.height;
+
+                gl.viewport(0, 0, w, h);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+
+                gl.useProgram(program);
+                gl.bindVertexArray(vao);
+                gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+
+                // Ensure committed geometry is on the GPU
+                ensureGpuData();
+
+                // Upload live stroke geometry (always changes, appended after committed data)
+                let liveVertexCount = 0;
+                if (currentStroke && currentStrokeGeo && currentStrokeGeo.length > 0) {
+                    liveVertexCount = currentStrokeGeo.length / FLOATS_PER_VERTEX;
+                    const totalNeeded = totalVertexFloats + currentStrokeGeo.length;
+                    if (totalNeeded > gpuBufferCapacity) {
+                        gpuBufferCapacity = totalNeeded * 2;
+                        gl.bufferData(gl.ARRAY_BUFFER, gpuBufferCapacity * 4, gl.DYNAMIC_DRAW);
+                        gpuDirty = true;
+                        ensureGpuData();
+                    }
+                    gl.bufferSubData(gl.ARRAY_BUFFER, totalVertexFloats * 4, currentStrokeGeo);
+                }
+
+                // Resolution: use CSS pixel dimensions (not canvas px) so
+                // world coordinates from getWorldCoords map correctly.
+                const dpr = window.devicePixelRatio || 1;
+                gl.uniform2f(u_resolution, w / (2 * dpr), h / (2 * dpr));
+
+                // View matrix
+                const vm = getViewMatrix();
+                gl.uniformMatrix3fv(u_viewMatrix, false, vm);
+
+                // Draw all committed strokes
+                let vertexOffset = 0;
+                for (let si = 0; si < strokes.length; si++) {
+                    const stroke = strokes[si];
+                    const geo = strokeGeometries[si];
+                    if (!geo || geo.length === 0) continue;
+
+                    const vertexCount = geo.length / FLOATS_PER_VERTEX;
+                    const angleStep = (Math.PI * 2) / stroke.symmetry;
+                    const arms = stroke.mirror ? stroke.symmetry * 2 : stroke.symmetry;
+
+                    for (let arm = 0; arm < arms; arm++) {
+                        const isMirror = stroke.mirror && arm >= stroke.symmetry;
+                        const idx = isMirror ? arm - stroke.symmetry : arm;
+                        gl.uniform1f(u_angle, angleStep * idx);
+                        gl.uniform1f(u_mirror, isMirror ? -1.0 : 1.0);
+                        gl.drawArrays(gl.TRIANGLES, vertexOffset, vertexCount);
+                    }
+
+                    vertexOffset += vertexCount;
+                }
+
+                // Draw current (live) stroke
+                if (currentStroke && liveVertexCount > 0) {
+                    const angleStep = (Math.PI * 2) / currentStroke.symmetry;
+                    const arms = currentStroke.mirror ? currentStroke.symmetry * 2 : currentStroke.symmetry;
+
+                    for (let arm = 0; arm < arms; arm++) {
+                        const isMirror = currentStroke.mirror && arm >= currentStroke.symmetry;
+                        const idx = isMirror ? arm - currentStroke.symmetry : arm;
+                        gl.uniform1f(u_angle, angleStep * idx);
+                        gl.uniform1f(u_mirror, isMirror ? -1.0 : 1.0);
+                        gl.drawArrays(gl.TRIANGLES, vertexOffset, liveVertexCount);
+                    }
+                }
+            }
+
+            requestAnimationFrame(render);
+
+            // ── UI / Helpers ──
+            buildColorPicker();
+
+            function buildColorPicker() {
+                PALETTES.forEach((p, i) => {
+                    const el = document.createElement('div');
+                    el.className = 'color-option';
+                    el.style.background = p.color === 'rainbow'
+                        ? 'conic-gradient(#f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)' : p.color;
+                    if (i === 0) el.classList.add('selected');
+                    el.addEventListener('click', () => selectColor(p, el));
+                    colorPicker.appendChild(el);
+                });
+
+                const custom = document.createElement('div');
+                custom.className = 'color-custom';
+                // Use CSS gradient for picker look; removed inline background override
+                const input = document.createElement('input');
+                input.type = 'color';
+                input.value = customColor;
+                input.addEventListener('input', e => {
+                    customColor = e.target.value;
+                    // Keep the picker look consistent, don't change background to solid color
+                    selectColor({ color: customColor, name: 'Custom' }, custom);
+                });
+                custom.appendChild(input);
+                colorPicker.appendChild(custom);
+            }
+
+            function selectColor(palette, el) {
+                document.querySelectorAll('.color-option, .color-custom').forEach(e => e.classList.remove('selected'));
+                el.classList.add('selected');
+                currentColor = palette;
+                // Cache parsed color
+                if (palette.color !== 'rainbow' && !parsedPaletteColors[palette.color]) {
+                    parsedPaletteColors[palette.color] = parseColor(palette.color);
+                }
+            }
+
+            function showToast(msg) {
+                toast.textContent = msg;
+                toast.classList.add('visible');
+                setTimeout(() => toast.classList.remove('visible'), 1200);
+            }
+
+            symmetryRange.addEventListener('change', e => {
+                state.symmetry = parseInt(e.target.value, 10);
+            });
+
+            brushRange.addEventListener('change', e => {
+                state.brushSize = parseInt(e.target.value, 10);
+            });
+
+            mirrorBtn.addEventListener('click', () => {
+                state.mirrorMode = !state.mirrorMode;
+                mirrorBtn.classList.toggle('active', state.mirrorMode);
+                showToast(state.mirrorMode ? 'Mirror On' : 'Mirror Off');
+            });
+
+            let isLightMode = false;
+            bgBtn.addEventListener('click', () => {
+                isLightMode = !isLightMode;
+                if (isLightMode) {
+                    document.body.classList.add('light-mode');
+                    gl.clearColor(1, 1, 1, 1); // Pure White
+                } else {
+                    document.body.classList.remove('light-mode');
+                    gl.clearColor(0, 0, 0, 1); // Pure Black
+                }
+                state.needsRender = true;
+            });
+
+            clearBtn.addEventListener('click', () => {
+                if (!state.clearPending) {
+                    state.clearPending = true;
+                    clearBtn.textContent = 'Sure?';
+                    clearBtn.classList.add('danger-confirm');
+                    state.clearTimer = setTimeout(() => {
+                        state.clearPending = false;
+                        clearBtn.textContent = 'Clear';
+                        clearBtn.classList.remove('danger-confirm');
+                    }, 3000);
+                    return;
+                }
+
+                clearTimeout(state.clearTimer);
+                state.clearPending = false;
+                clearBtn.textContent = 'Clear';
+                clearBtn.classList.remove('danger-confirm');
+
+                strokes.length = 0;
+                strokeGeometries = [];
+                totalVertexFloats = 0;
+                history.push();
+                markGpuDirty();
+                showToast('Cleared');
+            });
+
+            saveBtn.addEventListener('click', async () => {
+                showToast('Generating High-Res...');
+
+                // Allow UI to update before freezing for render
+                await new Promise(r => setTimeout(r, 50));
+
+                const originalWidth = glCanvas.width;
+                const originalHeight = glCanvas.height;
+                const dpr = window.devicePixelRatio || 1;
+                const rect = canvasContainer.getBoundingClientRect();
+
+                // 4x resolution or max 8192px
+                const scaleFactor = 4;
+                const maxDim = 8192;
+                let targetW = rect.width * dpr * scaleFactor;
+                let targetH = rect.height * dpr * scaleFactor;
+
+                // Cap at maxDim to prevent crashes on huge screens
+                if (targetW > maxDim || targetH > maxDim) {
+                    const ratio = Math.min(maxDim / targetW, maxDim / targetH);
+                    targetW *= ratio;
+                    targetH *= ratio;
+                }
+
+                // Resize canvas
+                glCanvas.width = targetW;
+                glCanvas.height = targetH;
+
+                // Render High Res
+                gl.viewport(0, 0, targetW, targetH);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.useProgram(program);
+                gl.bindVertexArray(vao);
+                gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+                ensureGpuData();
+
+                // Use ORIGINAL coordinate system (rect.width/2) so the same world-space drawing
+                // fills the larger viewport, resulting in high-res vector scaling.
+                gl.uniform2f(u_resolution, rect.width / 2, rect.height / 2);
+                gl.uniformMatrix3fv(u_viewMatrix, false, getViewMatrix());
+
+                let vo = 0;
+                for (let si = 0; si < strokes.length; si++) {
+                    const stroke = strokes[si], geo = strokeGeometries[si];
+                    if (!geo || geo.length === 0) continue;
+                    const vc = geo.length / FLOATS_PER_VERTEX;
+                    const as = (Math.PI * 2) / stroke.symmetry;
+                    const ar = stroke.mirror ? stroke.symmetry * 2 : stroke.symmetry;
+                    for (let a = 0; a < ar; a++) {
+                        const m = stroke.mirror && a >= stroke.symmetry;
+                        gl.uniform1f(u_angle, as * (m ? a - stroke.symmetry : a));
+                        gl.uniform1f(u_mirror, m ? -1.0 : 1.0);
+                        gl.drawArrays(gl.TRIANGLES, vo, vc);
+                    }
+                    vo += vc;
+                }
+
+                gl.finish();
+
+                try {
+                    const link = document.createElement('a');
+                    link.download = `mandala-${Date.now()}.png`;
+                    link.href = glCanvas.toDataURL('image/png');
+                    link.click();
+                } catch (err) {
+                    console.error('Save error:', err);
+                    showToast('Error saving image');
+                }
+
+                // Restore
+                glCanvas.width = originalWidth;
+                glCanvas.height = originalHeight;
+                state.needsRender = true;
+            });
+
+            undoBtn.addEventListener('click', () => history.undo());
+            redoBtn.addEventListener('click', () => history.redo());
+
+            fullscreenBtn.addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        showToast(`Fullscreen error: ${err.message}`);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+
+            document.addEventListener('fullscreenchange', () => {
+                if (document.fullscreenElement) {
+                    fullscreenBtn.textContent = '[ - ]';
+                    fullscreenBtn.title = 'Exit Fullscreen';
+                    fullscreenBtn.classList.add('active');
+                } else {
+                    fullscreenBtn.textContent = '[ + ]';
+                    fullscreenBtn.title = 'Enter Fullscreen';
+                    fullscreenBtn.classList.remove('active');
+                }
+            });
+
+            // Utils
+            function clamp(val, min, max) { return Math.max(min, Math.min(max, val)); }
+            function debounce(fn, ms) {
+                let t;
+                return (...args) => {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn(...args), ms);
+                };
+            }
+
+        })();
+    </script>
+</body>
+
+</html>

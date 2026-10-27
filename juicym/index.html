@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#081a33" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext x='50%25' y='.9em' font-size='90' text-anchor='middle'%3E%26%23x1F349%3B%3C/text%3E%3C/svg%3E" />
+  <title>JuicyM</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <main class="shell">
+      <div class="level-progress" id="levelProgress" role="progressbar" aria-label="Level progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <div class="combo-status" id="comboStatus" aria-live="polite" aria-atomic="true"></div>
+        <span class="level-progress-fill" id="levelProgressFill"></span>
+      </div>
+      <div class="canvas-wrap" id="canvasWrap">
+        <canvas id="gameCanvas" aria-label="JUICYM game board"></canvas>
+      </div>
+    </main>
+
+    <section class="footer">
+      <button class="moves-trigger" id="statusLine" type="button" aria-label="0 moves left" aria-live="polite">
+        <span id="statusMoves">0</span>
+      </button>
+      <button class="settings-trigger" id="settingsBtn" aria-label="Open game menu" aria-haspopup="dialog" aria-controls="settingsMenu" aria-expanded="false"><span class="settings-trigger-icon" aria-hidden="true">⚙️</span></button>
+      <button class="fullscreen-trigger" id="fullscreenBtn" aria-label="Enter fullscreen" aria-pressed="false">⬆️</button>
+    </section>
+  </div>
+
+  <div class="settings-menu" id="settingsMenu" aria-hidden="true" inert>
+    <div class="settings-panel" id="settingsPanel" role="dialog" aria-modal="true" aria-label="Game menu">
+      <div class="footer-line settings-grid">
+        <button class="secondary footer-action" id="shuffleBtn" aria-label="Shuffle board for 3 moves">
+          <span class="action-icon" aria-hidden="true">🔀</span>
+          <span class="action-copy">
+            <span class="action-title">Shuffle</span>
+          </span>
+        </button>
+        <button class="danger footer-action" id="restartBtn" aria-label="Start a new run">
+          <span class="action-icon" aria-hidden="true">♻️</span>
+          <span class="action-copy">
+            <span class="action-title">New Level</span>
+          </span>
+        </button>
+        <button class="secondary footer-action" id="muteMusicBtn" aria-label="Toggle music" aria-pressed="false">
+          <span class="action-icon" id="muteMusicIcon" aria-hidden="true">🎵</span>
+          <span class="action-copy">
+            <span class="action-title" id="muteMusicLabel">Music On</span>
+          </span>
+        </button>
+        <button class="secondary footer-action" id="muteFxBtn" aria-label="Toggle sound effects" aria-pressed="false">
+          <span class="action-icon" id="muteFxIcon" aria-hidden="true">🔊</span>
+          <span class="action-copy">
+            <span class="action-title" id="muteFxLabel">FX On</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="overlay-card">
+      <h2 class="overlay-title" id="overlayTitle">Level Clear</h2>
+      <div class="overlay-sub" id="overlaySub"></div>
+      <div class="overlay-stats">
+        <div class="overlay-stat" id="overlayScoreStat">
+          <div class="label">Score</div>
+          <div class="value" id="overlayScore">0</div>
+        </div>
+        <div class="overlay-stat" id="overlayTargetStat">
+          <div class="label">Target</div>
+          <div class="value" id="overlayTarget">0</div>
+        </div>
+        <div class="overlay-stat" id="overlayLevelStat">
+          <div class="label">Level</div>
+          <div class="value" id="overlayLevel">1</div>
+        </div>
+      </div>
+      <div class="overlay-actions">
+        <button id="overlayPrimary">Continue</button>
+        <button class="secondary" id="overlaySecondary">New Run</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="confirm-modal" id="confirmModal" aria-hidden="true" inert>
+    <div class="confirm-card" id="confirmCard" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+      <div class="confirm-kicker" id="confirmKicker">Confirm</div>
+      <h2 class="confirm-title" id="confirmTitle">Are you sure?</h2>
+      <p class="confirm-message" id="confirmMessage">This action cannot be undone.</p>
+      <div class="confirm-actions">
+        <button class="secondary" id="confirmCancel" type="button">No</button>
+        <button id="confirmAccept" type="button">Yes</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="splash" id="splash">
+    <div class="splash-card">
+      <div class="splash-fruits" id="splashFruitLine" aria-hidden="true"></div>
+      <h1 class="splash-title" id="splashTitle">JuicyM</h1>
+      <div class="splash-copy">
+        Swap pieces to match 3 or more, trigger explosive combos, and rack up points before your moves run out!
+      </div>
+      <div class="splash-actions">
+        <button id="startBtn">Start</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="game.js" defer></script>
+</body>
+</html>
