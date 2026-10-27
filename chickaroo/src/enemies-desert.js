@@ -8,7 +8,7 @@
 // itself down over ledges -- head first, the body flowing after it round every corner (the body
 // follows the exact path the head took). But it never crawls out of sight: at the edge of the
 // screen, a bottomless drop, or a wall it can't get over, it turns back. Stomp it flat.
-const SNAKE_LEN = 28, SNAKE_WAVE = 15, SNAKE_CLIMB = 0.7, SNAKE_DOWN = 1.0;   // (px per frame up, and down, a wall face)
+const SNAKE_LEN = 28, SNAKE_STEP = 1, SNAKE_WAVE = 15, SNAKE_CLIMB = 0.7, SNAKE_DOWN = 1.0;   // (px per frame up, and down, a wall face)
 class Sidewinder extends Enemy {
   constructor(col, row) {
     super(col * TILE - 2, (row + 1) * TILE - 8, 20, 8);
@@ -116,11 +116,11 @@ class Sidewinder extends Enemy {
     if(!this.trail)this.straighten();
     ctx.save();if(this.flipped){ctx.translate(0,by0*2-this.h);ctx.scale(1,-1);}
     const raw = [];
-    for (let s = 0; s <= SNAKE_LEN; s += 0.5) raw.push(this.along(s));
+    for (let s = 0; s <= SNAKE_LEN; s += SNAKE_STEP) raw.push(this.along(s));   // (a ring every SNAKE_STEP px)
     const pts = raw.map(([x, y, flat], i) => {
-      const s = i * 0.5, r = Sidewinder.girth(s);
+      const s = i * SNAKE_STEP, r = Sidewinder.girth(s), near = Math.round(3 / SNAKE_STEP);
       let calm = 1;
-      for (let k = -6; k <= 6; k++) { const q = raw[i + k]; if (q && !q[2]) { calm = Math.min(calm, Math.abs(k) / 7); } }
+      for (let k = -near; k <= near; k++) { const q = raw[i + k]; if (q && !q[2]) { calm = Math.min(calm, Math.abs(k) * SNAKE_STEP / 3.5); } }
       if (!flat) {
         const rockR = g && g.level.solid(Math.floor((x + 4) / TILE), Math.floor(y / TILE)), side = rockR ? 1 : -1;
         return { x, y, r, s, flat: false, side };
@@ -144,7 +144,7 @@ class Sidewinder extends Enemy {
       if(q.s>6&&q.s<SNAKE_LEN-3&&(q.s%6)<1.2)P.ell(q.x,q.y-q.r*0.53,0.48,q.r*0.5,C.MARK);
     }
     P.end(ctx);
-    const h0=pts[0],h1=pts[4],angle=Math.atan2(h0.y-h1.y,h0.x-h1.x);
+    const h0=pts[0],h1=pts[Math.round(2/SNAKE_STEP)],angle=Math.atan2(h0.y-h1.y,h0.x-h1.x);
     ctx.translate(h0.x,h0.y);ctx.rotate(angle);if(f<0)ctx.scale(1,-1);ctx.drawImage(duneSnakeHeadArt(this.tongue<0&&(this.t>>1)%3),-10,-6);ctx.restore();
   }
 }

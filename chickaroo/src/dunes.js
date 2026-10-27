@@ -737,13 +737,13 @@ class CrumbleMesa extends Enemy {
         if (x < x0 || x > x1 || y >= bot) return;
         px.push([x,y,d+s]);lines.push([oldX,oldY,x,y,d+s]); max = Math.max(max, d + s);
         // splitting off: a branch angling away to one side, shorter, which may split again
-        if (gen < 3 && s > 5 && rng() < (gen === 0 ? 0.05 : 0.032)) {
+        if (gen < 2 && s > 5 && rng() < (gen === 0 ? 0.04 : 0.025)) {
           const side = rng() < 0.5 ? -1 : 1;
           grow(x, y, side * (0.5 + rng() * 0.6), d + s, Math.round(len * (0.35 + rng() * 0.3)), gen + 1);
         }
       }
     };
-    const roots = 3 + Math.floor(rng() * 2);
+    const roots = 2 + Math.floor(rng() * 2);
     for (let i = 0; i < roots; i++) {
       const sx = x0 + 3 + (x1 - x0 - 6) * (i + 0.3 + rng() * 0.4) / roots;
       grow(sx, top, (rng() - 0.5) * 0.3, Math.floor(rng() * 6), Math.round((bot - top) * (0.75 + rng() * 0.25)), 0);
