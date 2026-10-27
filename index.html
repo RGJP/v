@@ -1,152 +1,336 @@
 <!doctype html>
-<html lang="en" class="loading">
+<html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#070c14">
+  <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#0a0a0a">
-  <title>CHICKAROO</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐥</text></svg>">
-  <meta name="description" content="CHICKAROO — a handcrafted 2D platformer homage. Pure HTML5 canvas and Web Audio.">
-  <style>html, body { background: #0a0a0a; }</style>
-  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2338bdf8'/%3E%3Cstop offset='100%25' stop-color='%236366f1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='46' fill='url(%23g)'/%3E%3Cpath d='M34 66 L66 50 L34 34 Z' fill='%23ffffff'/%3E%3C/svg%3E">
+  <title>Launchpad</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070c14;
+      --card-bg: rgba(18, 26, 43, 0.78);
+      --card-border: rgba(255, 255, 255, 0.09);
+      --card-hover: rgba(28, 42, 70, 0.96);
+      --text: #f1f5f9;
+      --accent: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      height: 100svh;
+      height: var(--app-height, 100svh);
+      max-height: 100svh;
+      max-height: var(--app-height, 100svh);
+      overflow: hidden;
+      background: var(--bg);
+      background-image: radial-gradient(circle at 50% 0%, #162444 0%, #070c14 80%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    }
+
+    /* Fullscreen Viewport Shell with Android 3-Button Nav Protection */
+    .viewport-shell {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding-top: max(8px, env(safe-area-inset-top, 0px));
+      padding-left: max(8px, env(safe-area-inset-left, 0px));
+      padding-right: max(8px, env(safe-area-inset-right, 0px));
+      /* Generous bottom padding for Android 3-button native navigation */
+      padding-bottom: max(18px, calc(env(safe-area-inset-bottom, 0px) + 10px));
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Grid Layout:
+       - Mobile Portrait: 2 COLUMNS x 10 ROWS (Wide cards: text never truncates!)
+       - Tablet / Landscape: 4 COLUMNS x 5 ROWS
+       - Desktop: 5 COLUMNS x 4 ROWS
+    */
+    main {
+      flex: 1;
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      gap: clamp(4px, 0.9vh, 8px);
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+    }
+
+    @media (min-width: 600px) {
+      main {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-rows: repeat(5, 1fr);
+        gap: clamp(6px, 1.2vh, 12px);
+      }
+    }
+
+    @media (min-width: 960px) {
+      main {
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: repeat(4, 1fr);
+        gap: clamp(8px, 1.5vh, 14px);
+      }
+    }
+
+    /* App Button: Horizontal card on mobile & desktop */
+    .app-btn {
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      gap: clamp(8px, 2vw, 14px);
+      min-width: 0;
+      min-height: 0;
+      padding: 0 clamp(8px, 2.2vw, 16px);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: clamp(10px, 1.8vh, 15px);
+      text-decoration: none;
+      color: var(--text);
+      user-select: none;
+      outline: none;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    .app-btn:last-child {
+      grid-column: span 2;
+    }
+
+    /* Left accent indicator strip */
+    .app-btn::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 18%;
+      bottom: 18%;
+      width: 3px;
+      background: var(--accent-color, var(--accent));
+      border-radius: 0 4px 4px 0;
+      opacity: 0.85;
+      transition: all 140ms ease;
+    }
+
+    .app-btn:hover {
+      background: var(--card-hover);
+      border-color: var(--accent-color, var(--accent));
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px -2px rgba(0, 0, 0, 0.45);
+    }
+
+    .app-btn:hover::before {
+      top: 10%;
+      bottom: 10%;
+      width: 4px;
+      opacity: 1;
+      box-shadow: 0 0 10px var(--accent-color, var(--accent));
+    }
+
+    .app-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Icon Squircle Box */
+    .btn-icon-box {
+      width: clamp(28px, 4.4vh, 38px);
+      height: clamp(28px, 4.4vh, 38px);
+      border-radius: clamp(8px, 1.3vh, 11px);
+      background: var(--icon-bg, rgba(255, 255, 255, 0.06));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(1.15rem, 2.5vh, 1.55rem);
+      line-height: 1;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+      transition: transform 140ms ease;
+    }
+
+    .app-btn:hover .btn-icon-box {
+      transform: scale(1.08);
+    }
+
+    /* Label Container */
+    .btn-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .btn-label {
+      font-size: clamp(0.76rem, 1.7vh, 0.94rem);
+      font-weight: 700;
+      letter-spacing: -0.015em;
+      line-height: 1.15;
+      text-align: left;
+      white-space: normal;
+      word-break: normal;
+      overflow-wrap: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* Ultra-compact screen adjustments (landscape / small screens) */
+    @media (max-height: 540px) {
+      .viewport-shell {
+        gap: 3px;
+        padding-bottom: max(14px, calc(env(safe-area-inset-bottom, 0px) + 6px));
+      }
+      .btn-icon-box {
+        width: 24px;
+        height: 24px;
+        font-size: 1rem;
+      }
+      .btn-label {
+        font-size: clamp(0.68rem, 1.3vh, 0.78rem);
+      }
+    }
+  </style>
 </head>
 <body>
-  <!-- Static bake of SPR.small.blush, embedded so it appears before game scripts and fonts load. -->
-  <div id="loading" role="status" aria-label="Loading CHICKAROO">
-    <img src="data:image/png;base64,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" width="96" height="74" alt="" fetchpriority="high" draggable="false">
+  <div class="viewport-shell">
+    <main id="appGrid">
+      <a href="balance/index.html" class="app-btn" style="--accent-color: #14b8a6; --icon-bg: rgba(20, 184, 166, 0.2);">
+        <div class="btn-icon-box">⚖️</div>
+        <div class="btn-info"><span class="btn-label">Balance</span></div>
+      </a>
+
+      <a href="chickaroo/index.html" class="app-btn" style="--accent-color: #2ec4b6; --icon-bg: rgba(46, 196, 182, 0.2);">
+        <div class="btn-icon-box">🐥</div>
+        <div class="btn-info"><span class="btn-label">Chickaroo</span></div>
+      </a>
+
+      <a href="chremed/index.html" class="app-btn" style="--accent-color: #5f7f72; --icon-bg: rgba(95, 127, 114, 0.25);">
+        <div class="btn-icon-box">✝️</div>
+        <div class="btn-info"><span class="btn-label">Méditations avec le Christ</span></div>
+      </a>
+
+      <a href="condalim/index.html" class="app-btn" style="--accent-color: #ef4444; --icon-bg: rgba(239, 68, 68, 0.2);">
+        <div class="btn-icon-box">🛡️</div>
+        <div class="btn-info"><span class="btn-label">Condalim</span></div>
+      </a>
+
+      <a href="emojiland/index.html" class="app-btn" style="--accent-color: #fbbf24; --icon-bg: rgba(251, 191, 36, 0.2);">
+        <div class="btn-icon-box">⭐</div>
+        <div class="btn-info"><span class="btn-label">Emojiland</span></div>
+      </a>
+
+      <a href="eos.html" class="app-btn" style="--accent-color: #8b5cf6; --icon-bg: rgba(139, 92, 246, 0.2);">
+        <div class="btn-icon-box">🔔</div>
+        <div class="btn-info"><span class="btn-label">Echoes (EOS)</span></div>
+      </a>
+
+      <a href="gasquebec/index.html" class="app-btn" style="--accent-color: #f97316; --icon-bg: rgba(249, 115, 22, 0.2);">
+        <div class="btn-icon-box">⛽</div>
+        <div class="btn-info"><span class="btn-label">Gas Québec</span></div>
+      </a>
+
+      <a href="guitar.html" class="app-btn" style="--accent-color: #a855f7; --icon-bg: rgba(168, 85, 247, 0.2);">
+        <div class="btn-icon-box">🎸</div>
+        <div class="btn-info"><span class="btn-label">Guitare</span></div>
+      </a>
+
+      <a href="hridayam.html" class="app-btn" style="--accent-color: #06b6d4; --icon-bg: rgba(6, 182, 212, 0.2);">
+        <div class="btn-icon-box">🌬️</div>
+        <div class="btn-info"><span class="btn-label">Hridayam</span></div>
+      </a>
+
+      <a href="juicym/index.html" class="app-btn" style="--accent-color: #ec4899; --icon-bg: rgba(236, 72, 153, 0.2);">
+        <div class="btn-icon-box">🍓</div>
+        <div class="btn-info"><span class="btn-label">JuicyM</span></div>
+      </a>
+
+      <a href="kirtan/index.html" class="app-btn" style="--accent-color: #f43f5e; --icon-bg: rgba(244, 63, 94, 0.2);">
+        <div class="btn-icon-box">🎵</div>
+        <div class="btn-info"><span class="btn-label">Kirtan</span></div>
+      </a>
+
+      <a href="mandala.html" class="app-btn" style="--accent-color: #38bdf8; --icon-bg: rgba(56, 189, 248, 0.2);">
+        <div class="btn-icon-box">🌀</div>
+        <div class="btn-info"><span class="btn-label">Mandala</span></div>
+      </a>
+
+      <a href="messequebec/index.html" class="app-btn" style="--accent-color: #eab308; --icon-bg: rgba(234, 179, 8, 0.2);">
+        <div class="btn-icon-box">🙏</div>
+        <div class="btn-info"><span class="btn-label">Messe QC</span></div>
+      </a>
+
+      <a href="mindfulpause.html" class="app-btn" style="--accent-color: #10b981; --icon-bg: rgba(16, 185, 129, 0.2);">
+        <div class="btn-icon-box">🪷</div>
+        <div class="btn-info"><span class="btn-label">Mindful Pause</span></div>
+      </a>
+
+      <a href="moojilongvideos.html" class="app-btn" style="--accent-color: #f59e0b; --icon-bg: rgba(245, 158, 11, 0.2);">
+        <div class="btn-icon-box">🕉️</div>
+        <div class="btn-info"><span class="btn-label">Mooji (1h+)</span></div>
+      </a>
+
+      <a href="mooji2010/index.html" class="app-btn" style="--accent-color: #d97706; --icon-bg: rgba(217, 119, 6, 0.2);">
+        <div class="btn-icon-box">⛰️</div>
+        <div class="btn-info"><span class="btn-label">Mooji 2010</span></div>
+      </a>
+
+      <a href="mose.html" class="app-btn" style="--accent-color: #d4af37; --icon-bg: rgba(212, 175, 55, 0.25);">
+        <div class="btn-icon-box">🎧</div>
+        <div class="btn-info"><span class="btn-label">Mose</span></div>
+      </a>
+
+      <a href="mudra.html" class="app-btn" style="--accent-color: #6366f1; --icon-bg: rgba(99, 102, 241, 0.2);">
+        <div class="btn-icon-box">🤚</div>
+        <div class="btn-info"><span class="btn-label">Mudra</span></div>
+      </a>
+
+      <a href="satsangs351/index.html" class="app-btn" style="--accent-color: #ca8a04; --icon-bg: rgba(202, 138, 4, 0.2);">
+        <div class="btn-icon-box">🕯️</div>
+        <div class="btn-info"><span class="btn-label">Satsangs 351</span></div>
+      </a>
+
+      <a href="yoga.html" class="app-btn" style="--accent-color: #059669; --icon-bg: rgba(5, 150, 105, 0.2);">
+        <div class="btn-icon-box">🧘</div>
+        <div class="btn-info"><span class="btn-label">Yoga</span></div>
+      </a>
+    </main>
   </div>
-  <main id="stage">
-    <div id="frame">
-      <canvas id="game" width="1200" height="672" aria-label="CHICKAROO game screen"></canvas>
-    </div>
-  </main>
 
-  <div id="toolbar">
-    <button id="pause" class="tool touch-only" type="button" aria-label="Pause" title="Pause (P)">
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 3h3v10H4zM9 3h3v10H9z"/></svg>
-    </button>
-    <button id="swap" class="tool touch-only play-only" type="button" aria-label="Swap reserve item" title="Swap item">
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M3 5h9l-2.5-2.5M13 11H4l2.5 2.5"/></svg>
-    </button>
-    <button id="fs" class="tool" type="button" aria-label="Toggle fullscreen" title="Fullscreen (F)">
-      <svg class="icon-enter" viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>
-      <svg class="icon-exit" viewBox="0 0 16 16" aria-hidden="true"><path class="line" d="M6 2v4H2M14 6h-4V2M10 14v-4h4M2 10h4v4"/></svg>
-    </button>
-  </div>
+  <script>
+    // Exact visual height binding for mobile address bars & Android navigation
+    function updateAppHeight() {
+      const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+      document.documentElement.style.setProperty('--app-height', `${vh}px`);
+    }
 
-  <div id="touch" class="touch-only" aria-hidden="true">
-    <div id="dpad">
-      <div class="base"><span class="chev u"></span><span class="chev d"></span><span class="chev l"></span><span class="chev r"></span><span class="knob"></span></div>
-    </div>
-    <button id="autorun" type="button" class="chip"><span class="dot"></span>AUTO RUN</button>
-    <div id="btns">
-      <span id="bR" class="btn small" data-code="TouchRoll"><i>ROLL</i></span>
-      <span id="bS" class="btn small" data-code="TouchSpin"><i>SPIN</i></span>
-      <span id="bB" class="btn" data-code="TouchRun"><b>B</b><i>RUN</i></span>
-      <span id="bA" class="btn" data-code="TouchJump"><b>A</b><i>JUMP</i></span>
-    </div>
-  </div>
-
-  <div id="rotate" role="alert">
-    <div class="phone"><span></span></div>
-    <p class="big">Turn your phone sideways</p>
-    <p class="small">CHICKAROO plays in landscape. Tap to go fullscreen.</p>
-  </div>
-
-  <div id="toast" role="status" aria-live="polite"></div>
-
-  <script src="src/levels.js"></script>
-  <script src="src/constants.js"></script>
-  <script src="src/utils.js"></script>
-  <script src="src/fonts.js"></script>
-  <script src="src/hires.js"></script>
-  <script src="src/audio.js"></script>
-  <script src="src/bayou-music.js"></script>
-  <script src="src/input.js"></script>
-  <script src="src/sprites.js"></script>
-  <script src="src/tiles.js"></script>
-  <script src="src/backgrounds.js"></script>
-  <script src="src/meadow-fine.js"></script>
-  <script src="src/fine-ground.js"></script>
-  <script src="src/cave-fine.js"></script>
-  <script src="src/sky-fine.js"></script>
-  <script src="src/citadel-fine.js"></script>
-  <script src="src/ocean-fine.js"></script>
-  <script src="src/snow-fine.js"></script>
-  <script src="src/clock-fine.js"></script>
-  <script src="src/eclipse-fine.js"></script>
-  <script src="src/desert-fine.js"></script>
-  <script src="src/level.js"></script>
-  <script src="src/enemy.js"></script>
-  <script src="src/enemies-meadow.js"></script>
-  <script src="src/blooms.js"></script>
-  <script src="src/meadow-art.js"></script>
-  <script src="src/desert-art.js"></script>
-  <script src="src/magmaw-art.js"></script>
-  <script src="src/sprites-fine.js"></script>
-  <script src="src/bayou-fine.js"></script>
-  <script src="src/jungle-fine.js"></script>
-  <script src="src/winter-art.js"></script>
-  <script src="src/clock-art.js"></script>
-  <script src="src/eclipse-enemy-art.js"></script>
-  <script src="src/enemies-water-ice.js"></script>
-  <script src="src/enemies-snow.js"></script>
-  <script src="src/enemies-forest.js"></script>
-  <script src="src/enemies-desert.js"></script>
-  <script src="src/enemies-jungle.js"></script>
-  <script src="src/enemies-misc.js"></script>
-  <script src="src/snorer-art.js"></script>
-  <script src="src/enemies-cave.js"></script>
-  <script src="src/cave-moths.js"></script>
-  <script src="src/enemies-sky.js"></script>
-  <script src="src/fair.js"></script>
-  <script src="src/enemies-citadel.js"></script>
-  <script src="src/enemies-clock.js"></script>
-  <script src="src/clock-finale.js"></script>
-  <script src="src/enemies-eclipse.js"></script>
-  <script src="src/bosses.js"></script>
-  <script src="src/umbra-art.js"></script>
-  <script src="src/shade.js"></script>
-  <script src="src/sigil.js"></script>
-  <script src="src/dunes.js"></script>
-  <script src="src/enemies-bayou.js"></script>
-  <script src="src/enemies-gut.js"></script>
-  <script src="src/enemies-gumbo.js"></script>
-  <script src="src/crawdad-art.js"></script>
-  <script src="src/items-fx.js"></script>
-  <script src="src/platform.js"></script>
-  <script src="src/gumbo.js"></script>
-  <script src="src/game.js"></script>
-  <script src="src/game-update.js"></script>
-  <script src="src/game-jungle.js"></script>
-  <script src="src/game-sky.js"></script>
-  <script src="src/game-clock.js"></script>
-  <script src="src/game-bayou.js"></script>
-  <script src="src/gut.js"></script>
-  <script src="src/gut-dream.js"></script>
-  <script src="src/gut-rooms.js"></script>
-  <script src="src/gut-ileum.js"></script>
-  <script src="src/gut-colon.js"></script>
-  <script src="src/cloacolith-art.js"></script>
-  <script src="src/turtle-art.js"></script>
-  <script src="src/gut-vault.js"></script>
-  <script src="src/gut-sprites.js"></script>
-  <script src="src/game-gumbo.js"></script>
-  <script src="src/game-world.js"></script>
-  <script src="src/game-blocks-items.js"></script>
-  <script src="src/game-suits.js"></script>
-  <script src="src/game-entities.js"></script>
-  <script src="src/game-render.js"></script>
-  <script src="src/game-decor.js"></script>
-  <script src="src/game-goals.js"></script>
-  <script src="src/game-hud.js"></script>
-  <script src="src/game-devwarp.js"></script>
-  <script src="src/game-cat.js"></script>
-  <script src="src/game-story.js"></script>
-  <script src="src/logo.js"></script>
-  <script src="src/boot.js"></script>
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateAppHeight);
+    }
+    window.addEventListener('resize', updateAppHeight);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(updateAppHeight, 100);
+    });
+    updateAppHeight();
+  </script>
 </body>
 </html>
