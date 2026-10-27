@@ -89,8 +89,14 @@ const Pad = {
     return true;
   },
   list() {
-    try { return navigator.getGamepads ? Array.from(navigator.getGamepads()).filter(g => g && g.connected) : []; }
-    catch (e) { return []; }
+    try {
+      if (!navigator.getGamepads) return [];
+      const raw = navigator.getGamepads();
+      if (!raw) return [];
+      const res = [];
+      for (let i = 0; i < raw.length; i++) { const g = raw[i]; if (g && g.connected) res.push(g); }
+      return res;
+    } catch (e) { return []; }
   },
   read(gp) {
     const b = i => { const x = gp.buttons[i]; return !!x && (x.pressed || x.value > 0.5); };

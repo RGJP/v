@@ -414,14 +414,25 @@ GameDecor.prototype.drawSeedChute = function (ctx) {   // (in fine pixels: hires
 };
 // the open sea behind a dry stretch of a water level (fine: a smooth rolling wave line, the water deepening below it,
 // a foaming crest with glints running along it, streaks of light drifting on the swell)
+let SEA_GRAD = null, SEA_PTS = null;
 GameDecor.prototype.drawSea = function (ctx, cam) {
   const t = this.t, base = 12 * TILE + 6, wave = x => base + Math.sin((x + t * 0.6) / 13) * 1.5 + Math.sin((x - t * 0.4) / 7);
-  const pts = [];
-  for (let x = cam - 1; x <= cam + VIEW_W + 1; x += 1 / ART_R) pts.push([x, wave(x)]);
-  const body = dy => { ctx.beginPath(); ctx.moveTo(cam - 1, VIEW_H); for (const [x, y] of pts) ctx.lineTo(x, y + dy); ctx.lineTo(cam + VIEW_W + 1, VIEW_H); ctx.fill(); };
-  const gr = ctx.createLinearGradient(0, base - 3, 0, VIEW_H);
-  gr.addColorStop(0, '#2c98d8'); gr.addColorStop(0.3, '#1f7fc0'); gr.addColorStop(1, '#10467e');
-  ctx.fillStyle = gr; body(0);
+  if (!SEA_PTS) SEA_PTS = Array.from({ length: 1500 }, () => [0, 0]);
+  let pIdx = 0;
+  for (let x = cam - 1; x <= cam + VIEW_W + 1; x += 1 / ART_R) {
+    const pt = SEA_PTS[pIdx++]; pt[0] = x; pt[1] = wave(x);
+  }
+  const body = dy => {
+    ctx.beginPath(); ctx.moveTo(cam - 1, VIEW_H);
+    for (let i = 0; i < pIdx; i++) ctx.lineTo(SEA_PTS[i][0], SEA_PTS[i][1] + dy);
+    ctx.lineTo(cam + VIEW_W + 1, VIEW_H); ctx.fill();
+  };
+  if (!SEA_GRAD) {
+    const gr = ctx.createLinearGradient(0, base - 3, 0, VIEW_H);
+    gr.addColorStop(0, '#2c98d8'); gr.addColorStop(0.3, '#1f7fc0'); gr.addColorStop(1, '#10467e');
+    SEA_GRAD = gr;
+  }
+  ctx.fillStyle = SEA_GRAD; body(0);
   ctx.globalAlpha = 0.3; ctx.fillStyle = '#0c3e74'; body(10); ctx.globalAlpha = 1;
   for (let k = 0; k < 14; k++) {   // light on the swell
     const x = cam + ((k * 61 + t * (0.2 + (k % 3) * 0.08)) % (VIEW_W + 20)) - 10, y = base + 5 + ((k * 7) % 19), w = 3 + (k % 4) * 1.5;
@@ -429,7 +440,11 @@ GameDecor.prototype.drawSea = function (ctx, cam) {
   }
   ctx.globalAlpha = 1;
   ctx.strokeStyle = '#a8e4ff'; ctx.lineWidth = 0.8; ctx.beginPath();
-  pts.forEach(([x, y], i) => i ? ctx.lineTo(x, y + 0.35) : ctx.moveTo(x, y + 0.35)); ctx.stroke();
+  for (let i = 0; i < pIdx; i++) {
+    if (i === 0) ctx.moveTo(SEA_PTS[0][0], SEA_PTS[0][1] + 0.35);
+    else ctx.lineTo(SEA_PTS[i][0], SEA_PTS[i][1] + 0.35);
+  }
+  ctx.stroke();
   for (let x = Math.floor(cam); x < cam + VIEW_W; x++) if ((x + (t >> 3)) % 9 < 3) fRect(ctx, x, wave(x) - 1 / ART_R, 1, 2 / ART_R, '#ffffff');   // foam glints
 };
 // 2-1's underwater whirlpool current around the treasure island: swirling slipstream ribbons and a dense stream of

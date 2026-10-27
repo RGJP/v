@@ -418,7 +418,12 @@ function fineHeart(ctx, x, y, w, color, shine = '#ffe1eb') {
   const r = w * 0.29;
   fBlob(ctx, x - r * 0.95, y - r * 0.35, r, color); fBlob(ctx, x + r * 0.95, y - r * 0.35, r, color);
   const n = Math.round(w * ART_R * 0.55);
-  fRects(ctx, color, Array.from({ length: n }, (_, j) => { const k = j / n, hw = (1 - k) * r * 1.95; return [x - hw, y - r * 0.35 + j / ART_R, hw * 2, 1 / ART_R]; }));
+  ctx.fillStyle = color; ctx.beginPath();
+  for (let j = 0; j < n; j++) {
+    const k = j / n, hw = (1 - k) * r * 1.95;
+    ctx.rect(fSnap(x - hw), fSnap(y - r * 0.35 + j / ART_R), fSnap(hw * 2), 1 / ART_R);
+  }
+  ctx.fill();
   fBlob(ctx, x - r * 1.15, y - r * 0.6, r * 0.32, shine);
 }
 // a filled polygon in rows of art pixels (crisp, one fill), points in game units

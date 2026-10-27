@@ -159,11 +159,15 @@ class HighStriker extends Enemy {
     g.burst(this.towerX, this.ground - STRIKE_TALL - 12, ['#ffd166', '#ffffff', '#ff8fb8', '#8fe0ff'], 18);
   }
   draw(ctx, g) {
+    if (g && (this.x + this.w < g.camX - 30 || this.x > g.camX + VIEW_W + 30)) return;
     const G = this.ground, tx = this.towerX, top = G - STRIKE_TALL - 8, t = this.t;
     // the tower: a tall post with a scale painted up it, cool to hot, and the bell on top
     fRoundRect(ctx, tx - 4.6, top + 4, 9.2, G - top - 4, 2, INK);
-    const pole = ctx.createLinearGradient(tx - 4, 0, tx + 4, 0); pole.addColorStop(0, '#fffaf0'); pole.addColorStop(0.5, '#e8dcc8'); pole.addColorStop(1, '#b8a888');
-    fRoundRect(ctx, tx - 3.8, top + 5, 7.6, G - top - 5, 1.6, pole);
+    if (!this._pole) {
+      const pole = ctx.createLinearGradient(tx - 4, 0, tx + 4, 0); pole.addColorStop(0, '#fffaf0'); pole.addColorStop(0.5, '#e8dcc8'); pole.addColorStop(1, '#b8a888');
+      this._pole = pole;
+    }
+    fRoundRect(ctx, tx - 3.8, top + 5, 7.6, G - top - 5, 1.6, this._pole);
     const BANDS = ['#5fd068', '#a8e050', '#ffe14d', '#ffb347', '#ff7a45', '#ff4d6d'];
     for (let i = 0; i < 6; i++) { const y = G - 6 - (i + 1) * (STRIKE_TALL - 6) / 6; fRect(ctx, tx - 3.8, y, 7.6, (STRIKE_TALL - 6) / 6 - 1.4, BANDS[i]); }
     fRect(ctx, tx - 0.4, top + 10, 0.8, G - top - 14, '#5a4a3a');   // the wire the puck rides
@@ -171,8 +175,11 @@ class HighStriker extends Enemy {
     const shake = this.ringT >= 0 && this.ringT < 60 ? Math.sin(this.ringT * 0.9) * (1 - this.ringT / 60) * 1.4 : 0;
     ctx.save(); ctx.translate(tx, top + 3); ctx.rotate(shake * 0.2);
     fPoly(ctx, [[-7.2, 6], [-5.4, -2], [-2.6, -5.6], [2.6, -5.6], [5.4, -2], [7.2, 6]], INK);
-    const bell = ctx.createLinearGradient(-6, 0, 6, 0); bell.addColorStop(0, '#fff3b0'); bell.addColorStop(0.35, '#ffd166'); bell.addColorStop(1, '#b8781a');
-    fPoly(ctx, [[-6.2, 5.2], [-4.6, -1.6], [-2.2, -4.7], [2.2, -4.7], [4.6, -1.6], [6.2, 5.2]], bell);
+    if (!HighStriker.bellGrad) {
+      const bell = ctx.createLinearGradient(-6, 0, 6, 0); bell.addColorStop(0, '#fff3b0'); bell.addColorStop(0.35, '#ffd166'); bell.addColorStop(1, '#b8781a');
+      HighStriker.bellGrad = bell;
+    }
+    fPoly(ctx, [[-6.2, 5.2], [-4.6, -1.6], [-2.2, -4.7], [2.2, -4.7], [4.6, -1.6], [6.2, 5.2]], HighStriker.bellGrad);
     fRoundRect(ctx, -7.6, 4.4, 15.2, 2.2, 1, INK); fBlob(ctx, 0, 7.2, 1.3, INK); fEll(ctx, -2.6, -1, 0.8, 2.4, '#fffaf0');
     ctx.restore();
     if (this.ringT >= 0 && this.ringT < 50) {
@@ -272,7 +279,8 @@ class FairGate extends Enemy {
       if (this.k > 0.4 && this.shut) { for (let r = this.top; r <= this.bot; r++) g.level.set(this.col, r, T.EMPTY);g.level.skyGates.delete(this.col); this.shut = false; }
     }
   }
-  draw(ctx) {
+  draw(ctx, g) {
+    if (g && (this.x + TILE < g.camX || this.x > g.camX + VIEW_W)) return;
     const x=this.x+8,y0=-LIFT_MAX-20,y1=this.y+this.h,e=this.k*this.k*(3-2*this.k);
     const bottom=y1-e*(y1-y0+20);
     if(bottom>y0){

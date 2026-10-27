@@ -58,6 +58,7 @@ class Vine extends Enemy {
     }
   }
   draw(ctx, g) {   // (in fine pixels: hires.js)
+    if (g && (this.ax + this.len < g.camX || this.ax - this.len > g.camX + VIEW_W)) return;
     const n = Math.ceil(this.len / 3), bend = clamp(-this.w * 26, -5, 5);
     const ux = Math.sin(this.a), uy = Math.cos(this.a);
     // the rope trails a little behind the swing (a gentle bow), with leaves every so often
@@ -341,6 +342,7 @@ class Chamelurk extends Enemy {
     } else if (this.state === 'show' && this.timer >= 50) { this.state = 'hide'; this.timer = 0; this.cool = 70; }
   }
   draw(ctx, g) {   // (painted fine: chamArt, jungle-fine.js; in its own frame: x across from its back, facing +x)
+    if (g && (this.x + this.w + 64 < g.camX || this.x - 64 > g.camX + VIEW_W)) return;
     const f = this.face, x = Math.round(this.x), by = Math.round(this.y + this.h), t = this.t, v = this.vis;
     if (this.flipped) { ctx.save(); ctx.translate(0, by * 2 - this.h); ctx.scale(1, -1); }
     ctx.save(); ctx.translate(f > 0 ? x : x + this.w, by); if (f < 0) ctx.scale(-1, 1);

@@ -510,9 +510,10 @@ function drawDuneHellfire(game,ctx,c0,c1) {
     ctx.drawImage(duneFlameArt(Math.floor(t/3)%12,c%2),x,top-30);
     for(let i=0;i<2;i++){
       const seed=c*37+i*53,u=((t+seed)%100)/100,xx=x+((seed%13)+13)%13+Math.sin(u*7+seed)*2,yy=top-5-u*55;
-      ctx.save();ctx.globalAlpha=1-u;fEll(ctx,xx,yy,0.35,0.7,'#ffd993');ctx.restore();
+      ctx.globalAlpha=1-u;fEll(ctx,xx,yy,0.35,0.7,'#ffd993');
     }
   }
+  ctx.globalAlpha=1;
 }
 function duneDecorArt(kind,h=12,flower=false,color='#c17c58') {
   return duneBake('decor:'+kind+h+flower+color,40,40,A=>{

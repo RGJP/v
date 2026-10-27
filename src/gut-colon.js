@@ -192,7 +192,8 @@ class Spout extends Enemy {
   }
   // Pressurised sludge fluid, drawn with continuous curves matching POOL.sludge: a rising
   // olive-brown blister, then a torn, murky sludge jet that looks indistinguishable from the lake rising up.
-  draw(ctx) {
+  draw(ctx, g) {
+    if (g && (this.x + this.w < g.camX - 20 || this.x > g.camX + VIEW_W + 20)) return;
     const cx=this.x+this.w/2,w=this.w,t=this.t,surf=this.surf,warn=this.warn;
     const shape=(fill,path,stroke=null,width=.65)=>{
       ctx.beginPath();path();ctx.closePath();ctx.fillStyle=fill;ctx.fill();
@@ -239,11 +240,14 @@ class Spout extends Enemy {
     if(this.k<=0){ctx.restore();return;}
     const h=this.h*this.k,top=surf-h,half=w*.35;
     // Broad fluid shading matching the sludge pool (#2e2410 deep, #5e4e20 body, #a8983e top) so the jet is the lake itself rising up.
-    const jet=ctx.createLinearGradient(cx-half,0,cx+half,0);
-    jet.addColorStop(0,'#2e2410');jet.addColorStop(.22,'#5e4e20');
-    jet.addColorStop(.52,'#a8983e');jet.addColorStop(.76,'#5e4e20');jet.addColorStop(1,'#2e2410');
+    if(!this._jetGrad){
+      const jet=ctx.createLinearGradient(cx-half,0,cx+half,0);
+      jet.addColorStop(0,'#2e2410');jet.addColorStop(.22,'#5e4e20');
+      jet.addColorStop(.52,'#a8983e');jet.addColorStop(.76,'#5e4e20');jet.addColorStop(1,'#2e2410');
+      this._jetGrad=jet;
+    }
     const edge=(side,u)=>cx+side*(half+Math.sin(u*11-t*.17)*1.9+Math.sin(u*21+t*.11)*.75+(1-u)*1.4);
-    shape(jet,()=>{
+    shape(this._jetGrad,()=>{
       ctx.moveTo(edge(-1,0),surf+1);
       for(let i=1;i<=12;i++){const u=i/12;ctx.lineTo(edge(-1,u),surf-h*u);}
       ctx.quadraticCurveTo(cx,top-3,edge(1,1),top);

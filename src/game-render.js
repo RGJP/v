@@ -251,7 +251,8 @@ class GameRender {
               while(lv.get(left-1,r)===T.ICE)left--;
               while(lv.get(right+1,r)===T.ICE)right++;
               const openLeft=!lv.looksSolid(left-1,r),openRight=!lv.looksSolid(right+1,r);
-              const openBottom=Array.from({length:right-left+1},(_,i)=>left+i).every(x=>!lv.looksSolid(x,r+1));
+              let openBottom=true;
+              for(let x=left;x<=right;x++){if(lv.looksSolid(x,r+1)){openBottom=false;break;}}
               // Rock continues behind the shelf's chipped lower edge so its natural contour has no sky gaps.
               for(let cc=Math.max(left,c0);cc<=Math.min(right,c1);cc++)if(lv.get(cc,r+1)===T.GROUND) {
                 const backing=ts['ground'+(((cc*7+(r+1)*13)^(cc>>2))&7)]||ts.ground;
@@ -345,9 +346,9 @@ class GameRender {
         glowTop = top;
         glow = ctx.createLinearGradient(0, top - 30, 0, top); glow.addColorStop(0, 'rgba(42,138,80,0)'); glow.addColorStop(1, '#2a8a50');
       }
-      ctx.save(); ctx.globalCompositeOperation = 'lighter';   // a soft glow fading upward
+      ctx.globalCompositeOperation = 'lighter';   // a soft glow fading upward
       ctx.globalAlpha = 0.07 * pulse; ctx.fillStyle = glow; ctx.fillRect(x0, top - 30, TILE, 30);
-      ctx.restore(); ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over'; ctx.globalAlpha = 1;
       // a bubble: swells on the surface for a while, then pops into a ring
       const per = 90 + (c * 37) % 70, u = ((t + c * 53) % per) / per, bx = x0 + 3 + (c * 7) % 10;
       if (u < 0.8) { const rr = 1 + u * 3; fBlob(ctx, bx + 0.5, top - rr + 1.5, rr + 1, '#1c8a5a'); fBlob(ctx, bx + 0.5, top - rr + 1.5, rr, '#a8ff6a'); fBlob(ctx, bx - 0.2 - rr * 0.3, top - rr * 1.5 + 1.6, 0.45, '#ffffff'); }   // (fine)
@@ -365,6 +366,9 @@ class GameRender {
     if(this.level.themeName==='desert'){drawDuneHellfire(this,ctx,c0,c1);return;}
     const lv = this.level, t = this.t;
     let haze = null, hazeTop = -1;
+    if (!this._hellfirePts) this._hellfirePts = Array.from({ length: 64 }, () => [0, 0]);
+    const pts = this._hellfirePts;
+    const layers = [[1, '#c0201a'], [0.7, '#ff6a1f'], [0.35, '#ffd27a']];
     for (let c = c0; c <= c1; c++) {
       let r = 1;
       while (r < ROWS && lv.get(c, r) !== T.LAVA) r++;
@@ -377,10 +381,16 @@ class GameRender {
       ctx.globalAlpha = 0.14 + Math.sin(t * 0.06 + c * 0.7) * 0.03; ctx.fillStyle = haze; ctx.fillRect(x0, top - 34, TILE, 34);
       ctx.globalAlpha = 1;
       const tongue = x => 6 + Math.sin(x * 0.37 + t * 0.21) * 4 + Math.sin(x * 0.11 - t * 0.13) * 3 + Math.sin(x * 1.3 + t * 0.4) * 1.6;   // licking tongues of flame
-      for (const [k, col] of [[1, '#c0201a'], [0.7, '#ff6a1f'], [0.35, '#ffd27a']]) {
-        const pts = [[x0, top + 1]];
-        for (let x = x0; x <= x0 + TILE; x += 1 / ART_R) pts.push([x, top - Math.max(2, tongue(x)) * k]);
-        pts.push([x0 + TILE, top + 1]); fPoly(ctx, pts, col);
+      for (let l = 0; l < 3; l++) {
+        const k = layers[l][0], col = layers[l][1];
+        let pIdx = 0;
+        let pt = pts[pIdx++]; pt[0] = x0; pt[1] = top + 1;
+        for (let x = x0; x <= x0 + TILE; x += 1 / ART_R) {
+          pt = pts[pIdx++]; pt[0] = x; pt[1] = top - Math.max(2, tongue(x)) * k;
+        }
+        pt = pts[pIdx++]; pt[0] = x0 + TILE; pt[1] = top + 1;
+        pts.length = pIdx;
+        fPoly(ctx, pts, col);
       }
       for (let x = x0; x < x0 + TILE; x++) if ((x + (t >> 1)) % 9 === 0) fEll(ctx, x + 0.5, top - tongue(x) - 2.6, 0.6, 1.2, '#ff6a1f');   // a lick breaking free
       for (let k = 0; k < 2; k++) {   // embers floating up, swaying

@@ -58,6 +58,7 @@ class AcidLake extends Enemy {
     if (p.state === 'play' && cx > this.x && cx < this.x + this.w && p.y + p.h > this.surf + 5 && !this.inDrain(cx)) g.killPlayer('acid');
   }
   draw(ctx, g) {   // clip to the same fine contour that paints the flesh banks
+    if (g && (this.x + this.w < g.camX - 16 || this.x > g.camX + VIEW_W + 16)) return;
     const C = POOL[this.kind], x0 = this.x, w = this.w, t = this.t, top = this.surf;
     const surf = x => {
       const edge=clamp(Math.min(x-x0,x0+w-x)/12,0,1),ease=edge*edge*(3-2*edge);
@@ -77,22 +78,35 @@ class AcidLake extends Enemy {
     }else{ctx.beginPath();ctx.rect(x0,top-4,w,VIEW_H-top+4);ctx.clip();}
 
     // the body: murky and glowing, darker down deep, under a slow swell of a surface
-    const gr = ctx.createLinearGradient(0, top, 0, VIEW_H);
-    gr.addColorStop(0, C.body); gr.addColorStop(0.18, C.body); gr.addColorStop(0.5, C.deep); gr.addColorStop(1, C.deep);
-    ctx.save(); ctx.globalAlpha = 0.86; ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(x0 - 6, VIEW_H);
-    for (let x = x0 - 6; x <= x0 + w + 6; x += 1 / ART_R) ctx.lineTo(x, surf(x)); ctx.lineTo(x0 + w + 6, VIEW_H); ctx.fill(); ctx.restore();
+    if (!this._bodyGrad) {
+      const gr = ctx.createLinearGradient(0, top, 0, VIEW_H);
+      gr.addColorStop(0, C.body); gr.addColorStop(0.18, C.body); gr.addColorStop(0.5, C.deep); gr.addColorStop(1, C.deep);
+      this._bodyGrad = gr;
+    }
+    const camL = g ? g.camX - 16 : x0 - 6, camR = g ? g.camX + VIEW_W + 16 : x0 + w + 6;
+    const sx0 = Math.max(x0 - 6, camL), sx1 = Math.min(x0 + w + 6, camR);
+    if (sx1 > sx0) {
+      ctx.globalAlpha = 0.86; ctx.fillStyle = this._bodyGrad; ctx.beginPath(); ctx.moveTo(sx0, VIEW_H);
+      for (let x = sx0; x <= sx1; x += 1 / ART_R) ctx.lineTo(x, surf(x));
+      ctx.lineTo(sx1, VIEW_H); ctx.fill(); ctx.globalAlpha = 1;
+    }
     ctx.globalAlpha = 0.3;   // light rippling through it
-    for (let i = 0; i < w / 6; i++) { const lx = x0 + ((i * 37 + Math.sin(t * 0.02 + i) * 6) % w + w) % w, ly = top + 5 + (i * 11) % (VIEW_H - top - 6); fRoundRect(ctx, lx, ly, 4 + (i % 3) * 2, 2 / 3, 0.3, C.top); }
+    for (let i = 0; i < w / 6; i++) {
+      const lx = x0 + ((i * 37 + Math.sin(t * 0.02 + i) * 6) % w + w) % w;
+      if (lx < camL - 8 || lx > camR + 8) continue;
+      const ly = top + 5 + (i * 11) % (VIEW_H - top - 6);
+      fRoundRect(ctx, lx, ly, 4 + (i % 3) * 2, 2 / 3, 0.3, C.top);
+    }
     ctx.globalAlpha = 1;
     ctx.strokeStyle = C.top; ctx.lineWidth = 1.2; ctx.beginPath();   // the surface catching the light
     let pen = false;
-    for (let x = x0; x <= x0 + w; x += 1 / ART_R) { if (this.inDrain(x)) { pen = false; continue; } if (pen) ctx.lineTo(x, surf(x) + 0.6); else { ctx.moveTo(x, surf(x) + 0.6); pen = true; } }
+    for (let x = sx0; x <= sx1; x += 1 / ART_R) { if (this.inDrain(x)) { pen = false; continue; } if (pen) ctx.lineTo(x, surf(x) + 0.6); else { ctx.moveTo(x, surf(x) + 0.6); pen = true; } }
     ctx.stroke();
-    for (let x = Math.ceil(x0); x < x0 + w; x++) if ((x + (t >> 2)) % 23 === 0 && !this.inDrain(x)) fRoundRect(ctx, x, surf(x), 2.4, 2 / 3, 0.3, C.foam);
+    for (let x = Math.ceil(sx0); x < sx1; x++) if ((x + (t >> 2)) % 23 === 0 && !this.inDrain(x)) fRoundRect(ctx, x, surf(x), 2.4, 2 / 3, 0.3, C.foam);
     // bubbles rising and popping
     for (let i = 0; i < Math.ceil(w / 40); i++) {
       const life = 70 + (i * 13) % 50, u = ((t + i * 37) % life) / life, bx = x0 + (i * 53 + 11) % w;
-      if (this.inDrain(bx)) continue;
+      if (bx < camL - 8 || bx > camR + 8 || this.inDrain(bx)) continue;
       const by = top + 18 - u * 18;
       if (u < 0.9) { fBlob(ctx, bx, by, 0.5 + u * 0.7, C.bub); fBlob(ctx, bx - 0.3, by - 0.3, 0.2 + u * 0.2, '#ffffff'); }
       else { fBlob(ctx, bx - 1, top - 1, 0.45, C.foam); fBlob(ctx, bx + 2, top - 2, 0.45, C.foam); }
@@ -618,7 +632,8 @@ class MethaneVent extends Enemy {
       p.airMax = Math.max(p.airMax || 0, 1.6);
     }
   }
-  draw(ctx) {
+  draw(ctx, g) {
+    if (g && (this.x + this.w < g.camX - 20 || this.x > g.camX + VIEW_W + 20)) return;
     const cx = Math.round(this.x + this.w / 2), top = this.surf, t = this.t;
     // the vent: a crusty crater ring poking out of the muck
     gutEllipse(ctx, cx, top, 10, 4, '#2e2418'); gutEllipse(ctx, cx, top - 1, 8, 3, '#94805c'); gutEllipse(ctx, cx, top, 5, 2, '#1a120a');
@@ -630,8 +645,11 @@ class MethaneVent extends Enemy {
       const u = ((t * 0.035 + i / 26) % 1), y = top - u * h, sp = 3 + u * 6, x = cx + Math.sin(i * 2.1 + t * 0.15) * sp;
       ctx.globalAlpha = this.k * (1 - u) * 0.75; gutEllipse(ctx, x, y, 2 + Math.round(u * 3), 2 + Math.round(u * 2), i % 3 ? '#9ac84a' : '#d8f08a');
     }
-    const col = ctx.createLinearGradient(cx - 5, 0, cx + 5, 0); col.addColorStop(0, 'rgba(184,224,90,0)'); col.addColorStop(0.5, '#b8e05a'); col.addColorStop(1, 'rgba(184,224,90,0)');
-    ctx.globalAlpha = this.k * 0.3; ctx.fillStyle = col; ctx.fillRect(cx - 5, this.y, 10, h);   // (a soft column: fine)
+    if (!this._colGrad) {
+      const col = ctx.createLinearGradient(cx - 5, 0, cx + 5, 0); col.addColorStop(0, 'rgba(184,224,90,0)'); col.addColorStop(0.5, '#b8e05a'); col.addColorStop(1, 'rgba(184,224,90,0)');
+      this._colGrad = col;
+    }
+    ctx.globalAlpha = this.k * 0.3; ctx.fillStyle = this._colGrad; ctx.fillRect(cx - 5, this.y, 10, h);   // (a soft column: fine)
     ctx.globalAlpha = 1;
   }
 }
@@ -658,6 +676,7 @@ class StinkPocket extends Enemy {
     this.near = p.stink > 0 && Math.abs(p.x + p.w / 2 - (this.x + this.w / 2)) < this.w / 2 + 24 && Math.abs(p.y + p.h / 2 - (this.y + this.h / 2)) < this.h / 2 + 24;
   }
   draw(ctx, g) {
+    if (g && (this.x + this.w < g.camX || this.x > g.camX + VIEW_W)) return;
     const t = this.t, x0 = this.x, y0 = this.y, w = this.w, h = this.h;
     // a hanging cloud of stale gas, its puffs slowly rolling over each other
     ctx.globalAlpha = 0.12; ctx.fillStyle = '#9ac84a'; ctx.beginPath(); ctx.ellipse(x0 + w / 2, y0 + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2); ctx.fill();   // (a soft haze: fine)

@@ -176,14 +176,19 @@ class GameJungle {
       if (a >= b) continue;
       const [wc, wd] = this.waterCols(rv), y0 = Math.round(rv.y) + 1;
       for (let c = Math.floor(a / TILE); c * TILE < b; c++) {
+        let grL = null, grR = null;
         for (let r = Math.max(0, Math.floor(y0 / TILE)); r < ROWS; r++) {
           if (lv.solid(c, r)) continue;
           const top = Math.max(y0, r * TILE), bot = (r + 1) * TILE, deep = Math.max(top, y0 + 9);
           for (const sd of [-1, 1]) {
             if (!lv.solid(c + sd, r)) continue;
             const x = sd < 0 ? c * TILE - 5 : (c + 1) * TILE;
-            const gr = ctx.createLinearGradient(sd < 0 ? x : x + 5, 0, sd < 0 ? x + 5 : x, 0);   // (a soft edge where the water laps the bank)
-            gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, wc);
+            let gr = sd < 0 ? grL : grR;
+            if (!gr) {
+              gr = ctx.createLinearGradient(sd < 0 ? x : x + 5, 0, sd < 0 ? x + 5 : x, 0);   // (a soft edge where the water laps the bank)
+              gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, wc);
+              if (sd < 0) grL = gr; else grR = gr;
+            }
             ctx.globalAlpha = 0.5; ctx.fillStyle = gr; ctx.fillRect(x, top, 5, bot - top);
             ctx.globalAlpha = 0.35; ctx.fillStyle = wd; if (bot > deep) ctx.fillRect(x, deep, 5, bot - deep);
           }
@@ -204,6 +209,12 @@ class GameJungle {
       if (a >= b) continue;
       const [wc, wd, ws, wg] = this.waterCols(rv);
       const y0 = Math.round(rv.y);
+      if (!rv._gr || rv._grY0 !== y0 || rv._grWc !== wc) {
+        rv._gr = ctx.createLinearGradient(0, y0, 0, y0 + 40);
+        rv._gr.addColorStop(0, wc); rv._gr.addColorStop(0.25, wc); rv._gr.addColorStop(1, wd);
+        rv._grY0 = y0; rv._grWc = wc;
+      }
+      const gr = rv._gr;
       for (let c = Math.floor(a / TILE); c * TILE < b; c++) {
         const x = c * TILE;
         for (let r = Math.max(0, Math.floor(y0 / TILE)); r < ROWS;) {
@@ -214,8 +225,6 @@ class GameJungle {
           r = r2;
           if (bot <= top) continue;
           const thick = swamp;   // (you can't see far into swamp water) -- (in fine pixels: hires.js)
-          const gr = ctx.createLinearGradient(0, y0, 0, y0 + 40);
-          gr.addColorStop(0, wc); gr.addColorStop(0.25, wc); gr.addColorStop(1, wd);
           ctx.globalAlpha = thick ? 0.82 : 0.6; ctx.fillStyle = gr; ctx.fillRect(x, top, TILE, bot - top);
           if (top === y0) {   // the surface: a smooth swell catching the light, glints riding along it
             const wave = wx => y0 + Math.sin((wx + t * 0.6) / 9) * 1.1 + Math.sin((wx - t * 0.4) / 5) * 0.5;

@@ -62,6 +62,7 @@ class Prisoner extends Enemy {
     }
   }
   draw(ctx, g) {
+    if (g && (this.x + this.w < g.camX - 24 || this.x > g.camX + VIEW_W + 24)) return;
     const x = Math.round(this.x), y = Math.round(this.y), w = this.w, bottom = y + this.h;
     const R = (px, py, pw, ph, c) => { ctx.fillStyle = c; ctx.fillRect(px, py, pw, ph); };
     if (this.state === 'caged') {
