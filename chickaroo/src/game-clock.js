@@ -48,7 +48,7 @@ class GameClock {
     if (fx && R < 700) {
       ctx.globalAlpha = Math.max(0, 1 - t / 45);
       ctx.strokeStyle = out ? '#ffe08a' : '#bff4ff'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.arc(fx.x, fx.y, R, 0, Math.PI * 2); ctx.stroke();   // (a smooth ring: fine)
-      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(fx.x, fx.y, R - 0.6, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.arc(fx.x, fx.y, Math.max(0, R - 0.6), 0, Math.PI * 2); ctx.stroke();
       ctx.globalAlpha = 1;
     }
   }

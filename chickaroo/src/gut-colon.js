@@ -279,7 +279,7 @@ class Spout extends Enemy {
       ctx.bezierCurveTo(cx+half*.7,top-9,cx+half+3,top-5,cx+half,top+3);
       ctx.quadraticCurveTo(cx+half-1,top+7,cx+half,top+11);
     };
-    shape(jet,crown);
+    shape(this._jetGrad,crown);
     // Outline only the exposed spray, leaving its join to the jet seamless.
     ctx.beginPath();crown();ctx.strokeStyle='#221a0a';ctx.lineWidth=.65;ctx.stroke();
     ctx.strokeStyle='#d0c068';ctx.lineWidth=1.15;
