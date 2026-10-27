@@ -242,7 +242,7 @@ async function boot() {
   const autoBtn = document.getElementById('autorun'), bCap = bB && bB.querySelector('i');
   const showAutoRun = () => {
     if (autoBtn) autoBtn.classList.toggle('on', Input.touchAutoRun);
-    if (bCap) bCap.textContent = Input.touchAutoRun ? 'FIRE/GRAB' : 'RUN';
+    if (bCap) bCap.textContent = Input.touchAutoRun ? 'FIRE' : 'RUN';
   };
   showAutoRun();
   if (autoBtn) {
@@ -254,6 +254,21 @@ async function boot() {
     });
   }
   document.addEventListener('gesturestart', e => e.preventDefault());
+
+  // ---- smart switching: while a controller is connected (Bluetooth or the phone's port) the touch controls hide and
+  // the game goes fullscreen; when the last one goes, they're back. Fullscreen needs a tap on most phones (a button
+  // press doesn't count as one), so it's tried at once and otherwise on the next tap anywhere
+  let padShown = false;
+  const padSwitch = on => {
+    root.classList.toggle('pad', on);
+    Touch.releaseAll();
+    if (!on || !root.classList.contains('touch')) return;
+    game.goFullscreen();
+    setTimeout(() => { if (!fsElement() && canFs) showToast('Controller ready: tap the screen once for fullscreen'); }, 400);
+  };
+  const padTapFullscreen = () => { if (root.classList.contains('pad') && root.classList.contains('touch') && !fsElement()) game.goFullscreen(); };
+  window.addEventListener('pointerup', padTapFullscreen);
+  window.addEventListener('touchend', padTapFullscreen);
 
   let acc = 0, last = performance.now(), renderSlow = 0, shownMode = null;
   function frame(now) {
@@ -269,6 +284,8 @@ async function boot() {
     try {
       Pad.poll(game);
       Touch.poll(game);
+      const hasPad = Pad.list().some(gp => gp.buttons.length >= 8 && gp.axes.length >= 2);   // (not a fingerprint reader posing as one)
+      if (hasPad !== padShown) { padShown = hasPad; padSwitch(hasPad); }
       if (game.mode !== shownMode) {
         shownMode = game.mode;
         root.classList.toggle('menus', shownMode === 'title' || shownMode === 'select' || shownMode === 'placeholder');

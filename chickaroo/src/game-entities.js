@@ -431,7 +431,7 @@ class GameEntities {
   buttonText(s) {
     const pad = Pad.used, ps = pad && Pad.isPS(), touch = this.touch && !pad;
     const N = pad ? { JUMP: ps ? 'CROSS' : 'A', RUN: ps ? 'SQUARE' : 'X', ROLL: ps ? 'CIRCLE' : 'B', SPIN: ps ? 'TRIANGLE' : 'Y', DOWN: 'DOWN' }
-      : touch ? { JUMP: 'A', RUN: 'B', ROLL: 'ROLL', SPIN: 'SPIN', DOWN: 'DOWN' } : { JUMP: 'UP', RUN: 'D', ROLL: 'C', SPIN: 'W', DOWN: 'DOWN' };
+      : touch ? { JUMP: 'JUMP', RUN: 'RUN', ROLL: 'ROLL', SPIN: 'SPIN', DOWN: 'DOWN' } : { JUMP: 'UP', RUN: 'D', ROLL: 'C', SPIN: 'W', DOWN: 'DOWN' };
     let missing = false;
     const out = s.replace(/\{(\w+)\}/g, (m, k) => { if (!N[k]) missing = true; return N[k] || k; });
     return missing ? null : out;

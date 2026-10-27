@@ -563,8 +563,8 @@ class GameHud {
         ? [['D-PAD / STICK', 'MOVE'], ['CROSS', 'JUMP'], ['SQUARE / R1', 'RUN / FIRE'], ['CIRCLE', 'ROLL'], ['TRIANGLE', 'SPIN JUMP'], ['CROSS', 'CONFIRM'], ['OPTIONS', 'PAUSE'], ['CREATE', 'SWAP ITEM']]
         : [['D-PAD / STICK', 'MOVE'], ['A', 'JUMP'], ['X / RB', 'RUN / FIRE'], ['B', 'ROLL'], ['Y', 'SPIN JUMP'], ['A', 'CONFIRM'], ['MENU', 'PAUSE'], ['VIEW', 'SWAP ITEM']])
       : this.touch
-      ? [['STICK', 'MOVE / CROUCH'], ['A', 'JUMP'], ['B', Input.touchAutoRun ? 'GRAB / FIRE' : 'RUN / FIRE'], ['SPIN', 'SPIN ATTACK'],
-        ['ROLL', 'ROLL'], ['AUTO RUN', Input.touchAutoRun ? 'ON' : 'OFF'], ['TAP MENUS', 'SELECT']]
+      ? [['STICK', 'MOVE / CROUCH'], ['BOTTOM', 'JUMP'], ['LEFT', Input.touchAutoRun ? 'GRAB / FIRE' : 'RUN / FIRE'], ['TOP', 'SPIN ATTACK'],
+        ['RIGHT', 'ROLL'], ['AUTO RUN', Input.touchAutoRun ? 'ON' : 'OFF'], ['TAP MENUS', 'SELECT']]
       // (the small font has no arrows: words only. On a keyboard he runs on his own)
       : [['LEFT / RIGHT', 'MOVE'], ['UP', 'JUMP'], ['DOWN', 'CROUCH / STOMP'], ['D', 'GRAB / FIRE'], ['W', 'SPIN ATTACK'], ['C', 'ROLL'], ['B', 'SWAP ITEM'], ['ENTER / SPACE', 'CONFIRM'], ['P / ESC', 'PAUSE']];
     const half = Math.ceil(rows.length / 2), rg = 9, cw = 120, cx0 = VIEW_W / 2 - cw - 6;

@@ -111,7 +111,9 @@ const Pad = {
   read(gp) {
     const b = i => { const x = gp.buttons[i]; return !!x && (x.pressed || x.value > 0.5); };
     const ax = i => gp.axes[i] || 0;
-    if (gp.mapping === 'standard') {
+    // Chrome on Android lays every controller out in the standard order, even one it reports as unmapped (a Razer
+    // Kishi in the phone's port, say): read as raw, its left and top face buttons came out swapped (run <-> spin)
+    if (gp.mapping === 'standard' || /android/i.test(navigator.userAgent)) {
       return {
         jump: b(0), roll: b(1), spin: b(3), run: b(2) || b(4) || b(5) || b(6) || b(7), sq: b(2),
         l1: b(4), r1: b(5), l2: b(6), r2: b(7),
@@ -119,7 +121,7 @@ const Pad = {
         left: b(14), right: b(15), up: b(12), down: b(13), lx: ax(0), ly: ax(1), rx: ax(2), ry: ax(3),
       };
     }
-    // Raw layout (e.g. Firefox on Linux): cross, circle, triangle, square, L1, R1, L2, R2, create,
+    // Raw layout (e.g. Firefox on Linux, desktop): cross, circle, triangle, square, L1, R1, L2, R2, create,
     // options; the d-pad is a hat on axes 6/7.
     const hx = gp.axes.length > 7 ? ax(6) : 0, hy = gp.axes.length > 7 ? ax(7) : 0;
     return {

@@ -204,13 +204,13 @@ html.touch .tool { width: 38px; height: 38px; padding: 8px; background: rgba(18,
 #autorun.on { color: #fff; border-color: rgba(46, 196, 182, .7); }
 #autorun.on .dot { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
 
-/* the buttons fan round the right thumb like a controller's face buttons: A (jump) biggest, where the thumb rests;
-   B (run / fire) beside it, so one thumb can lie across both; spin and roll above */
+/* the face buttons in a controller's diamond, the same on every controller: jump at the bottom (biggest, where the
+   thumb rests), run / fire on the left (one thumb can lie across both), spin attack on top, roll on the right */
 #btns {
   right: calc(8px + var(--safe-r));
-  bottom: calc(8px + var(--safe-b));
-  width: 206px;
-  height: 184px;
+  bottom: calc(6px + var(--safe-b));
+  width: 210px;
+  height: 200px;
   transform: scale(var(--ui, 1));
   transform-origin: right bottom;
 }
@@ -226,13 +226,12 @@ html.touch .tool { width: 38px; height: 38px; padding: 8px; background: rgba(18,
   box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
   transition: transform .06s ease, background-color .06s ease;
 }
-#btns .btn b { font: 800 24px/1 system-ui, sans-serif; }
-#btns .btn i { font: 800 9px/1 system-ui, sans-serif; font-style: normal; letter-spacing: .05em; opacity: .8; margin-top: 2px; }
-#btns .btn.small i { font-size: 11px; opacity: .95; margin: 0; }
-#bA { width: 78px; height: 78px; left: 124px; top: 98px; background: rgba(255, 93, 115, .45); }
-#bB { width: 66px; height: 66px; left: 40px; top: 116px; background: rgba(46, 196, 182, .38); }
-#bS { width: 54px; height: 54px; left: 136px; top: 22px; background: rgba(255, 209, 102, .3); }
-#bR { width: 54px; height: 54px; left: 54px; top: 42px; background: rgba(160, 130, 255, .32); }
+#btns .btn i { font: 800 12px/1 system-ui, sans-serif; font-style: normal; letter-spacing: .05em; }
+#bB i { font-size: 10px; }
+#bA { width: 74px; height: 74px; left: 68px; top: 122px; background: rgba(255, 93, 115, .45); }
+#bB { width: 62px; height: 62px; left: 10px; top: 69px; background: rgba(46, 196, 182, .38); }
+#bS { width: 62px; height: 62px; left: 74px; top: 8px; background: rgba(255, 209, 102, .3); }
+#bR { width: 62px; height: 62px; left: 138px; top: 69px; background: rgba(160, 130, 255, .32); }
 #btns .btn.on { transform: scale(.92); border-color: #fff; }
 #bA.on { background: rgba(255, 93, 115, .8); }
 #bB.on { background: rgba(46, 196, 182, .75); }
@@ -242,6 +241,9 @@ html.touch .tool { width: 38px; height: 38px; padding: 8px; background: rgba(18,
 /* faint while resting so the game shows through; a press lights up what's under the thumb */
 #dpad .base, #btns .btn, #autorun { opacity: .3; transition: opacity .08s ease, transform .06s ease, background-color .06s ease; }
 #dpad.held .base, #btns .btn.on { opacity: .6; }
+
+/* a controller plugged in or paired: the touch controls step aside until it's gone again */
+html.pad #touch, html.pad #toolbar .touch-only { display: none; }
 
 /* menus are tapped directly: the play controls step out of the way */
 html.menus #touch, html.menus .play-only { opacity: 0; visibility: hidden; }
