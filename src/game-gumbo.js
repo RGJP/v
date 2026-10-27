@@ -271,11 +271,25 @@ class GameGumbo {
     // are boiling broth, drawn red (it scalds on contact)
     const surges = this.entities.filter(e => e instanceof Surge), surged = x => surges.some(e => x >= e.x && x < e.x + e.w);
     const sc = lv.def.scalding, hot = x => !!sc && x >= sc[0] * TILE && x < (sc[1] + 1) * TILE;
+    const spans = [];
     for (let c = Math.floor(x0 / TILE); c * TILE < x1; c++) {   // a smooth stretch per column of tiles (in fine pixels: paintRouxSpan)
       let a = Math.max(x0, c * TILE), b = Math.min(x1, (c + 1) * TILE);
       while (a < b && surged(a)) a++;
       while (b > a && surged(b - 1)) b--;
-      for (const [r, bot] of runs(c)) paintRouxSpan(ctx, a, b, x => r * TILE + 4 + rouxWaveF(x, t), bot, t, hot(a));
+      if (b <= a) continue;
+      const isHot = hot(a);
+      for (const [r, bot] of runs(c)) {
+        const last = spans.length > 0 ? spans[spans.length - 1] : null;
+        if (last && last.b === a && last.r === r && last.bot === bot && last.isHot === isHot) {
+          last.b = b;
+        } else {
+          spans.push({ a, b, r, bot, isHot });
+        }
+      }
+    }
+    for (let i = 0; i < spans.length; i++) {
+      const s = spans[i];
+      paintRouxSpan(ctx, s.a, s.b, x => s.r * TILE + 4 + rouxWaveF(x, t), s.bot, t, s.isHot);
     }
     // bubbles and droplets, run by run along each surface row
     const rows = new Set();

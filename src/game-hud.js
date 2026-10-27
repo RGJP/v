@@ -263,8 +263,12 @@ class GameHud {
     const d = this.dialog;
     if (d && !d.tip && this.mode === 'play' && d.speaker && !d.speaker.remove) {   // a little bobbing marker over whoever's talking (a note from the author has nobody)
       const x = Math.round(d.speaker.cx), y = Math.round(d.speaker.talkY != null ? d.speaker.talkY : d.speaker.y) - 7 - ((this.t >> 3) % 2);   // (talkY: the top of its head, if that isn't its hitbox)
-      fRects(ctx, INK, Array.from({ length: 13 }, (_, i) => [x - 4.5 + i / 3, y - 1.3 + i / 3, 9.6 - i * 2 / 3, 1 / 3]));   // (in fine pixels: hires.js)
-      fRects(ctx, d.color, Array.from({ length: 10 }, (_, i) => [x - 3.4 + i / 3, y - 0.7 + i / 3, 7.4 - i * 2 / 3, 1 / 3]));
+      ctx.fillStyle = INK; ctx.beginPath();
+      for (let i = 0; i < 13; i++) ctx.rect(fSnap(x - 4.5 + i / 3), fSnap(y - 1.3 + i / 3), fSnap(9.6 - i * 2 / 3), 1 / 3);
+      ctx.fill();
+      ctx.fillStyle = d.color; ctx.beginPath();
+      for (let i = 0; i < 10; i++) ctx.rect(fSnap(x - 3.4 + i / 3), fSnap(y - 0.7 + i / 3), fSnap(7.4 - i * 2 / 3), 1 / 3);
+      ctx.fill();
     }
     for (const q of this.particles) {   // (all in fine pixels: hires.js)
       const x = fSnap(q.x), y = fSnap(q.y);

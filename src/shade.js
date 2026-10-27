@@ -788,9 +788,9 @@ class Umbraroo extends Enemy {
     for (const [ex, ey] of giant.eyes || []) {
       const x = cx + jx + (flip ? -1 : 1) * (ex - giant.width / 2), y = bottom - (giant.height - ey) * breathe;
       this.eyeGlow.push([x, y]);
-      const glow = ctx.createRadialGradient(x, y, 1, x, y, 20 + hot * 30);
-      glow.addColorStop(0, 'rgba(255,42,58,0.45)'); glow.addColorStop(1, 'rgba(255,42,58,0)');
-      ctx.globalAlpha = 0.55 + hot + Math.sin(this.t * 0.12) * 0.1; ctx.fillStyle = glow; ctx.fillRect(x - 40, y - 40, 80, 80);
+      const rad = 20 + hot * 30;
+      const alpha = (0.55 + hot + Math.sin(this.t * 0.12) * 0.1) * 0.45;
+      fGlow(ctx, x, y, rad, '#ff2a3a', alpha);
     }
     ctx.globalAlpha = 1;
     // Damage releases a spreading bloom of shadow shards and violet glints.
