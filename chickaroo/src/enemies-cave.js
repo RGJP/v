@@ -294,7 +294,19 @@ class ChimeSeal extends Enemy {
   }
   hitbox() { return null; }
   touches() { return false; }
-  update() { this.t++; }
+  // the slate's shelf, its sealed wall and its bridge, which run a long way past the slate: culled as one, or the
+  // bridge loses its crystal (back to bare stone tiles) once the slate's off screen
+  viewSpan() {
+    let x0 = this.x - 24, x1 = this.x + this.w + 24;
+    const cfg = this.chimeCfg;
+    if (cfg) {
+      const [b0, b1] = Array.isArray(cfg) ? cfg : cfg.bridge;
+      x0 = Math.min(x0, b0 * TILE); x1 = Math.max(x1, (b1 + 1) * TILE);
+      if (cfg.wall) { x0 = Math.min(x0, cfg.wall[0] * TILE); x1 = Math.max(x1, (cfg.wall[0] + 1) * TILE); }
+    }
+    return [x0, x1];
+  }
+  update(g) { this.t++; this.chimeCfg = g.level.def.chimes && g.level.def.chimes[this.key]; }
   draw(ctx, g) {
     const lv = g.level, cfg = lv.def.chimes && lv.def.chimes[this.key], s = lv.chimes && lv.chimes[this.key];
     const cols = lv.def.entities.filter(e => e[0] === 'chime' && e[3] === this.key).sort((a, b) => a[1] - b[1]).map(e => (CHIME_NAMED[e[4]] || [0, CHIME_COLORS[e[4]] || '#7ad8ff'])[1]);
