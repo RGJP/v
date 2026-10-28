@@ -195,6 +195,8 @@ class Fridge extends Enemy {
     this.roof = { x: this.x + 1, y: 9 * TILE + 2, w: 30, h: 4, dx: 0, dy: 0, prevY: 9 * TILE + 2, update() {}, draw() {} };
   }
   hitbox() { return null; }
+  // its frost covers the whole lake: culled with the lake, or the plain ice tiles show once the fridge is off screen
+  viewSpan() { return [Math.min(this.x, this.x0 * TILE), Math.max(this.x + this.w, (this.x1 + 1) * TILE)]; }
   touches(p) { return this.state === 'idle' && overlap(this, p); }
   onTouch() { this.openUp(); }
   update(g) {

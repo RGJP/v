@@ -1,5 +1,9 @@
 'use strict';
 function entityInView(e, cam) {
+  if (e.viewSpan) {   // (something drawn far past its own box: a bowed sunflower's head, a fridge's frozen lake)
+    const [x0, x1] = e.viewSpan();
+    return (x1 >= cam - 64 && x0 <= cam + VIEW_W + 64);
+  }
   if (e.paintsRoom || e.drawOver) {
     return (e.x + (e.w || 16) >= cam - 16 && e.x <= cam + VIEW_W + 16);
   }

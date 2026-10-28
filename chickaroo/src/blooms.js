@@ -67,6 +67,13 @@ class Bloom extends Enemy {
   get talkY() { return this.head.y - 4 - (this.under || 0); }   // (with him standing on its head, the marker goes over him, never on him)
   hitbox() { return null; }
   touches() { return false; }
+  // drawn from the base of the stem out to its head (which, bowed, can be a long way off): culled as one, so the
+  // stem never pops in after the head
+  viewSpan() {
+    if (this.bx == null) return [this.x, this.x + 16];
+    const h = this.head;
+    return [Math.min(this.bx - 24, h.x), Math.max(this.bx + 24, h.x + h.w)];
+  }
   say(g, text) {
     if (!this.opts.worldQuips) { g.speak(this, text, '#ffd23f'); return; }
     const line = String(oneOf(text)).toUpperCase();
