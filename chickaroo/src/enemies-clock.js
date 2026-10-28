@@ -82,6 +82,8 @@ class Cuckoo extends Enemy {
   get doorY() { return this.y + 11; }
   get birdX() { return this.doorX + this.dir * this.ext; }
   hitbox() { return null; }
+  // the house, and the arm and bird out to wherever they've reached (a long bridge goes far past the house)
+  viewSpan() { const bx = this.birdX; return [Math.min(this.x - 4, bx - 20), Math.max(this.x + this.w + 4, bx + 20)]; }
   touches() { return false; }
   update(g) {
     this.t++;
