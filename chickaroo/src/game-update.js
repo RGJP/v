@@ -69,25 +69,26 @@ class GameUpdate {
           break;
         }
         if (Input.hit('pause')) { this.resume(); break; }
-        const n = this.canRemap() ? 6 : 5;   // resume, restart, quit, music vol, sfx vol (and controls)
+        const rows = this.pauseRows(), n = rows.length;   // resume, restart, (controls,) quit, music vol, sfx vol
         this.menu = Math.min(this.menu, n - 1);
         if (Input.hit('up')) { this.menu = (this.menu + n - 1) % n; Sound.play('select'); }
         if (Input.hit('down')) { this.menu = (this.menu + 1) % n; Sound.play('select'); }
-        if (this.menu === 3 || this.menu === 4) {
+        const row = rows[this.menu];
+        if (row === 'music' || row === 'sfx') {
           const dir = (Input.down('right') ? 1 : 0) - (Input.down('left') ? 1 : 0);
           this.volRep = dir && this.volRep > 0 ? this.volRep - 1 : 0;
           if (dir && (Input.hit('left') || Input.hit('right') || this.volRep === 0)) {
             if (!(Input.hit('left') || Input.hit('right'))) this.volRep = 4; else this.volRep = 14;
-            Sound.setVol(this.menu === 3 ? 'music' : 'sfx', (this.menu === 3 ? Sound.musicVol : Sound.sfxVol) + dir * 0.05);
-            if (this.menu === 4) Sound.play('coin');
+            Sound.setVol(row, (row === 'music' ? Sound.musicVol : Sound.sfxVol) + dir * 0.05);
+            if (row === 'sfx') Sound.play('coin');
           }
         }
         if (confirm) {
-          if (this.menu === 0) this.resume();
-          else if (this.menu === 1 || this.menu === 2) {
-            this.pauseConfirm = this.menu === 1 ? 'restart' : 'quit';
+          if (row === 'resume') this.resume();
+          else if (row === 'restart' || row === 'quit') {
+            this.pauseConfirm = row;
             this.pauseReturn = this.menu; this.menu = 1; Sound.play('select');
-          } else if (this.menu === 5) this.openControls('pause');
+          } else if (row === 'controls') this.openControls('pause');
         }
         break;
       }

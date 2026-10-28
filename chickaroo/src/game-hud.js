@@ -766,6 +766,9 @@ class GameHud {
     if (this.useCheckpoint) drawText(ctx, 'RESUMING FROM CHECKPOINT', VIEW_W / 2, 150, '#8a83b0', { align: 'center' });
   }
 
+  // the pause menu's rows, top to bottom (menu index = row)
+  pauseRows() { return ['resume', 'restart'].concat(this.canRemap() ? ['controls'] : [], ['quit', 'music', 'sfx']); }
+
   drawPause(ctx) {
     ctx.globalAlpha = 0.55; ctx.fillStyle = '#0b0918'; ctx.fillRect(0, 0, VIEW_W, VIEW_H); ctx.globalAlpha = 1;
     if (this.pauseConfirm) {
@@ -776,9 +779,9 @@ class GameHud {
       return;
     }
     // the panel hugs its rows (9px of air above the title and below the last bar) and sits in the middle of the screen
-    const remap = this.canRemap(), oy = remap ? 19 : 26;
+    const rows = this.pauseRows(), remap = rows.includes('controls'), oy = remap ? 20 : 26;
     ctx.save(); ctx.translate(0, oy);
-    this.drawPanel(ctx, 56, 10, 288, remap ? 165 : 151);
+    this.drawPanel(ctx, 56, 10, 288, remap ? 163 : 151);
     drawText(ctx, 'PAUSED', VIEW_W / 2, 19, '#ffffff', { align: 'center', scale: 2, shadow: INK });
     const def = this.level.def, pl = this.player;
     drawText(ctx, def.name, VIEW_W / 2, 38, '#9fd8f0', { align: 'center', small: true });
@@ -796,12 +799,12 @@ class GameHud {
       drawText(ctx, suit.name, 275, 63, suit.color, { small: true });
     }
     ctx.fillStyle = '#3a3170'; ctx.fillRect(72, 87, 256, 1);
-    // rows, one per line (menu index = row): resume, restart, quit, music vol, sfx vol, controls
-    const actions = { 0: 'RESUME', 1: 'RESTART LEVEL', 2: 'QUIT TO TITLE', 5: 'CONTROLS' }, ys = [94, 106, 118, 132, 144, 158].slice(0, remap ? 6 : 5), gap = 12;
-    ys.forEach((y, i) => {
-      const on = i === this.menu;
-      if (actions[i]) {
-        const s = actions[i], tw = textWidth(s);
+    // rows, one per line (menu index = row): resume, restart, (controls,) quit, then a little air and the volume bars
+    const labels = { resume: 'RESUME', restart: 'RESTART LEVEL', controls: 'CONTROLS', quit: 'QUIT TO TITLE' }, gap = 12;
+    rows.forEach((row, i) => {
+      const on = i === this.menu, y = 94 + i * gap + (labels[row] ? 0 : 2);
+      if (labels[row]) {
+        const s = labels[row], tw = textWidth(s);
         this.menuHits.push({ x: VIEW_W / 2 - tw / 2 - 18, y: y - 4 + oy, w: tw + 36, h: gap, i });
         drawText(ctx, s, VIEW_W / 2, y, on ? '#ffd166' : '#b8b2d8', { align: 'center', shadow: INK });
         if (on && Math.floor(this.t / 16) % 2 === 0) {
@@ -810,7 +813,7 @@ class GameHud {
         }
         return;
       }
-      const kind = i === 3 ? 'music' : 'sfx', v = kind === 'music' ? Sound.musicVol : Sound.sfxVol;
+      const kind = row, v = kind === 'music' ? Sound.musicVol : Sound.sfxVol;
       const bx = 206, bw = 88, col = on ? '#ffd166' : '#b8b2d8';
       drawText(ctx, kind === 'music' ? 'MUSIC VOL.' : 'SFX VOL.', 116, y, col, { shadow: INK });
       ctx.fillStyle = '#2a2450'; ctx.fillRect(bx, y + 1, bw, 5);
