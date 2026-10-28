@@ -134,7 +134,15 @@ class Game {
     return [
       this.save ? { label: 'CONTINUE - ' + LEVELS[this.save.level].name, act: 'continue' } : { label: 'PLAY', act: 'play' },
       { label: 'LEVEL SELECT', act: 'select' },
-    ].concat(this.canRemap() ? [{ label: 'CONTROLS', act: 'controls' }] : []);
+    ].concat(this.canRemap() ? [{ label: 'CONTROLS', act: 'controls' }] : [], [{ label: 'WALKTHROUGH', act: 'walkthrough' }]);
+  }
+  // the dev's full video playthrough, in a new tab (asked for from the title, past a spoiler warning).
+  // A browser only lets a page open a tab right after a key, click or tap: a gamepad press doesn't count,
+  // so if it's blocked the warning stays up and says to click YES instead
+  openWalkthrough() {
+    const w = window.open(WALKTHROUGH_URL, '_blank');
+    if (w) { w.opener = null; return true; }
+    return false;
   }
   titleSelectIdx() { return 1; }
   toIntro() { if (LEVELS[this.levelIndex].placeholder) { this.startLevel(); return; } this.mode = 'intro'; this.introT = 0; Music.stop(); }

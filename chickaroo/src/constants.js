@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════════════════════
 const TILE = 16, ROWS = 14, VIEW_W = 400, VIEW_H = 224;
 const STEP_MS = 1000 / 60;
+const WALKTHROUGH_URL = 'https://www.youtube.com/live/4koW6D1a5sk';   // the dev's full playthrough (title menu: WALKTHROUGH)
 
 const WALK_MAX = 1.6, RUN_MAX = 2.75;
 const SHELL_SPEED = 2.95;   // a kicked shell: a touch faster than a full sprint, so you can never run into the back of it

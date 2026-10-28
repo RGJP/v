@@ -553,12 +553,13 @@ class GameHud {
     // Title logo
     drawLogo(ctx, VIEW_W / 2, 12, this.t);
     // menu on its own see-through plaque, the picked row lit by a soft bar
-    const labels = this.titleItems().map(i => i.label), mg = 16;
-    const mw = Math.max(154, Math.max(...labels.map(s => textWidth(s))) + 60), my = 62;
+    // (four rows sit a little closer and start a little higher, so the plaque still ends where three of them do)
+    const labels = this.titleItems().map(i => i.label), four = labels.length > 3, mg = four ? 13 : 16;
+    const mw = Math.max(154, Math.max(...labels.map(s => textWidth(s))) + 60), my = four ? 58 : 62, sel = this.titleConfirm ? this.titleReturn : this.menu;
     this.drawPanel(ctx, Math.round(VIEW_W / 2 - mw / 2), my, mw, labels.length * mg + 10, '#3a3170', 'rgba(11,9,24,0.6)', true);
     ctx.fillStyle = 'rgba(255,209,102,0.16)';
-    if (this.menu < labels.length) ctx.fillRect(Math.round(VIEW_W / 2 - mw / 2) + 3, my + 4 + this.menu * mg, mw - 6, mg - 2);
-    this.drawMenu(ctx, labels, this.menu, VIEW_W / 2, my + 7, mg);
+    if (sel < labels.length) ctx.fillRect(Math.round(VIEW_W / 2 - mw / 2) + 3, my + 4 + sel * mg, mw - 6, mg - 2);
+    this.drawMenu(ctx, labels, sel, VIEW_W / 2, my + 7, mg);
     // controls: a compact two-column card, see-through so the meadow stays in view
     // (the keys and buttons as the player has them: Controls)
     const P = (a, both) => Controls.label('pad', a, both), K = a => Controls.label('keys', a);
@@ -587,7 +588,20 @@ class GameHud {
       this.drawPanel(ctx, tx, ty, tw, th, '#3a3170', 'rgba(11,9,24,0.6)', true);
       drawText(ctx, tip, VIEW_W / 2, ty + (th - 6) / 2, '#9fd8f0', { align: 'center', small: true });
     }
-
+    if (this.titleConfirm) this.drawWalkConfirm(ctx);
+  }
+  // the walkthrough's spoiler warning, over the title (its YES / NO are the only things to tap)
+  drawWalkConfirm(ctx) {
+    ctx.globalAlpha = 0.55; ctx.fillStyle = '#0b0918'; ctx.fillRect(0, 0, VIEW_W, VIEW_H); ctx.globalAlpha = 1;
+    this.menuHits = [];
+    const h = this.walkBlocked ? 138 : 126, y = Math.round((VIEW_H - h) / 2);
+    this.drawPanel(ctx, 50, y, 300, h, '#ff8a5c');
+    drawText(ctx, 'SPOILER ALERT', VIEW_W / 2, y + 12, '#ff8a5c', { align: 'center', scale: 2, shadow: INK });
+    drawText(ctx, 'FULL VIDEO WALKTHROUGH OF THE GAME', VIEW_W / 2, y + 36, '#ffffff', { align: 'center', shadow: INK });
+    drawText(ctx, 'BY THE DEV, IN CASE YOU GET STUCK', VIEW_W / 2, y + 48, '#ffffff', { align: 'center', shadow: INK });
+    drawText(ctx, 'CONFIRM TO WATCH (YOUTUBE)', VIEW_W / 2, y + 64, '#9fd8f0', { align: 'center', shadow: INK });
+    this.drawMenu(ctx, ['YES', 'NO'], this.menu, VIEW_W / 2, y + 84, 15);
+    if (this.walkBlocked) drawText(ctx, 'THE BROWSER BLOCKED THE NEW TAB - CLICK YES TO OPEN IT', VIEW_W / 2, y + 120, '#ffd166', { align: 'center', small: true });
   }
 
   // stages reached the end of at least once (older saves only have best scores, which count too)
@@ -600,6 +614,20 @@ class GameHud {
   // Every campaign level is available from the start.
   selectLevels() {
     return LEVELS.map((def, index) => ({ def, index })).filter(e => !e.def.dev);
+  }
+  // where card i sits across the grid, in card widths (a short row is centred, so its cards sit between the columns above)
+  selectSlot(i, n) {
+    const row = Math.floor(i / SELECT_COLS), count = Math.min(SELECT_COLS, n - row * SELECT_COLS);
+    return i % SELECT_COLS + (SELECT_COLS - count) / 2;
+  }
+  // up / down: the card in the next row (dr = -1 / 1) nearest the one picked, as they're drawn (or stay put at the edge)
+  selectVertical(i, n, dr) {
+    const first = (Math.floor(i / SELECT_COLS) + dr) * SELECT_COLS;
+    if (first < 0 || first >= n) return i;
+    const slot = this.selectSlot(i, n);
+    let best = first;
+    for (let j = first + 1; j < Math.min(n, first + SELECT_COLS); j++) if (Math.abs(this.selectSlot(j, n) - slot) < Math.abs(this.selectSlot(best, n) - slot)) best = j;
+    return best;
   }
 
   openSelect() {
@@ -623,8 +651,8 @@ class GameHud {
     const cols = SELECT_COLS, row = Math.floor(this.menu / cols);
     if (Input.hit('left') && this.menu % cols > 0) { this.menu--; Sound.play('select'); }
     else if (Input.hit('right') && this.menu % cols < cols - 1 && this.menu < n - 1) { this.menu++; Sound.play('select'); }
-    else if ((Input.hit('up') || Input.hit('worldPrev')) && row > 0) { this.menu -= cols; Sound.play('select'); }
-    else if ((Input.hit('down') || Input.hit('worldNext')) && (row + 1) * cols < n) { this.menu = Math.min(n - 1, this.menu + cols); Sound.play('select'); }
+    else if ((Input.hit('up') || Input.hit('worldPrev')) && row > 0) { this.menu = this.selectVertical(this.menu, n, -1); Sound.play('select'); }
+    else if ((Input.hit('down') || Input.hit('worldNext')) && (row + 1) * cols < n) { this.menu = this.selectVertical(this.menu, n, 1); Sound.play('select'); }
     else if (Input.hit('start') || Input.hit('jump') || Input.hit('ok')) {
       const chosen = list[this.menu];
       if (!chosen || this.fadeCb) return;
@@ -637,10 +665,9 @@ class GameHud {
     if (h.selectAction === 'back') {
       this.mode = 'title'; this.menu = this.titleSelectIdx(); Sound.play('select');
     } else if (h.selectAction === 'prev') {
-      this.menu = Math.max(0, this.menu - SELECT_COLS); Sound.play('select');
+      this.menu = this.selectVertical(this.menu, this.selectLevels().length, -1); Sound.play('select');
     } else if (h.selectAction === 'next') {
-      const list = this.selectLevels();
-      this.menu = Math.min(list.length - 1, this.menu + SELECT_COLS); Sound.play('select');
+      this.menu = this.selectVertical(this.menu, this.selectLevels().length, 1); Sound.play('select');
     } else if (h.selectAction === 'play') {
       Input.hits.add('start');
     } else if (h.selectIdx != null) {

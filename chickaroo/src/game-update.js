@@ -14,6 +14,16 @@ class GameUpdate {
     switch (this.mode) {
       case 'title': {
         if (busy) break;
+        if (this.titleConfirm) {   // the walkthrough's spoiler warning: YES / NO (NO first)
+          if (Input.hit('pause') || Input.hit('roll')) { this.titleConfirm = false; this.walkBlocked = false; this.menu = this.titleReturn; Sound.play('select'); break; }
+          if (Input.hit('up') || Input.hit('down') || Input.hit('left') || Input.hit('right')) { this.menu = 1 - this.menu; Sound.play('select'); }
+          if (confirm) {
+            if (this.menu === 0 && !this.openWalkthrough()) { this.walkBlocked = true; Sound.play('select'); break; }
+            Sound.play(this.menu === 0 ? 'confirm' : 'select');
+            this.titleConfirm = false; this.walkBlocked = false; this.menu = this.titleReturn;
+          }
+          break;
+        }
         const items = this.titleItems(), n = items.length;
         this.menu = Math.min(this.menu, n - 1);
         if (Input.hit('up')) { this.menu = (this.menu + n - 1) % n; Sound.play('select'); }
@@ -24,6 +34,7 @@ class GameUpdate {
           else if (act === 'play') { Sound.play('confirm'); this.transition(() => this.newGame()); }
           else if (act === 'select') { Sound.play('confirm'); this.openSelect(); }
           else if (act === 'controls') this.openControls('title');
+          else if (act === 'walkthrough') { this.titleConfirm = true; this.walkBlocked = false; this.titleReturn = this.menu; this.menu = 1; Sound.play('select'); }
         }
         break;
       }
