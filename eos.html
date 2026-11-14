@@ -3,604 +3,1036 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Echoes of Silence</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
     <meta name="description"
-        content="A calm, minimal web app for creating an endless, layered soundscape with Tibetan singing bowls.">
+        content="A calm, minimal web app for an endless, evolving soundscape of Tibetan singing bowls.">
+    <meta name="theme-color" content="#041735">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔔</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Lora:ital,wght@0,500;1,400&display=swap"
+        rel="stylesheet">
 
     <style>
-        /* --- Reset & Base Styles --- */
         :root {
-            --bg-deep-blue: #041735;
-            --bg-mid-blue: #0A2A4A;
-            --accent-gold: #C9A84D;
-            --text-light: #EDE8DC;
-            --shadow-color: rgba(0, 0, 0, 0.25);
+            --bg-deep: #041735;
+            --bg-mid: #0A2A4A;
+            --gold: #C9A84D;
+            --gold-soft: rgba(201, 168, 77, 0.35);
+            --text: #EDE8DC;
+            --text-dim: rgba(237, 232, 220, 0.6);
+            --glow: 0;
 
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            --font-serif-display: 'Lora', 'Georgia', serif;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-serif: 'Lora', Georgia, serif;
 
-            font-synthesis: none;
-            text-rendering: optimizeLegibility;
+            color-scheme: dark;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        html,
-        body {
-            height: 100vh;
-            /* Use viewport height */
-            overflow: hidden;
-            /* Prevent scrolling on the body */
-        }
+        html, body { height: 100%; overflow: hidden; }
 
         body {
-            background-color: var(--bg-deep-blue);
-            color: var(--text-light);
+            min-height: 100dvh;
+            background:
+                radial-gradient(ellipse at 50% 38%, var(--bg-mid) 0%, var(--bg-deep) 62%, #020d20 100%);
+            background-color: var(--bg-deep);
+            color: var(--text);
             font-family: var(--font-sans);
+            line-height: 1.5;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 1rem;
-            line-height: 1.5;
+            padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+                     max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- New Content Wrapper --- */
-        .content-wrapper {
+        #ripples {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app {
+            position: relative;
+            z-index: 1;
             display: flex;
             flex-direction: column;
             align-items: center;
+            gap: clamp(1rem, 3vh, 1.75rem);
             width: 100%;
-            max-width: 450px;
-        }
-
-        /* --- Main App Container & Layout --- */
-        .app-container {
-            width: 100%;
-            max-height: 95vh;
-            background-color: var(--bg-mid-blue);
-            border-radius: 2rem;
-            padding: 1.5rem;
-            box-shadow: 0 10px 30px var(--shadow-color);
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            /* Adjusted gap */
-            transition: all 0.3s ease;
-        }
-
-        @media (min-width: 640px) {
-            .app-container {
-                padding: 2rem;
-            }
-        }
-
-        /* --- Header --- */
-        .header {
+            max-width: 420px;
             text-align: center;
         }
 
-        .header-image {
-            width: 280px;
-            height: 280px;
-            border-radius: 1rem;
-            object-fit: cover;
-            border: 0px solid var(--accent-gold);
-            margin-bottom: 1rem;
-            box-shadow: 0 5px 15px var(--shadow-color);
+        /* --- Bowl --- */
+        .bowl {
+            position: relative;
+            width: min(280px, 64vw, 38dvh);
+            aspect-ratio: 1;
+            border-radius: 50%;
         }
 
-        .title-container {
+        .bowl img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.35),
+                0 0 calc(20px + var(--glow) * 70px) calc(var(--glow) * 12px) rgba(201, 168, 77, calc(0.08 + var(--glow) * 0.45));
+            transition: transform 1.5s ease;
+        }
+
+        .bowl::after {
+            content: "";
+            position: absolute;
+            inset: -10px;
+            border-radius: 50%;
+            border: 1px solid var(--gold-soft);
+            opacity: 0;
+            transition: opacity 2s ease;
+        }
+
+        body.playing .bowl::after { opacity: 1; animation: breathe 11s ease-in-out infinite; }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.25; }
+            45% { transform: scale(1.06); opacity: 0.7; }
+        }
+
+        /* --- Titles --- */
+        h1 {
+            font-family: var(--font-serif);
+            color: var(--gold);
+            font-size: 1.7rem;
+            font-weight: 500;
+            letter-spacing: 0.04em;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            margin-top: 0.3rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+        }
+
+        /* --- Main button --- */
+        .toggle {
+            position: relative;
+            background: var(--gold);
+            color: var(--bg-deep);
+            border: none;
+            border-radius: 999px;
+            padding: 0.95rem 2rem;
+            min-width: 210px;
+            font: 600 1.05rem/1 var(--font-sans);
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, background-color 0.4s ease, color 0.4s ease;
+        }
+
+        .toggle:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(201, 168, 77, 0.3);
+        }
+
+        .toggle:disabled { cursor: default; opacity: 0.75; }
+
+        body.playing .toggle {
+            background: transparent;
+            color: var(--gold);
+            box-shadow: inset 0 0 0 1.5px var(--gold);
+        }
+
+        body.playing .toggle:hover:not(:disabled) {
+            box-shadow: inset 0 0 0 1.5px var(--gold), 0 6px 20px rgba(201, 168, 77, 0.2);
+        }
+
+        :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+        /* --- Small controls row --- */
+        .settings {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.75rem;
+            gap: 1.25rem;
+            font-size: 0.85rem;
+            color: var(--text-dim);
         }
 
-        .header h1 {
-            font-family: var(--font-serif-display);
-            color: var(--accent-gold);
-            font-size: 1.6rem;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.25rem;
+        .chip {
+            background: none;
+            border: 1px solid rgba(237, 232, 220, 0.18);
+            color: var(--text);
+            border-radius: 999px;
+            padding: 0.45rem 0.95rem;
+            font: 500 0.85rem/1 var(--font-sans);
+            cursor: pointer;
+            min-width: 92px;
+            transition: border-color 0.2s ease, background-color 0.2s ease;
         }
 
+        .chip:hover { border-color: var(--gold-soft); background: rgba(201, 168, 77, 0.06); }
+
+        .volume {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .volume svg { width: 18px; height: 18px; flex: none; opacity: 0.7; }
+
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 110px;
+            height: 24px;
+            background: transparent;
+            cursor: pointer;
+            --pct: 70%;
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            height: 3px;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--gold) var(--pct), rgba(237, 232, 220, 0.2) var(--pct));
+        }
+
+        input[type=range]::-moz-range-track {
+            height: 3px;
+            border-radius: 3px;
+            background: linear-gradient(to right, var(--gold) var(--pct), rgba(237, 232, 220, 0.2) var(--pct));
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            margin-top: -5.5px;
+            border-radius: 50%;
+            background: var(--text);
+            border: none;
+        }
+
+        input[type=range]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--text);
+            border: none;
+        }
+
+        /* --- Status --- */
+        .status {
+            min-height: 2.6em;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .status .clock { letter-spacing: 0.08em; }
+
+        .status .note {
+            display: block;
+            font-family: var(--font-serif);
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 1.2s ease;
+        }
+
+        .status .note.show { opacity: 0.75; }
+
+        /* --- Info --- */
         .info-button {
             background: none;
             border: none;
-            width: 26px;
-            /* Sized to be similar to the old emoji */
-            height: 26px;
+            width: 34px;
+            height: 34px;
+            padding: 4px;
             cursor: pointer;
-            color: var(--accent-gold);
-            padding: 0;
-            line-height: 1;
-            opacity: 0.8;
+            color: var(--gold);
+            opacity: 0.65;
+            border-radius: 50%;
             transition: opacity 0.2s ease;
         }
 
-        .info-button:hover {
-            opacity: 1;
-        }
+        .info-button:hover { opacity: 1; }
+        .info-button svg { width: 100%; height: 100%; display: block; }
 
-        .info-button svg {
-            width: 100%;
-            height: 100%;
-        }
-
-        .header p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        /* --- Controls --- */
-        .controls {
-            display: flex;
-            justify-content: center;
-            margin-top: 1rem;
-            /* Added margin for spacing */
-        }
-
-        .control-button {
-            background-color: var(--accent-gold);
-            color: var(--bg-deep-blue);
-            border: none;
-            border-radius: 50px;
-            padding: 0.9rem 2rem;
-            /* Increased padding */
-            font-size: 1.1rem;
-            /* Increased font size */
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-            width: 200px;
-            /* Set a fixed width */
-            text-align: center;
-        }
-        
-        .control-button:disabled {
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-
-        .control-button:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(201, 168, 77, 0.3);
-        }
-
-        .control-button.active {
-            background-color: #a88d3e;
-            /* Darker gold when active */
-        }
-
-        /* --- Information Overlay --- */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            padding: 1rem;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
-        }
-
-        .overlay-content {
-            background-color: var(--bg-mid-blue);
-            padding: 2.5rem 2rem 2rem 2rem;
-            border-radius: 1rem;
-            max-width: 450px;
-            width: 100%;
-            position: relative;
-            box-shadow: 0 5px 25px var(--shadow-color);
-            border: 1px solid var(--accent-gold);
+        dialog {
+            margin: auto;
+            max-width: min(450px, calc(100vw - 2rem));
+            max-height: calc(100dvh - 2rem);
+            overflow-y: auto;
+            background: var(--bg-mid);
+            color: var(--text);
+            border: 1px solid var(--gold-soft);
+            border-radius: 1.25rem;
+            padding: 2.25rem 1.75rem 1.75rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
 
-        .overlay-content h2 {
-            font-family: var(--font-serif-display);
-            color: var(--accent-gold);
-            margin-bottom: 1rem;
+        dialog::backdrop {
+            background: rgba(2, 10, 25, 0.7);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        dialog[open] { animation: rise 0.35s ease; }
+
+        @keyframes rise {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: none; }
+        }
+
+        dialog h2 {
+            font-family: var(--font-serif);
+            font-weight: 500;
+            color: var(--gold);
             font-size: 1.5rem;
+            margin-bottom: 1rem;
         }
 
-        .overlay-content p {
-            opacity: 0.9;
-            line-height: 1.7;
+        dialog p { opacity: 0.9; line-height: 1.7; font-size: 0.95rem; }
+        dialog p + p { margin-top: 1rem; }
+        dialog a { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+        dialog .keys { font-size: 0.8rem; color: var(--text-dim); }
+
+        kbd {
+            font: 500 0.75rem var(--font-sans);
+            border: 1px solid rgba(237, 232, 220, 0.25);
+            border-radius: 4px;
+            padding: 0.05rem 0.35rem;
         }
 
         .close-button {
             position: absolute;
-            top: 1rem;
-            right: 1rem;
+            top: 0.75rem;
+            right: 0.75rem;
+            width: 36px;
+            height: 36px;
             background: none;
             border: none;
-            font-size: 2rem;
-            font-weight: bold;
-            color: var(--text-light);
-            cursor: pointer;
+            font-size: 1.8rem;
             line-height: 1;
-            opacity: 0.7;
-            transition: opacity 0.2s ease;
-        }
-
-        .close-button:hover {
-            opacity: 1;
-        }
-
-        /* --- Now Playing Element --- */
-        .now-playing-text {
-            text-align: center;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-            opacity: 0.1;
-            min-height: 1.5em;
-            /* Prevent layout shift */
-            transition: opacity 0.3s ease-in-out;
-        }
-
-        /* --- Footer (example if needed inside app-container) --- */
-        .site-footer {
-            text-align: center;
-            margin-top: auto;
-            /* Pushes footer to the bottom of the flex container */
-            padding-top: 1rem;
-            font-size: 0.8rem;
-            color: var(--text-light);
+            color: var(--text);
+            cursor: pointer;
             opacity: 0.6;
+            border-radius: 50%;
         }
 
-        .site-footer a {
-            color: var(--accent-gold);
-            text-decoration: none;
-            font-weight: 500;
+        .close-button:hover { opacity: 1; }
+
+        @media (max-height: 560px) {
+            .subtitle { display: none; }
         }
 
-        .site-footer a:hover {
-            text-decoration: underline;
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
         }
     </style>
 </head>
 
 <body>
+    <canvas id="ripples" aria-hidden="true"></canvas>
 
-    <div class="content-wrapper">
-        <main class="app-container" aria-live="polite">
-            <header class="header">
-                <img src="tb.jpg" alt="An ornate brass Tibetan singing bowl" class="header-image">
-                <div class="title-container">
-                    <h1>Echoes of Silence</h1>
-                </div>
-                <div class="subtitle-container">
-                    <p>Sound Meditation</p>
-                    <br>
-                    <button id="infoBtn" class="info-button" aria-label="About">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"
-                            aria-hidden="true">
-                            <path
-                                d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
-                        </svg>
-                    </button>
-                </div>
-            </header>
-
-            <div class="controls">
-                <button id="toggleMeditationBtn" class="control-button">Start Meditation</button>
-            </div>
-        </main>
-
-        <p id="nowPlaying" class="now-playing-text"></p>
-    </div>
-
-    <div id="infoOverlay" class="overlay">
-        <div class="overlay-content">
-            <button id="closeOverlayBtn" class="close-button" aria-label="Close">&times;</button>
-            <h2>About</h2>
-            <p>
-                'Echoes of Silence' lets you meditate with the magic sounds of authentic Tibetan singing bowls. Press
-                <b>Start</b> to create an endless, evolving soundscape—randomized in a unique sequence and unique timing
-                every time—when you are done, press <b>Stop</b> to end.
-                <br><br>
-                The sounds are adapted from varied recordings by
-                <a href="https://kasper.bandcamp.com/album/singing-bowls" target="_blank" rel="noopener noreferrer"
-                    style="color:white; text-decoration:underline;">
-                    Kasper</a> and include over 15 different tones. Koshi chimes from <a href="https://freesound.org" target="_blank" rel="noopener noreferrer"
-                    style="color:white; text-decoration:underline;">  FreeSound</a>.
-                <br><br>
-                For the best experience, listen with headphones at low volume for at least five minutes while focusing
-                on your breath. This app will always be free, ad-free, and dedicated solely to well-being 🙏.
-            </p>
+    <main class="app">
+        <div class="bowl">
+            <img src="tb.jpg" width="1024" height="1024" alt="An ornate brass Tibetan singing bowl">
         </div>
-    </div>
+
+        <header>
+            <h1>Echoes of Silence</h1>
+            <p class="subtitle">Sound Meditation</p>
+        </header>
+
+        <button id="toggleBtn" class="toggle" type="button">Begin</button>
+
+        <div class="settings">
+            <button id="durationBtn" class="chip" type="button" aria-label="Session length">Endless</button>
+            <label class="volume" title="Volume">
+                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 7.97v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
+                </svg>
+                <input id="volume" type="range" min="0" max="100" value="70" aria-label="Volume">
+            </label>
+        </div>
+
+        <div class="status" aria-live="polite">
+            <span id="clock" class="clock"></span>
+            <span id="note" class="note"></span>
+        </div>
+
+        <button id="infoBtn" class="info-button" type="button" aria-label="About">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            </svg>
+        </button>
+    </main>
+
+    <dialog id="infoDialog">
+        <button class="close-button" type="button" aria-label="Close" data-close>&times;</button>
+        <h2>About</h2>
+        <p>
+            'Echoes of Silence' lets you meditate with the sounds of authentic Tibetan singing bowls. Press
+            <b>Begin</b> and an endless soundscape unfolds: bowls, bells and drones in an order and rhythm that is
+            never the same twice, slowly drifting between deeper and brighter tones and between two harmonic moods.
+            Press <b>End</b> when you are done, or choose a session length and a closing bell will see you out.
+        </p>
+        <p>
+            The sounds are adapted from recordings by
+            <a href="https://kasper.bandcamp.com/album/singing-bowls" target="_blank" rel="noopener noreferrer">Kasper</a>
+            and include over 15 different tones. Koshi chimes from
+            <a href="https://freesound.org" target="_blank" rel="noopener noreferrer">FreeSound</a>.
+        </p>
+        <p>
+            For the best experience, listen with headphones at low volume for at least five minutes while
+            focusing on your breath. This app will always be free, ad-free, and dedicated solely to well-being 🙏.
+        </p>
+        <p class="keys"><kbd>Space</kbd> begin / end &nbsp;·&nbsp; <kbd>↑</kbd><kbd>↓</kbd> volume</p>
+    </dialog>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // --- DOM Elements ---
-            const toggleBtn = document.getElementById('toggleMeditationBtn');
-            const infoBtn = document.getElementById('infoBtn');
-            const infoOverlay = document.getElementById('infoOverlay');
-            const closeOverlayBtn = document.getElementById('closeOverlayBtn');
-            const nowPlayingEl = document.getElementById('nowPlaying');
+    (() => {
+        'use strict';
 
-            // --- App State & Audio Config ---
-            const BOWL_SOUNDS = [
-                'tibetanbowls/110_a.mp3', 'tibetanbowls/130_c.mp3', 'tibetanbowls/147_d.mp3',
-                'tibetanbowls/164_e.mp3', 'tibetanbowls/174_f.mp3', 'tibetanbowls/198_g.mp3',
-                'tibetanbowls/220_a.mp3', 'tibetanbowls/264_c.mp3', 'tibetanbowls/50_g.mp3',
-                'tibetanbowls/50_g.mp3', 'tibetanbowls/50_g.mp3', 'tibetanbowls/64_c.mp3',
-                'tibetanbowls/75_d.mp3', 'tibetanbowls/82_e.mp3', 'tibetanbowls/87_f.mp3',
-                'tibetanbowls/98_g.mp3', 'tibetanbowls/bell_f.mp3', 'tibetanbowls/bell_a.mp3',
-                'tibetanbowls/bell_g.mp3', 'tibetanbowls/bell_e.mp3', 'tibetanbowls/drone_c.mp3',
-                'tibetanbowls/drone_a.mp3', 'tibetanbowls/drone_f.mp3', 'tibetanbowls/drone_c.mp3',
-                'tibetanbowls/drone_f.mp3'
-            ];
-            const CHIME_SOUNDS = [
-                'tibetanbowls/kcam1.mp3', 'tibetanbowls/kcam2.mp3'
-            ];
+        // ------------------------------------------------------------------
+        // Sound library
+        // ------------------------------------------------------------------
+        const DIR = 'tibetanbowls/';
+        const NOTE_NAMES = { a: 'A', c: 'C', d: 'D', e: 'E', f: 'F', g: 'G' };
 
-            let isPlaying = false;
-            let soundScheduler = null;
-            let chimeScheduler = null;
-            let wakeLock = null; // To hold the WakeLockSentinel object
+        // kind: bowl | bell | drone.  weight: relative likelihood.  hz: nominal pitch (for colour & register).
+        const SOUNDS = [
+            ['50_g', 2], ['64_c'], ['75_d'], ['82_e'], ['87_f'], ['98_g'],
+            ['110_a'], ['130_c'], ['147_d'], ['164_e'], ['174_f'],
+            ['198_g'], ['220_a'], ['264_c'],
+            ['bell_a', 0.8], ['bell_e', 0.8], ['bell_f', 0.8], ['bell_g', 0.8],
+            ['drone_a', 1.2], ['drone_c', 1.6], ['drone_f', 1.6],
+        ].map(([name, weight = 1]) => {
+            const [head, letter] = name.split('_');
+            const kind = /^\d+$/.test(head) ? 'bowl' : head;
+            const hz = kind === 'bowl' ? Number(head) : kind === 'bell' ? 400 : 70;
+            const label = kind === 'bowl'
+                ? `${NOTE_NAMES[letter]} · ${hz} Hz`
+                : `${kind === 'bell' ? 'Bell' : 'Drone'} · ${NOTE_NAMES[letter]}`;
+            return { url: `${DIR}${name}.mp3`, name, kind, note: letter, hz, weight, label };
+        });
 
-            // --- Web Audio API specific variables ---
-            let audioContext = null;
-            let compressor = null; // NEW: To equalize volume
-            const audioBuffers = {};
-            let activeSources = [];
-            let soundsLoaded = false;
-            
-            // --- Wake Lock Functions ---
-            const requestWakeLock = async () => {
-                if ('wakeLock' in navigator) {
-                    try {
-                        wakeLock = await navigator.wakeLock.request('screen');
-                        wakeLock.addEventListener('release', () => {
-                            console.log('Screen Wake Lock was released by the system.');
-                        });
-                        console.log('Screen Wake Lock is active.');
-                    } catch (err) {
-                        console.error(`Wake Lock request failed: ${err.name}, ${err.message}`);
-                    }
-                } else {
-                    console.warn('Screen Wake Lock API is not supported on this browser.');
+        const CHIMES = ['kcam1', 'kcam2'].map(n => ({ url: `${DIR}${n}.mp3`, name: n, kind: 'chime', hz: 600, label: 'Koshi chime' }));
+
+        // Two pentatonic moods that share C, D, G, A and differ by E ↔ F.
+        const MOODS = [new Set(['a', 'c', 'd', 'e', 'g']), new Set(['c', 'd', 'f', 'g', 'a'])];
+
+        const DURATIONS = [0, 10, 20, 30, 45, 60]; // minutes; 0 = endless
+
+        // ------------------------------------------------------------------
+        // DOM
+        // ------------------------------------------------------------------
+        const $ = id => document.getElementById(id);
+        const toggleBtn = $('toggleBtn');
+        const durationBtn = $('durationBtn');
+        const volumeEl = $('volume');
+        const clockEl = $('clock');
+        const noteEl = $('note');
+        const infoDialog = $('infoDialog');
+        const canvas = $('ripples');
+        const g2d = canvas.getContext('2d');
+        const bowlImg = document.querySelector('.bowl img');
+        const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+
+        // ------------------------------------------------------------------
+        // Preferences
+        // ------------------------------------------------------------------
+        const store = {
+            get(k, d) { try { const v = localStorage.getItem('eos.' + k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+            set(k, v) { try { localStorage.setItem('eos.' + k, JSON.stringify(v)); } catch { /* ignore */ } },
+        };
+
+        let durationIdx = Math.max(0, DURATIONS.indexOf(store.get('duration', 0)));
+        volumeEl.value = store.get('volume', 70);
+
+        // ------------------------------------------------------------------
+        // State
+        // ------------------------------------------------------------------
+        // idle → loading → playing → (ending) → stopping → idle
+        let state = 'idle';
+        let session = 0;
+        let ctx = null;
+        let nodes = null;               // audio graph
+        const buffers = new Map();      // url → { buffer, norm }
+        const loading = new Map();      // url → Promise
+        let active = [];                // { src, gain, sound, endsAt }
+        let recent = [];                // last few urls, to avoid repeats
+        let timers = [];
+        let startedAt = 0;
+        let clockTimer = null;
+        let wakeLock = null;
+        let noteTimer = null;
+
+        // Slow "tide" (0..1) controlling density and register; mood switches every few minutes.
+        let tidePhase = 0;
+        let tidePeriod = 420;
+        let moodIdx = 0;
+        let nextMoodAt = 0;
+
+        const rand = (a, b) => a + Math.random() * (b - a);
+        const elapsed = () => (performance.now() - startedAt) / 1000;
+        const tide = () => 0.5 - 0.5 * Math.cos(tidePhase + (2 * Math.PI * elapsed()) / tidePeriod);
+
+        // ------------------------------------------------------------------
+        // Audio graph
+        // ------------------------------------------------------------------
+        function ensureAudio() {
+            if (ctx) return;
+            const AC = window.AudioContext || window.webkitAudioContext;
+            ctx = new AC({ latencyHint: 'playback' });
+
+            // Let iOS play through the silent switch where supported.
+            try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* ignore */ }
+
+            const bus = ctx.createGain();
+            const reverb = ctx.createConvolver();
+            reverb.buffer = makeImpulse(4.5, 3.2);
+            const wet = ctx.createGain();
+            wet.gain.value = 0.22;
+            const fade = ctx.createGain();
+            fade.gain.value = 0;
+            const volume = ctx.createGain();
+            volume.gain.value = volumeCurve(volumeEl.value);
+            const comp = ctx.createDynamicsCompressor();
+            comp.threshold.value = -20;
+            comp.knee.value = 18;
+            comp.ratio.value = 3;
+            comp.attack.value = 0.02;
+            comp.release.value = 0.6;
+            const analyser = ctx.createAnalyser();
+            analyser.fftSize = 1024;
+
+            bus.connect(fade);
+            bus.connect(reverb).connect(wet).connect(fade);
+            fade.connect(volume).connect(comp).connect(analyser).connect(ctx.destination);
+
+            nodes = { bus, fade, volume, analyser, scope: new Float32Array(analyser.fftSize) };
+        }
+
+        // Soft, dark algorithmic reverb tail.
+        function makeImpulse(seconds, decay) {
+            const rate = ctx.sampleRate;
+            const len = Math.floor(rate * seconds);
+            const ir = ctx.createBuffer(2, len, rate);
+            for (let ch = 0; ch < 2; ch++) {
+                const d = ir.getChannelData(ch);
+                let lp = 0;
+                for (let i = 0; i < len; i++) {
+                    lp += 0.25 * ((Math.random() * 2 - 1) - lp); // gentle low-pass
+                    d[i] = lp * Math.pow(1 - i / len, decay);
                 }
+            }
+            return ir;
+        }
+
+        const volumeCurve = v => Math.pow(v / 100, 2) * 1.6;
+
+        // ------------------------------------------------------------------
+        // Loading
+        // ------------------------------------------------------------------
+        function load(sound) {
+            if (buffers.has(sound.url)) return Promise.resolve(buffers.get(sound.url));
+            if (loading.has(sound.url)) return loading.get(sound.url);
+            const p = fetch(sound.url)
+                .then(r => { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+                .then(ab => new Promise((res, rej) => ctx.decodeAudioData(ab, res, rej)))
+                .then(buffer => {
+                    const entry = { buffer, norm: sound.kind === 'chime' ? 1.4 : loudnessGain(buffer) };
+                    buffers.set(sound.url, entry);
+                    return entry;
+                })
+                .catch(err => { loading.delete(sound.url); console.warn('Could not load', sound.url, err); throw err; });
+            loading.set(sound.url, p);
+            return p;
+        }
+
+        // Even out recordings: nudge the RMS of the loudest half-second toward a common level.
+        // (Chimes are deliberately left quiet — they are accents, not voices.)
+        function loudnessGain(buffer) {
+            const data = buffer.getChannelData(0);
+            const win = Math.floor(buffer.sampleRate * 0.5);
+            let peakRms = 0;
+            for (let start = 0; start + win < data.length; start += win) {
+                let sum = 0;
+                for (let i = start; i < start + win; i += 4) sum += data[i] * data[i];
+                peakRms = Math.max(peakRms, Math.sqrt(sum / (win / 4)));
+            }
+            if (!peakRms) return 1;
+            return Math.min(1.6, Math.max(0.6, 0.3 / peakRms));
+        }
+
+        // ------------------------------------------------------------------
+        // Playing sounds
+        // ------------------------------------------------------------------
+        function play(sound, { gain = 0.8, delay = 0 } = {}) {
+            const entry = buffers.get(sound.url);
+            if (!entry || !ctx) return null;
+
+            const when = ctx.currentTime + delay + 0.03;
+            const src = ctx.createBufferSource();
+            src.buffer = entry.buffer;
+            // A breath of detune keeps repeats from sounding identical.
+            if (src.detune) src.detune.value = rand(-6, 6);
+
+            const g = ctx.createGain();
+            g.gain.value = gain * entry.norm;
+
+            let out = g;
+            if (ctx.createStereoPanner) {
+                const pan = ctx.createStereoPanner();
+                const spread = sound.kind === 'drone' ? 0.25 : 0.6;
+                pan.pan.value = rand(-spread, spread);
+                g.connect(pan);
+                out = pan;
+            }
+            out.connect(nodes.bus);
+            src.connect(g);
+            src.start(when);
+
+            const item = { src, gain: g, sound, endsAt: when + entry.buffer.duration };
+            active.push(item);
+            src.onended = () => {
+                active = active.filter(a => a !== item);
+                try { out.disconnect(); g.disconnect(); } catch { /* ignore */ }
             };
 
-            const releaseWakeLock = async () => {
-                if (wakeLock !== null) {
-                    try {
-                        await wakeLock.release();
-                        wakeLock = null;
-                        console.log('Screen Wake Lock released.');
-                    } catch (err) {
-                         console.error(`Wake Lock release failed: ${err.name}, ${err.message}`);
-                    }
-                }
-            };
-            
-            // Re-acquire the lock if the page becomes visible again (e.g., user switches tabs and comes back)
-            const handleVisibilityChange = async () => {
-                if (isPlaying && document.visibilityState === 'visible') {
-                   await requestWakeLock();
-                }
-            };
+            recent.push(sound.url);
+            if (recent.length > 4) recent.shift();
 
-            // --- Event Listeners ---
-            toggleBtn.addEventListener('click', toggleMeditation);
-            infoBtn.addEventListener('click', () => infoOverlay.style.display = 'flex');
-            closeOverlayBtn.addEventListener('click', () => infoOverlay.style.display = 'none');
-            infoOverlay.addEventListener('click', (e) => {
-                
-                    infoOverlay.style.display = 'none';
-                
+            later(() => onStrike(sound), delay * 1000 + 30);
+            return item;
+        }
+
+        function pickWeighted(list, weightFn) {
+            const weights = list.map(weightFn);
+            const total = weights.reduce((a, b) => a + b, 0);
+            if (total <= 0) return null;
+            let r = Math.random() * total;
+            for (let i = 0; i < list.length; i++) {
+                if ((r -= weights[i]) <= 0) return list[i];
+            }
+            return list[list.length - 1];
+        }
+
+        function chooseSound({ exclude = null } = {}) {
+            const t = tide();
+            const mood = MOODS[moodIdx];
+            const droneRinging = active.some(a => a.sound.kind === 'drone' && a.endsAt - ctx.currentTime > 6);
+            let pool = SOUNDS.filter(s => buffers.has(s.url) && mood.has(s.note) && !recent.includes(s.url)
+                && s !== exclude && !(s.kind === 'drone' && droneRinging));
+            if (!pool.length) pool = SOUNDS.filter(s => buffers.has(s.url) && s !== exclude);
+            if (!pool.length) return null;
+
+            return pickWeighted(pool, s => {
+                // Deep tones dominate at low tide, bright ones at high tide.
+                const low = s.hz < 105 ? 1 : s.hz < 180 ? 0.5 : 0;
+                const register = 1 + (low * (1 - t) + (1 - low) * t) * 1.6;
+                return s.weight * register;
             });
-            document.addEventListener('visibilitychange', handleVisibilityChange);
+        }
 
+        function strikeNext() {
+            if (state !== 'playing') return;
+            updateMood();
 
-            // --- Core Functions ---
-            async function toggleMeditation() {
-                isPlaying = !isPlaying;
-                if (isPlaying) {
-                    // Create AudioContext on first user interaction
-                    if (!audioContext) {
-                        audioContext = new(window.AudioContext || window.webkitAudioContext)();
-                        
-                        // NEW: Create and configure the compressor for volume equalization
-                        compressor = audioContext.createDynamicsCompressor();
-                        // Connect the compressor to the final output (speakers)
-                        compressor.connect(audioContext.destination);
-                    }
-                    await startSoundscape();
-                } else {
-                    await stopSoundscape();
+            const sound = chooseSound();
+            if (sound) {
+                play(sound, { gain: sound.kind === 'drone' ? 0.7 : 0.8 });
+
+                // Occasionally a second bowl answers, more often when the tide is high.
+                if (sound.kind !== 'drone' && Math.random() < 0.08 + 0.18 * tide()) {
+                    const answer = chooseSound({ exclude: sound });
+                    if (answer && answer.kind !== 'drone') play(answer, { gain: 0.55, delay: rand(1.8, 4.5) });
                 }
-                updateButtonUI();
             }
 
-            async function startSoundscape() {
-                console.log("Starting soundscape...");
-                await requestWakeLock(); // Request the wake lock
-                
-                if (!soundsLoaded) {
-                    toggleBtn.textContent = 'Loading...';
-                    toggleBtn.disabled = true;
-                    await preloadAllSounds();
-                    soundsLoaded = true;
-                    toggleBtn.disabled = false;
-                    updateButtonUI(); // Update text back to 'Stop'
+            // Spacious at low tide (≈16–26 s), denser at high tide (≈8–14 s).
+            const t = tide();
+            const gap = rand(16, 26) * (1 - t) + rand(8, 14) * t;
+            later(strikeNext, gap * 1000);
+        }
+
+        function updateMood() {
+            if (elapsed() < nextMoodAt) return;
+            if (nextMoodAt > 0) moodIdx = 1 - moodIdx;
+            nextMoodAt = elapsed() + rand(240, 480);
+        }
+
+        function chimeNext(first = false) {
+            if (state !== 'playing') return;
+            if (!first) {
+                const bowlRinging = active.some(a => a.sound.kind !== 'chime' && a.endsAt - ctx.currentTime > 4);
+                const chime = CHIMES.filter(c => buffers.has(c.url));
+                if (bowlRinging && chime.length) play(chime[Math.floor(Math.random() * chime.length)], { gain: 0.5 });
+            }
+            later(chimeNext, rand(150, 240) * 1000);
+        }
+
+        function later(fn, ms) {
+            const s = session;
+            const id = setTimeout(() => {
+                timers = timers.filter(x => x !== id);
+                if (s === session) fn();
+            }, ms);
+            timers.push(id);
+        }
+
+        function clearTimers() {
+            timers.forEach(clearTimeout);
+            timers = [];
+        }
+
+        // ------------------------------------------------------------------
+        // Session control
+        // ------------------------------------------------------------------
+        async function begin() {
+            if (state !== 'idle') return;
+            ensureAudio();
+            const my = ++session;
+            setState('loading');
+
+            try { await ctx.resume(); } catch { /* ignore */ }
+            requestWakeLock();
+
+            // Load everything in the background; start as soon as a few deep bowls are ready.
+            const firstBatch = SOUNDS.filter(s => s.kind === 'bowl' && s.hz < 110);
+            const firsts = firstBatch.map(load);
+            [...SOUNDS, ...CHIMES].forEach(s => load(s).catch(() => {}));
+
+            try {
+                await Promise.any(firsts);
+            } catch {
+                if (my !== session) return;
+                setState('idle');
+                clockEl.textContent = 'Could not load the sounds. Please check your connection.';
+                releaseWakeLock();
+                return;
+            }
+            if (my !== session || state !== 'loading') return;
+
+            startedAt = performance.now();
+            tidePhase = rand(0, 0.6); // begin near low tide: deep and spacious
+            tidePeriod = rand(360, 540);
+            moodIdx = Math.random() < 0.5 ? 0 : 1;
+            nextMoodAt = 0;
+            recent = [];
+
+            const f = nodes.fade.gain;
+            f.cancelScheduledValues(ctx.currentTime);
+            f.setValueAtTime(0, ctx.currentTime);
+            f.linearRampToValueAtTime(1, ctx.currentTime + 1.5);
+
+            setState('playing');
+            strikeNext();
+            chimeNext(true);
+            startClock();
+            startVisuals();
+        }
+
+        function end({ fadeSeconds = 4 } = {}) {
+            if (state === 'idle' || state === 'stopping') return;
+            const wasLoading = state === 'loading';
+            clearTimers();
+            session++;
+            setState('stopping');
+
+            if (wasLoading || !ctx) { finish(); return; }
+
+            const f = nodes.fade.gain;
+            const now = ctx.currentTime;
+            f.cancelScheduledValues(now);
+            f.setValueAtTime(f.value, now);
+            f.linearRampToValueAtTime(0, now + fadeSeconds);
+            setTimeout(finish, fadeSeconds * 1000 + 150);
+        }
+
+        function finish() {
+            active.forEach(a => { try { a.src.stop(); } catch { /* ignore */ } });
+            active = [];
+            stopClock();
+            releaseWakeLock();
+            setState('idle');
+            if (ctx && ctx.state === 'running') ctx.suspend().catch(() => {});
+        }
+
+        // Timed sessions close with a bell, then let everything ring out.
+        function closeSession() {
+            if (state !== 'playing') return;
+            clearTimers();
+            setState('ending');
+            const bells = SOUNDS.filter(s => s.kind === 'bell' && buffers.has(s.url) && MOODS[moodIdx].has(s.note));
+            const last = bells[Math.floor(Math.random() * bells.length)] || chooseSound();
+            const item = last ? play(last, { gain: 0.85, delay: 1.5 }) : null;
+            const ringOut = Math.max(8, ...active.map(a => a.endsAt - ctx.currentTime));
+            later(() => end({ fadeSeconds: 5 }), Math.min(ringOut - 5, 40) * 1000);
+            if (!item) end({ fadeSeconds: 5 });
+        }
+
+        function toggle() {
+            if (state === 'idle') begin();
+            else end();
+        }
+
+        // ------------------------------------------------------------------
+        // UI
+        // ------------------------------------------------------------------
+        function setState(s) {
+            state = s;
+            document.body.classList.toggle('playing', s === 'playing' || s === 'ending');
+            const labels = { idle: 'Begin', loading: 'Tuning…', playing: 'End', ending: 'End', stopping: 'Fading…' };
+            toggleBtn.textContent = labels[s];
+            toggleBtn.disabled = s === 'stopping';
+            toggleBtn.setAttribute('aria-label', s === 'idle' ? 'Begin the meditation soundscape' : 'End the meditation soundscape');
+            if (s === 'idle') {
+                clockEl.textContent = '';
+                showNote('');
+            }
+            if (s === 'ending') showNote('closing bell');
+            updateMediaSession();
+        }
+
+        function renderDuration() {
+            const m = DURATIONS[durationIdx];
+            durationBtn.textContent = m ? `${m} min` : 'Endless';
+            durationBtn.setAttribute('aria-label', `Session length: ${m ? m + ' minutes' : 'endless'}. Click to change.`);
+        }
+
+        function fmt(sec) {
+            sec = Math.max(0, Math.round(sec));
+            const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+            const mm = String(m).padStart(h ? 2 : 1, '0'), ss = String(s).padStart(2, '0');
+            return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
+        }
+
+        function tick() {
+            if (state !== 'playing' && state !== 'ending') return;
+            const limit = DURATIONS[durationIdx] * 60;
+            const e = elapsed();
+            if (limit && state === 'playing') {
+                clockEl.textContent = `${fmt(limit - e)} remaining`;
+                if (e >= limit) closeSession();
+            } else {
+                clockEl.textContent = fmt(e);
+            }
+        }
+
+        function startClock() { stopClock(); tick(); clockTimer = setInterval(tick, 1000); }
+        function stopClock() { clearInterval(clockTimer); clockTimer = null; }
+
+        function showNote(text) {
+            clearTimeout(noteTimer);
+            noteEl.classList.remove('show');
+            noteTimer = setTimeout(() => {
+                noteEl.textContent = text;
+                if (text) noteEl.classList.add('show');
+            }, noteEl.textContent ? 600 : 0);
+        }
+
+        function onStrike(sound) {
+            if (state !== 'playing' && state !== 'ending') return;
+            if (sound.kind !== 'chime' && state === 'playing') showNote(sound.label);
+            addRipple(sound);
+        }
+
+        function setVolume(v, save = true) {
+            v = Math.max(0, Math.min(100, Math.round(v)));
+            volumeEl.value = v;
+            volumeEl.style.setProperty('--pct', v + '%');
+            if (nodes) nodes.volume.gain.setTargetAtTime(volumeCurve(v), ctx.currentTime, 0.08);
+            if (save) store.set('volume', v);
+        }
+
+        // ------------------------------------------------------------------
+        // Visuals: ripples on each strike, glow that follows the sound
+        // ------------------------------------------------------------------
+        let ripples = [];
+        let rafId = null;
+        let dpr = 1;
+        let glow = 0;
+
+        function resizeCanvas() {
+            dpr = Math.min(window.devicePixelRatio || 1, 2);
+            canvas.width = Math.round(innerWidth * dpr);
+            canvas.height = Math.round(innerHeight * dpr);
+        }
+
+        function addRipple(sound) {
+            if (reducedMotion.matches) return;
+            const entry = buffers.get(sound.url);
+            const life = Math.min(entry ? entry.buffer.duration : 20, 26);
+            // Deep tones: warm, slow and wide. Bright tones: pale, quicker.
+            const bright = Math.min(1, Math.max(0, (Math.log2(sound.hz) - Math.log2(50)) / (Math.log2(600) - Math.log2(50))));
+            ripples.push({
+                born: performance.now(),
+                life: life * 1000,
+                speed: 26 + bright * 26,           // px per second
+                strength: sound.kind === 'drone' ? 0.35 : sound.kind === 'chime' ? 0.45 : 0.6,
+                rgb: mix([201, 150, 60], [237, 226, 190], bright),
+                rings: sound.kind === 'drone' ? 1 : 3,
+            });
+            startVisuals();
+        }
+
+        const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+
+        function frame(now) {
+            rafId = null;
+            const w = canvas.width, h = canvas.height;
+            g2d.clearRect(0, 0, w, h);
+
+            const r = bowlImg.getBoundingClientRect();
+            const cx = (r.left + r.width / 2) * dpr;
+            const cy = (r.top + r.height / 2) * dpr;
+            const r0 = (r.width / 2 + 10) * dpr;
+            const maxR = Math.hypot(w, h);
+
+            ripples = ripples.filter(rp => now - rp.born < rp.life);
+            for (const rp of ripples) {
+                const age = (now - rp.born) / 1000;
+                const k = 1 - (now - rp.born) / rp.life;
+                for (let i = 0; i < rp.rings; i++) {
+                    const a = age - i * 1.1;
+                    if (a < 0) continue;
+                    const radius = r0 + a * rp.speed * dpr * (1 + a * 0.02);
+                    if (radius > maxR) continue;
+                    const alpha = rp.strength * k * k * Math.min(1, a * 1.5) * (1 - i * 0.28);
+                    g2d.beginPath();
+                    g2d.arc(cx, cy, radius, 0, Math.PI * 2);
+                    g2d.strokeStyle = `rgba(${rp.rgb.join(',')},${alpha.toFixed(3)})`;
+                    g2d.lineWidth = (1.6 - i * 0.35) * dpr;
+                    g2d.stroke();
                 }
-                playRandomBowl(); // Play the first sound immediately
-                scheduleNextBowl();
-                scheduleNextChime();
             }
 
-            async function stopSoundscape() {
-                console.log("Stopping soundscape...");
-                await releaseWakeLock(); // Release the wake lock
+            // Glow follows the actual loudness of the soundscape.
+            let target = 0;
+            if (nodes && (state === 'playing' || state === 'ending' || state === 'stopping')) {
+                nodes.analyser.getFloatTimeDomainData(nodes.scope);
+                let sum = 0;
+                for (let i = 0; i < nodes.scope.length; i++) sum += nodes.scope[i] * nodes.scope[i];
+                target = Math.min(1, Math.sqrt(sum / nodes.scope.length) * 3);
+            }
+            glow += (target - glow) * 0.05;
+            document.documentElement.style.setProperty('--glow', glow.toFixed(3));
 
-                clearTimeout(soundScheduler);
-                clearTimeout(chimeScheduler);
-                soundScheduler = null;
-                chimeScheduler = null;
+            if (ripples.length || state !== 'idle' || glow > 0.002) rafId = requestAnimationFrame(frame);
+            else document.documentElement.style.setProperty('--glow', 0);
+        }
 
-                toggleBtn.disabled = true;
+        function startVisuals() {
+            if (reducedMotion.matches || rafId || document.hidden) return;
+            rafId = requestAnimationFrame(frame);
+        }
 
-                const fadeDuration = 4; // 4 seconds
+        // ------------------------------------------------------------------
+        // Wake lock, media session, visibility
+        // ------------------------------------------------------------------
+        async function requestWakeLock() {
+            if (!('wakeLock' in navigator) || wakeLock || document.visibilityState !== 'visible') return;
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                wakeLock.addEventListener('release', () => { wakeLock = null; });
+            } catch { wakeLock = null; }
+        }
 
-                // Fade out all currently playing sounds using Web Audio API
-                if (audioContext) {
-                    activeSources.forEach(({ gainNode }) => {
-                        gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + fadeDuration);
+        function releaseWakeLock() {
+            if (wakeLock) wakeLock.release().catch(() => {});
+            wakeLock = null;
+        }
+
+        function updateMediaSession() {
+            if (!('mediaSession' in navigator)) return;
+            const on = state === 'playing' || state === 'ending' || state === 'loading';
+            try {
+                navigator.mediaSession.playbackState = on ? 'playing' : 'paused';
+                if (on && !navigator.mediaSession.metadata && window.MediaMetadata) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: 'Echoes of Silence',
+                        artist: 'Sound Meditation',
+                        artwork: [{ src: 'tb.jpg', sizes: '1024x1024', type: 'image/jpeg' }],
                     });
                 }
+            } catch { /* ignore */ }
+        }
 
-                setTimeout(() => {
-                    window.location.reload();
-                }, (fadeDuration * 1000) + 500); // Add a buffer
+        if ('mediaSession' in navigator) {
+            const handlers = { play: () => begin(), pause: () => end(), stop: () => end() };
+            for (const [action, fn] of Object.entries(handlers)) {
+                try { navigator.mediaSession.setActionHandler(action, fn); } catch { /* unsupported */ }
             }
+        }
 
-            function scheduleNextBowl() {
-                if (!isPlaying) return;
-                const delay = Math.random() * 10000 + 10000; // 10-20 seconds
-                console.log(`[${new Date().toLocaleTimeString()}] Next bowl sound in ${(delay / 1000).toFixed(2)}s`);
-
-                soundScheduler = setTimeout(() => {
-                    playRandomBowl();
-                    scheduleNextBowl();
-                }, delay);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState !== 'visible') return;
+            if (state === 'playing' || state === 'ending') {
+                requestWakeLock();
+                if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
+                tick();
             }
+            startVisuals();
+        });
 
-           function scheduleNextChime() {
-                if (!isPlaying) return;
-                // Chimes are set to play once every 3 minutes
-                const delay = 180000; // 3 minutes in milliseconds
-                console.log(`[${new Date().toLocaleTimeString()}] Next chime in ${(delay / 1000).toFixed(2)}s`);
+        // ------------------------------------------------------------------
+        // Events
+        // ------------------------------------------------------------------
+        toggleBtn.addEventListener('click', toggle);
 
-                chimeScheduler = setTimeout(() => {
-                    playRandomChime();
-                    scheduleNextChime();
-                }, delay);
-            }
+        durationBtn.addEventListener('click', () => {
+            durationIdx = (durationIdx + 1) % DURATIONS.length;
+            store.set('duration', DURATIONS[durationIdx]);
+            renderDuration();
+            tick();
+        });
 
-            function playSound(soundSrc, type) {
-                if (!isPlaying || !audioContext) return;
+        volumeEl.addEventListener('input', () => setVolume(volumeEl.value));
 
-                const buffer = audioBuffers[soundSrc];
-                if (!buffer) {
-                    console.error(`Buffer for ${soundSrc} not found.`);
-                    return;
-                }
+        $('infoBtn').addEventListener('click', () => infoDialog.showModal());
+        infoDialog.addEventListener('click', e => {
+            if (e.target === infoDialog || e.target.hasAttribute('data-close')) infoDialog.close();
+        });
 
-                console.log(`[${new Date().toLocaleTimeString()}] Playing [${type}]: ${soundSrc}`);
-
-                // Only update the UI for the main bowl sounds
-                if (type === 'bowl') {
-                    const fileName = soundSrc.split('/').pop().replace('.mp3', '');
-                    nowPlayingEl.textContent = fileName;
-                }
-
-                // Setup Web Audio nodes
-                const source = audioContext.createBufferSource();
-                const gainNode = audioContext.createGain();
-
-                source.buffer = buffer;
-                // Make chimes slightly quieter
-                gainNode.gain.value = (type === 'chime') ? 0.6 : 0.8;
-
-                source.connect(gainNode);
-                // MODIFIED: Connect the gain node to the compressor instead of directly to the destination
-                gainNode.connect(compressor);
-                source.start(0);
-
-                // Track the source along with its type
-                const sourceData = { source, gainNode, type };
-                activeSources.push(sourceData);
-
-                // Clean up the source from the array once it has finished
-                source.onended = () => {
-                    activeSources = activeSources.filter(s => s !== sourceData);
-                    // If no more bowls are playing, clear the text
-                    if (!activeSources.some(s => s.type === 'bowl')) {
-                        nowPlayingEl.textContent = '';
-                    }
-                };
-            }
-
-            function playRandomBowl() {
-                if (!isPlaying || BOWL_SOUNDS.length === 0) return;
-                const soundIndex = Math.floor(Math.random() * BOWL_SOUNDS.length);
-                const soundSrc = BOWL_SOUNDS[soundIndex];
-                playSound(soundSrc, 'bowl');
-            }
-
-            function playRandomChime() {
-                if (!isPlaying || CHIME_SOUNDS.length === 0) return;
-
-                // CRITICAL CHECK: Only play chime if a bowl is currently active
-                const isBowlPlaying = activeSources.some(s => s.type === 'bowl');
-
-                if (isBowlPlaying) {
-                    const soundIndex = Math.floor(Math.random() * CHIME_SOUNDS.length);
-                    const soundSrc = CHIME_SOUNDS[soundIndex];
-                    playSound(soundSrc, 'chime');
-                } else {
-                    console.log(`[${new Date().toLocaleTimeString()}] Skipping chime: No bowl sound is currently playing.`);
-                }
-            }
-
-            // --- Web Audio API Helper Functions ---
-            async function loadSound(url) {
-                if (audioBuffers[url]) return audioBuffers[url]; // Return cached buffer
-                try {
-                    const response = await fetch(url);
-                    const arrayBuffer = await response.arrayBuffer();
-                    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                    audioBuffers[url] = audioBuffer;
-                    return audioBuffer;
-                } catch (error) {
-                    console.error(`Error loading sound: ${url}`, error);
-                }
-            }
-
-            async function preloadAllSounds() {
-                console.log("Preloading all sounds...");
-                const allSounds = [...BOWL_SOUNDS, ...CHIME_SOUNDS];
-                const uniqueSounds = [...new Set(allSounds)];
-                const promises = uniqueSounds.map(url => loadSound(url));
-                await Promise.all(promises);
-                console.log("All sounds preloaded.");
-            }
-
-            function updateButtonUI() {
-                if (isPlaying) {
-                    toggleBtn.textContent = 'Stop Meditation';
-                    toggleBtn.classList.add('active');
-                    toggleBtn.setAttribute('aria-label', 'Stop the meditation soundscape');
-                } else {
-                    toggleBtn.textContent = 'Start Meditation';
-                    toggleBtn.classList.remove('active');
-                    toggleBtn.setAttribute('aria-label', 'Start the meditation soundscape');
-                    nowPlayingEl.textContent = '';
-                }
+        document.addEventListener('keydown', e => {
+            if (infoDialog.open || e.altKey || e.ctrlKey || e.metaKey) return;
+            const tag = document.activeElement && document.activeElement.tagName;
+            if (e.code === 'Space' && tag !== 'BUTTON' && tag !== 'INPUT') {
+                e.preventDefault();
+                if (!toggleBtn.disabled) toggle();
+            } else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && tag !== 'INPUT') {
+                e.preventDefault();
+                setVolume(Number(volumeEl.value) + (e.key === 'ArrowUp' ? 5 : -5));
             }
         });
-    </script>
 
+        addEventListener('resize', resizeCanvas);
+        reducedMotion.addEventListener?.('change', () => { ripples = []; g2d.clearRect(0, 0, canvas.width, canvas.height); });
+
+        resizeCanvas();
+        renderDuration();
+        setVolume(volumeEl.value, false);
+        setState('idle');
+    })();
+    </script>
 </body>
 
 </html>
