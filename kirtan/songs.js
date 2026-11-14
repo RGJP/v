@@ -991,16 +991,6 @@ Jay Jay Ma Ma Ma, Jay Jay Ma Ma Ma`,
   ],
 },
 {
-  title: "Om namo bhagavate (teardrop massive attack)",
-  audio: "teardrop.mp3",
-  chords: `A - G - D II : F - G   A`,
-  lyrics: [
-    "Om Namo Bhagavate, Vasudevaya",
-    "Om, Hari Om",
-    "Hari Om, Hari Om , Hari Om",
-  ],
-},
-{
   title: "Asato Ma",
   audio: "asatodev.mp3",
   chords: `D  Bb- D- Bb  D- Bb- D- Bb- C | F Gm Am Bb`,
