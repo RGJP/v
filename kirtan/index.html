@@ -230,6 +230,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 
 /* ---------- mobile ---------- */
 @media (max-width:899px){
+  html,body{overflow-x:clip}
   .app{display:block}
   .side{position:static;height:auto;border:0;background:none;backdrop-filter:none;padding-bottom:calc(var(--player-h) + 16px)}
   .stick{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding-top:env(safe-area-inset-top)}
@@ -247,7 +248,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
   .mhero details summary::-webkit-details-marker{display:none}
   .mhero details[open] summary{display:none}
   .song{padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
-  .back{display:flex;align-items:center;gap:6px;height:48px;padding:env(safe-area-inset-top) 16px 0 10px;margin:calc(-12px - env(safe-area-inset-top)) -16px 12px;font-weight:600;color:var(--ink-2);position:sticky;top:0;z-index:20;width:calc(100% + 32px);box-sizing:content-box;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+  .back{display:flex;align-items:center;gap:6px;height:48px;padding:env(safe-area-inset-top) 16px 0 10px;margin:calc(-12px - env(safe-area-inset-top)) -16px 12px;font-weight:600;color:var(--ink-2);position:sticky;top:0;z-index:20;width:calc(100% + 32px);background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
   .back svg{width:20px;height:20px}
   .song-head{margin-bottom:20px;gap:18px}
   .actions{width:100%}
