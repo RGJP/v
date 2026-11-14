@@ -585,27 +585,36 @@
         // ------------------------------------------------------------------
         // Playing sounds
         // ------------------------------------------------------------------
-        function play(sound, { gain = 0.8, delay = 0 } = {}) {
+        function play(sound, { gain = 0.8, delay = 0, fadeIn = 0, fadeOut = 0 } = {}) {
             const entry = buffers.get(sound.url);
             if (!entry || !ctx) return null;
 
             const when = ctx.currentTime + delay + 0.03;
+            const dur = entry.buffer.duration;
             const src = ctx.createBufferSource();
             src.buffer = entry.buffer;
             // A breath of detune keeps repeats from sounding identical.
             if (src.detune) src.detune.value = rand(-6, 6);
 
+            // Fold every recording to mono so it sits dead centre in the stereo image.
             const g = ctx.createGain();
-            g.gain.value = gain * entry.norm;
+            g.channelCount = 1;
+            g.channelCountMode = 'explicit';
+            g.channelInterpretation = 'speakers';
 
-            let out = g;
-            if (ctx.createStereoPanner) {
-                const pan = ctx.createStereoPanner();
-                const spread = sound.kind === 'drone' ? 0.25 : 0.6;
-                pan.pan.value = rand(-spread, spread);
-                g.connect(pan);
-                out = pan;
+            const level = gain * entry.norm;
+            if (fadeIn || fadeOut) {
+                const inEnd = when + Math.min(fadeIn, dur * 0.4);
+                const outStart = Math.max(inEnd, when + dur - Math.min(fadeOut, dur * 0.6));
+                g.gain.setValueAtTime(fadeIn ? 0 : level, when);
+                if (fadeIn) g.gain.linearRampToValueAtTime(level, inEnd);
+                g.gain.setValueAtTime(level, outStart);
+                g.gain.linearRampToValueAtTime(0, when + dur);
+            } else {
+                g.gain.value = level;
             }
+
+            const out = g;
             out.connect(nodes.bus);
             src.connect(g);
             src.start(when);
@@ -684,7 +693,7 @@
             if (!first) {
                 const bowlRinging = active.some(a => a.sound.kind !== 'chime' && a.endsAt - ctx.currentTime > 4);
                 const chime = CHIMES.filter(c => buffers.has(c.url));
-                if (bowlRinging && chime.length) play(chime[Math.floor(Math.random() * chime.length)], { gain: 0.5 });
+                if (bowlRinging && chime.length) play(chime[Math.floor(Math.random() * chime.length)], { gain: 0.42, fadeIn: 2.5, fadeOut: 6 });
             }
             later(chimeNext, (first ? rand(30, 90) : rand(150, 240)) * 1000);
         }
