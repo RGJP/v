@@ -507,9 +507,9 @@
 
             const bus = ctx.createGain();
             const reverb = ctx.createConvolver();
-            reverb.buffer = makeImpulse(4.5, 3.2);
+            reverb.buffer = makeImpulse(6.5, 3);
             const wet = ctx.createGain();
-            wet.gain.value = 0.22;
+            wet.gain.value = 0.38;
             const fade = ctx.createGain();
             fade.gain.value = 0;
             const volume = ctx.createGain();
