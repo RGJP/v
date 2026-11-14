@@ -218,7 +218,6 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 .extra{display:flex;justify-content:flex-end;gap:4px}
 .extra .icon-btn[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft)}
 .speed{font:600 .78rem var(--mono);width:auto;padding:0 10px}
-.mini-progress{display:none}
 
 .toast{position:fixed;left:50%;bottom:calc(var(--player-h) + 20px);transform:translate(-50%,20px);opacity:0;background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:.88rem;font-weight:600;pointer-events:none;transition:all .25s;z-index:60}
 .toast.show{opacity:1;transform:translate(-50%,0)}
@@ -235,6 +234,8 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
   .side{position:static;height:auto;border:0;background:none;backdrop-filter:none;padding-bottom:calc(var(--player-h) + 16px)}
   .stick{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);padding-top:env(safe-area-inset-top)}
   .list{overflow:visible;padding:0 6px}
+  .item{padding:12px 10px;min-height:52px}
+  .item .t{font-size:1rem}
   .main{display:none}
   .app.is-song .side{display:none}
   .app.is-song .main{display:block}
@@ -246,7 +247,7 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
   .mhero details summary::-webkit-details-marker{display:none}
   .mhero details[open] summary{display:none}
   .song{padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
-  .back{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 12px 0 6px;margin:0 0 14px -6px;border-radius:12px;font-weight:600;color:var(--ink-2)}
+  .back{display:flex;align-items:center;gap:6px;height:48px;padding:env(safe-area-inset-top) 16px 0 10px;margin:calc(-12px - env(safe-area-inset-top)) -16px 12px;font-weight:600;color:var(--ink-2);position:sticky;top:0;z-index:20;width:calc(100% + 32px);box-sizing:content-box;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
   .back svg{width:20px;height:20px}
   .song-head{margin-bottom:20px;gap:18px}
   .actions{width:100%}
@@ -257,13 +258,21 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
   .chords{padding:18px;font-size:.88rem}
   .nav a{padding:14px 16px}
   .nav a b{font-size:1.1rem}
-  .player{grid-template-columns:minmax(0,1fr) auto;gap:10px;padding-top:12px}
-  .ctrl{width:auto}
-  .seek,.extra .hide-m,.ctrl-btns .hide-m{display:none}
-  .extra{display:none}
-  .np img{width:40px;height:40px}
-  .mini-progress{display:block;position:absolute;left:0;right:0;top:-1px;height:2px;background:var(--line)}
-  .mini-progress i{display:block;height:100%;width:var(--p,0%);background:var(--accent)}
+  .player{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"np btns" "seek extra";gap:4px 6px;padding-top:12px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  .np{grid-area:np}
+  .np img{width:42px;height:42px}
+  .ctrl{display:contents}
+  .ctrl-btns{grid-area:btns;gap:2px}
+  .ctrl-btns .icon-btn{width:42px;height:42px}
+  .pp{width:48px;height:48px}
+  .seek{grid-area:seek;gap:8px;font-size:.7rem}
+  .seek span{width:auto;min-width:30px}
+  input[type=range]{height:40px}
+  input[type=range]::-webkit-slider-thumb{width:16px;height:16px;margin-top:-6px}
+  .extra{grid-area:extra;gap:0;align-items:center}
+  .extra .icon-btn{width:40px;height:40px}
+  .extra .speed{width:auto;min-width:44px;padding:0 6px}
+  .toast{bottom:calc(var(--player-h) + 12px)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
@@ -350,11 +359,10 @@ input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;bac
 </div>
 
 <div class="player" id="player" aria-label="Player">
-  <div class="mini-progress"><i id="miniP"></i></div>
   <a class="np" id="np" href="#/"><img src="img.jpg" alt=""><div><b id="npT">—</b><span id="npS"></span></div></a>
   <div class="ctrl">
     <div class="ctrl-btns">
-      <button class="icon-btn hide-m" id="prevBtn" aria-label="Previous recording"><svg><use href="#i-prev"/></svg></button>
+      <button class="icon-btn" id="prevBtn" aria-label="Previous recording"><svg><use href="#i-prev"/></svg></button>
       <button class="pp" id="ppBtn" aria-label="Play"><svg><use href="#i-play"/></svg></button>
       <button class="icon-btn" id="nextBtn" aria-label="Next recording"><svg><use href="#i-next"/></svg></button>
     </div>
@@ -623,7 +631,7 @@ function playSong(s) {
   audio.playbackRate = SPEEDS[speedI];
   audio.play().catch(() => {});
   document.body.classList.add('has-player');
-  requestAnimationFrame(() => document.documentElement.style.setProperty('--player-h', $('#player').offsetHeight + 'px'));
+  setPH();
   $('#npT').textContent = s.name; $('#npS').textContent = s.sub || `No. ${s.n}`;
   $('#np').href = '#/' + s.slug;
   if ('mediaSession' in navigator) {
@@ -661,7 +669,6 @@ audio.addEventListener('timeupdate', () => {
   const p = audio.duration ? audio.currentTime / audio.duration : 0;
   if (!seeking) { $('#seek').value = Math.round(p * 1000); }
   $('#seek').style.setProperty('--p', p * 100 + '%');
-  $('#miniP').style.setProperty('--p', p * 100 + '%');
   $('#cur').textContent = fmt(audio.currentTime);
 });
 audio.addEventListener('ended', () => { if (st.auto) stepPlay(1); else syncAll(); });
@@ -683,6 +690,9 @@ if ('mediaSession' in navigator) {
   ms.setActionHandler('previoustrack', () => stepPlay(-1));
   ms.setActionHandler('nexttrack', () => stepPlay(1));
 }
+
+const setPH = () => document.documentElement.style.setProperty('--player-h', document.body.classList.contains('has-player') ? $('#player').offsetHeight + 'px' : '0px');
+if (window.ResizeObserver) new ResizeObserver(setPH).observe($('#player'));
 
 /* ---------- misc ---------- */
 let toastT;
