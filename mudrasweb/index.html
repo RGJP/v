@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#07101d">
+  <meta name="color-scheme" content="dark">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 28 28%22%3E%3Crect width=%2228%22 height=%2228%22 rx=%227%22 fill=%22%230d1b2f%22/%3E%3Cpath d=%22M14 24C8 21 4 17 3 10c6 0 10 4 11 14Zm0 0c6-3 10-7 11-14-6 0-10 4-11 14Zm0 0c-4-6-5-13 0-20 5 7 4 14 0 20Z%22 fill=%22none%22 stroke=%22%238fc3fb%22 stroke-width=%221.3%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+  <meta name="description" content="Découvrez un mudra au hasard parmi 68 cartes illustrées.">
+  <title>Mudras</title>
+  <script>
+    // Simple password gate (not real security: it only keeps casual visitors out).
+    try { if (localStorage.getItem("mudras-acces") === "9w98pmoj7c") document.documentElement.classList.add("ouvert"); } catch {}
+  </script>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="cartes.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <form class="porte" id="porte" autocomplete="off">
+    <svg width="34" height="34" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <path d="M14 24C8 21 4 17 3 10c6 0 10 4 11 14Zm0 0c6-3 10-7 11-14-6 0-10 4-11 14Zm0 0c-4-6-5-13 0-20 5 7 4 14 0 20Z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/>
+    </svg>
+    <h1 class="porte-titre">Mudras</h1>
+    <label class="sr-only" for="mdp">Mot de passe</label>
+    <input id="mdp" type="password" placeholder="Mot de passe" autofocus>
+    <button type="submit">Entrer</button>
+    <p id="porte-erreur" role="alert"></p>
+  </form>
+  <header class="masthead">
+    <svg width="27" height="27" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+      <path d="M14 24C8 21 4 17 3 10c6 0 10 4 11 14Zm0 0c6-3 10-7 11-14-6 0-10 4-11 14Zm0 0c-4-6-5-13 0-20 5 7 4 14 0 20Z" stroke="currentColor" stroke-width="1.15" stroke-linejoin="round"/>
+    </svg>
+    <span>Mudras</span>
+  </header>
+
+  <main>
+    <noscript>Activez JavaScript pour tirer une carte de mudra.</noscript>
+    <div id="tirage" hidden>
+      <article class="card" aria-labelledby="theme">
+        <figure class="illustration">
+          <div class="halo" aria-hidden="true"></div>
+          <img id="geste" alt="">
+        </figure>
+        <div class="identite">
+          <p class="nom" id="nom"></p>
+          <h1 id="theme"></h1>
+          <span class="separateur" aria-hidden="true"></span>
+          <p class="devise" id="devise"></p>
+        </div>
+      </article>
+
+      <div class="actions">
+        <button id="de" type="button" aria-label="Tirer un autre mudra" title="Tirer un autre mudra">
+          <svg viewBox="0 0 34 34" width="32" height="32" aria-hidden="true">
+            <rect x="5" y="5" width="24" height="24" rx="5.5" fill="none" stroke="currentColor" stroke-width="1.55"/>
+            <circle cx="11.5" cy="11.5" r="1.55" fill="currentColor"/>
+            <circle cx="22.5" cy="11.5" r="1.55" fill="currentColor"/>
+            <circle cx="17" cy="17" r="1.55" fill="currentColor"/>
+            <circle cx="11.5" cy="22.5" r="1.55" fill="currentColor"/>
+            <circle cx="22.5" cy="22.5" r="1.55" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+      <p class="sr-only" id="annonce" role="status"></p>
+
+      <section class="verso" aria-label="Signification">
+        <div class="verso-entete">
+          <p id="sous-titre" hidden></p>
+        </div>
+        <div id="signification"></div>
+        <blockquote id="affirmation" hidden></blockquote>
+      </section>
+
+      <section class="galerie" aria-label="Tous les mudras">
+        <ul id="grille" role="list"></ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
